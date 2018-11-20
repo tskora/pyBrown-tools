@@ -1,7 +1,11 @@
 from ReadInput import InputData
 from Grid import pack_molecules
+from WriteStructure import write_structure
+from ParseInput import parse_input_filename
 
-i = InputData("input.json", [])
+input_filename = parse_input_filename()
+i = InputData(input_filename, [])
 print(i.input_data)
-pop_grid = pack_molecules(i)
-print(pop_grid)
+coords = pack_molecules(i)
+print(coords)
+write_structure(i, coords)

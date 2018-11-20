@@ -11,7 +11,7 @@ def _generate_grid(input_data_object):
     input_data = input_data_object.input_data
 
     box_size = input_data["box_size"]
-    molecule_radius = input_data["molecule_radius"]
+    molecule_radius = input_data["hydrodynamic_radius"]
     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
     unit_dist = 2 * molecule_radius + min_dist_between_surfaces
