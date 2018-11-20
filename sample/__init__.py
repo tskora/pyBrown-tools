@@ -13,11 +13,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
-
-import argparse
-
-def parse_input_filename():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input_filename")
-    args = parser.parse_args()
-    return args.input_filename
