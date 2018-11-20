@@ -1,0 +1,6 @@
+{
+  "box_size": [500.0, 500.0, 500.0],
+  "molecule_radius": 5.1,
+  "number_of_molecules": 2,
+  "minimal_distance_between_surfaces": 15.0
+}
