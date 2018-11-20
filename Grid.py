@@ -1,6 +1,18 @@
 import random
 
-def generate_grid(box_size, molecule_radius, min_dist_between_surfaces):
+def pack_molecules(input_data_object):
+
+    grid = _generate_grid(input_data_object)
+
+    return _populate_grid(grid, input_data_object)
+
+def _generate_grid(input_data_object):
+
+    input_data = input_data_object.input_data
+
+    box_size = input_data["box_size"]
+    molecule_radius = input_data["molecule_radius"]
+    min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
     unit_dist = 2 * molecule_radius + min_dist_between_surfaces
 
@@ -13,7 +25,11 @@ def generate_grid(box_size, molecule_radius, min_dist_between_surfaces):
             for j in range(num_of_unit_y)
             for k in range(num_of_unit_z)]
 
-def populate_grid(grid, number_of_molecules):
+def _populate_grid(grid, input_data_object):
+
+    input_data = input_data_object.input_data
+
+    number_of_molecules = input_data["number_of_molecules"]
 
     populated_grid = []
 
@@ -23,20 +39,3 @@ def populate_grid(grid, number_of_molecules):
             populated_grid.append(grid[index_to_be_included])
 
     return populated_grid
-
-
-
-box_x = 500.0
-box_y = 500.0
-box_z = 500.0
-
-box_size = [box_x, box_y, box_z]
-
-molecule_radius = 5.1
-number_of_molecules = 2
-min_dist_surf = 15.0
-
-grid = generate_grid(box_size, molecule_radius, min_dist_surf)
-print(grid)
-pop_grid = populate_grid(grid, number_of_molecules)
-print(pop_grid)
