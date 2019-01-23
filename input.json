@@ -1,11 +1,11 @@
 {
-  "box_size": [500.0, 500.0, 500.0],
-  "hydrodynamic_radius": 5.1,
-  "lennard-jones_radius": 5.1,
+  "box_size": [1000.0, 1000.0, 1000.0],
+  "hydrodynamic_radius": 51,
+  "lennard-jones_radius": 51,
   "lennard-jones_energy": 0.5922,
-  "charge": 1.0,
+  "charge": 0.0,
   "mass": 1.0,
-  "number_of_molecules": 10,
-  "minimal_distance_between_surfaces": 15.0,
-  "output_structure_filename": "test_10.str"
+  "number_of_molecules": 728,
+  "minimal_distance_between_surfaces": 0.0,
+  "output_structure_filename": "test_720.str"
 }

@@ -1,4 +1,4 @@
-# pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simultions
+# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics simulations
 # Copyright (C) 2018  Tomasz Skóra (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,13 +14,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
-setup(
-   name='pyBrown',
-   version='1.0',
-   description='Bound of tools useful for Brownian and Stokesian dynamics simultions',
-   author='Tomasz Skóra',
-   author_email='tskora@ichf.edu.pl',
-   packages=['pyBrown'],
-   install_requires=['argparse', 'json'],
-   scripts=[]
-)
+import json
+
+class InputData:
+
+    def __init__(self, input_filename, keywords):
+
+        self._read_input_file(input_filename)
+
+        self._check_for_missing_keywords(keywords)
+
+    def _read_input_file(self, input_filename):
+
+        with open(input_filename, "r") as read_file:
+            self.input_data = json.load(read_file)
+
+    def _check_for_missing_keywords(self, keywords):
+
+        for keyword in keywords:
+            assert keyword in self.input_data.keys(),\
+                'Missing {} keyword in input JSON file.'.format(keyword)
+
+

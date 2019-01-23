@@ -14,13 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
-setup(
-   name='pyBrown',
-   version='1.0',
-   description='Bound of tools useful for Brownian and Stokesian dynamics simultions',
-   author='Tomasz Skóra',
-   author_email='tskora@ichf.edu.pl',
-   packages=['pyBrown'],
-   install_requires=['argparse', 'json'],
-   scripts=[]
-)
+from pyBrown.input import InputData
+from pyBrown.parse import parse_input_filename
+
+input_filename = parse_input_filename()
+i = InputData(input_filename, [])
+print(i.input_data)

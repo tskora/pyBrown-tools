@@ -1,4 +1,4 @@
-# pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simultions
+# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics simulations
 # Copyright (C) 2018  Tomasz Skóra (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,14 +13,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
-
-setup(
-   name='pyBrown',
-   version='1.0',
-   description='Bound of tools useful for Brownian and Stokesian dynamics simultions',
-   author='Tomasz Skóra',
-   author_email='tskora@ichf.edu.pl',
-   packages=['pyBrown'],
-   install_requires=['argparse', 'json'],
-   scripts=[]
-)
