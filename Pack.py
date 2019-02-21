@@ -1,4 +1,4 @@
-# pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simultions
+# pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simulations
 # Copyright (C) 2018  Tomasz Skóra (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify

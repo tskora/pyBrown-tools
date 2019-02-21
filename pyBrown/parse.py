@@ -1,5 +1,5 @@
 # pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics simulations
-# Copyright (C) 2018  Tomasz Skóra (tskora@ichf.edu.pl)
+# Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

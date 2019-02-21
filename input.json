@@ -1,11 +1,11 @@
 {
-  "box_size": [1000.0, 1000.0, 1000.0],
+  "box_size": [750.0, 750.0, 750.0],
   "hydrodynamic_radius": 51,
   "lennard-jones_radius": 51,
   "lennard-jones_energy": 0.5922,
   "charge": 0.0,
   "mass": 1.0,
-  "number_of_molecules": 728,
-  "minimal_distance_between_surfaces": 0.0,
-  "output_structure_filename": "test_720.str"
+  "number_of_molecules": 152,
+  "minimal_distance_between_surfaces": 10,
+  "output_structure_filename": "ficoll_152.str"
 }
