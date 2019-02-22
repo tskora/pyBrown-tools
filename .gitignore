@@ -1,7 +1,11 @@
 .idea/
 venv/
+venv1/
+venv2/
 __pycache__/
+*.pyc
 *.str
 *.json
 *.eps
+*.txt
 work/

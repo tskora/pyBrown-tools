@@ -19,21 +19,17 @@ import numpy as np
 
 def pack_molecules(input_data_object):
 
-    grid = _generate_grid(input_data_object)
+    input_data = input_data_object.input_data
 
-    ###
-    distances = []
-    for element in np.array(grid):
-        for element2 in np.array(grid):
-            if (element == element2).all(): continue
-            d = np.sqrt(np.sum((element - element2)**2))
-            # print(d)
-            distances.append(d)
-    # print(max(distances))
-    print('Minimal distance between points is: {}'.format(min(distances)))
-    ###
+    if input_data['packing_mode'] == 'regular':
 
-    return _populate_grid(grid, input_data_object)
+        grid = _generate_grid(input_data_object)
+
+        return _populate_grid(grid, input_data_object)
+
+    else if input_data['packing_mode'] == 'monte_carlo':
+
+        return _populate_monte_carlo(input_data_object)
 
 def _generate_grid(input_data_object):
 
@@ -49,8 +45,9 @@ def _generate_grid(input_data_object):
     num_of_unit_y = int(box_size[1] / unit_dist)
     num_of_unit_z = int(box_size[2] / unit_dist)
 
-    print('Number of available grid points is: {}'.format(num_of_unit_x * num_of_unit_y * num_of_unit_z))
-    print('Minimal distance between points ought to be: {}'.format(unit_dist))
+    grid_points = num_of_unit_x * num_of_unit_y * num_of_unit_z
+
+    print('Number of available grid points is: {}'.format( grid_points ))
 
     return [[(0.5 + i) * unit_dist, (0.5 + j) * unit_dist, (0.5 + k) * unit_dist]
             for i in range(num_of_unit_x)
@@ -65,9 +62,30 @@ def _populate_grid(grid, input_data_object):
 
     populated_grid = []
 
+    assert number_of_molecules <= len( grid ), \
+    'Too many molecules for that box, assuming given minimal distance'
+
     while len(populated_grid) < number_of_molecules:
         index_to_be_included = random.randint(0, len(grid)-1)
         if grid[index_to_be_included] not in populated_grid:
             populated_grid.append(grid[index_to_be_included])
 
     return populated_grid
+
+def _populate_monte_carlo(input_data_object):
+
+    input_data = input_data_object.input_data
+
+    number_of_molecules = input_data["number_of_molecules"]
+    box_size = input_data["box_size"]
+    spherical = input_data["spherical"]
+
+    # works correctly only for cubic boxes
+    mc = MonteCarlo(box_size[0], spherical)
+
+    populated_box = []
+
+    while len(populated_box) < number_of_molecules:
+        # lalalala
+
+    return populated_box
