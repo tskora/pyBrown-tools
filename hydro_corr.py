@@ -17,6 +17,12 @@
 from pyBrown.input import InputData
 from pyBrown.parse import parse_input_filename
 
-input_filename = parse_input_filename()
-i = InputData(input_filename, [])
-print(i.input_data)
+#-------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+	required_keywords = []
+
+	input_filename = parse_input_filename()
+	i = InputData(input_filename, [])
+	print(i.input_data)

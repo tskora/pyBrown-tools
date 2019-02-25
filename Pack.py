@@ -19,6 +19,8 @@ from pyBrown.grid import pack_molecules
 from pyBrown.write import write_structure
 from pyBrown.parse import parse_input_filename
 
+#-------------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
 	required_keywords = []
