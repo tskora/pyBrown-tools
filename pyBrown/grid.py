@@ -16,6 +16,10 @@
 
 import random
 import numpy as np
+from pyBrown.monte_carlo import place_tracers_linearly
+from pyBrown.sphere import overlap, fit#, distance_matrix
+
+#-------------------------------------------------------------------------------
 
 def pack_molecules(input_data_object):
 
@@ -27,65 +31,88 @@ def pack_molecules(input_data_object):
 
         return _populate_grid(grid, input_data_object)
 
-    else if input_data['packing_mode'] == 'monte_carlo':
+    elif input_data['packing_mode'] == 'monte_carlo':
 
         return _populate_monte_carlo(input_data_object)
 
-def _generate_grid(input_data_object):
+#-------------------------------------------------------------------------------
 
-    input_data = input_data_object.input_data
+# TODO: how to use grid for mixtures?
 
-    box_size = input_data["box_size"]
-    molecule_radius = input_data["hydrodynamic_radius"]
-    min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
+# def _generate_grid(input_data_object):
 
-    unit_dist = 2 * molecule_radius + min_dist_between_surfaces
+#     input_data = input_data_object.input_data
 
-    num_of_unit_x = int(box_size[0] / unit_dist)
-    num_of_unit_y = int(box_size[1] / unit_dist)
-    num_of_unit_z = int(box_size[2] / unit_dist)
+#     box_size = input_data["box_size"]
+#     molecule_radius = input_data["hydrodynamic_radii"][0][0]
+#     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
-    grid_points = num_of_unit_x * num_of_unit_y * num_of_unit_z
+#     unit_dist = 2 * molecule_radius + min_dist_between_surfaces
 
-    print('Number of available grid points is: {}'.format( grid_points ))
+#     num_of_unit_x = int(box_size[0] / unit_dist)
+#     num_of_unit_y = int(box_size[1] / unit_dist)
+#     num_of_unit_z = int(box_size[2] / unit_dist)
 
-    return [[(0.5 + i) * unit_dist, (0.5 + j) * unit_dist, (0.5 + k) * unit_dist]
-            for i in range(num_of_unit_x)
-            for j in range(num_of_unit_y)
-            for k in range(num_of_unit_z)]
+#     grid_points = num_of_unit_x * num_of_unit_y * num_of_unit_z
 
-def _populate_grid(grid, input_data_object):
+#     print('Number of available grid points is: {}'.format( grid_points ))
 
-    input_data = input_data_object.input_data
+#     return [[(0.5 + i) * unit_dist, (0.5 + j) * unit_dist, (0.5 + k) * unit_dist]
+#             for i in range(num_of_unit_x)
+#             for j in range(num_of_unit_y)
+#             for k in range(num_of_unit_z)]
 
-    number_of_molecules = input_data["number_of_molecules"]
+#-------------------------------------------------------------------------------
 
-    populated_grid = []
+# TODO: how to use grid for mixtures?
 
-    assert number_of_molecules <= len( grid ), \
-    'Too many molecules for that box, assuming given minimal distance'
+# def _populate_grid(grid, input_data_object):
 
-    while len(populated_grid) < number_of_molecules:
-        index_to_be_included = random.randint(0, len(grid)-1)
-        if grid[index_to_be_included] not in populated_grid:
-            populated_grid.append(grid[index_to_be_included])
+#     input_data = input_data_object.input_data
 
-    return populated_grid
+#     number_of_molecules = input_data["number_of_molecules"]
+
+#     populated_grid = []
+
+#     assert number_of_molecules <= len( grid ), \
+#     'Too many molecules for that box, assuming given minimal distance'
+
+#     while len(populated_grid) < number_of_molecules:
+#         index_to_be_included = random.randint(0, len(grid)-1)
+#         if grid[index_to_be_included] not in populated_grid:
+#             populated_grid.append(grid[index_to_be_included])
+
+#     return populated_grid
+
+#-------------------------------------------------------------------------------
 
 def _populate_monte_carlo(input_data_object):
 
     input_data = input_data_object.input_data
 
-    number_of_molecules = input_data["number_of_molecules"]
+    numbers_of_molecules = input_data["numbers_of_molecules"]
     box_size = input_data["box_size"]
-    spherical = input_data["spherical"]
-
-    # works correctly only for cubic boxes
-    mc = MonteCarlo(box_size[0], spherical)
+    radii = input_data["hydrodynamic_radii"]
 
     populated_box = []
 
-    while len(populated_box) < number_of_molecules:
-        # lalalala
+    for i, n_mol in enumerate(numbers_of_molecules):
 
-    return populated_box
+        thrown = 0
+
+        while thrown < n_mol:
+
+            # works correctly only for cubic boxes
+            tracers = place_tracers_linearly(radii[i], box_size[0])
+            if overlap(tracers, populated_box):
+                continue
+            elif not fit(tracers, box_size[0]):
+                continue
+            else:
+                populated_box += tracers
+                thrown += 1
+
+    # print( distance_matrix(populated_box) )
+
+    return [[populated_box[i].x, populated_box[i].y, populated_box[i].z]
+            for i in range( len(populated_box) )]

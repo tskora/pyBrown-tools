@@ -16,6 +16,8 @@
 
 import json
 
+#-------------------------------------------------------------------------------
+
 class InputData:
 
     def __init__(self, input_filename, keywords):
@@ -24,15 +26,29 @@ class InputData:
 
         self._check_for_missing_keywords(keywords)
 
+    #---------------------------------------------------------------------------
+
+    def __str__(self):
+
+        return str( self.input_data )
+
+    #---------------------------------------------------------------------------
+
+    def __repr__(self):
+
+        return self.__str__()
+
+    #---------------------------------------------------------------------------
+
     def _read_input_file(self, input_filename):
 
         with open(input_filename, "r") as read_file:
             self.input_data = json.load(read_file)
+
+    #---------------------------------------------------------------------------
 
     def _check_for_missing_keywords(self, keywords):
 
         for keyword in keywords:
             assert keyword in self.input_data.keys(),\
                 'Missing {} keyword in input JSON file.'.format(keyword)
-
-
