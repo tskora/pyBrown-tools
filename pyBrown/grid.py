@@ -17,7 +17,7 @@
 import random
 import numpy as np
 from pyBrown.monte_carlo import place_tracers_linearly
-from pyBrown.sphere import overlap, fit#, distance_matrix
+from pyBrown.sphere import overlap, fit
 
 #-------------------------------------------------------------------------------
 

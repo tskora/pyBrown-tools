@@ -19,7 +19,11 @@ from pyBrown.grid import pack_molecules
 from pyBrown.write import write_structure
 from pyBrown.parse import parse_input_filename
 
-input_filename = parse_input_filename()
-i = InputData(input_filename, [])
-coords = pack_molecules(i)
-write_structure(i, coords)
+if __name__ == '__main__':
+
+	required_keywords = []
+
+	input_filename = parse_input_filename()
+	i = InputData(input_filename, required_keywords)
+	coords = pack_molecules(i)
+	write_structure(i, coords)
