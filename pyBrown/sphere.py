@@ -65,8 +65,11 @@ class Sphere:
 #-------------------------------------------------------------------------------
 
 def _overlap(sphere1, sphere2):
+
+    eps = 0.01
+
     return ( np.sqrt( np.transpose(sphere1.coords - sphere2.coords) @
-     (sphere1.coords - sphere2.coords) ) ) < ( sphere1.r + sphere2.r )
+     (sphere1.coords - sphere2.coords) ) ) - ( sphere1.r + sphere2.r ) < eps
 
 #-------------------------------------------------------------------------------
 
