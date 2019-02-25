@@ -105,14 +105,12 @@ def _populate_monte_carlo(input_data_object):
             # works correctly only for cubic boxes
             tracers = place_tracers_linearly(radii[i], box_size[0])
             if overlap(tracers, populated_box):
-                print('~overlap~')
                 continue
+
             elif not fit(tracers, box_size[0]):
-                print('~not fitting~')
                 continue
+
             else:
-                print('~almost there~')
-                # added {
                 versors = [ np.array([nx * box_size[0],
                                       ny * box_size[1],
                                       nz * box_size[2]])
@@ -124,35 +122,18 @@ def _populate_monte_carlo(input_data_object):
 
                 for versor in versors:
 
-                    print('~~')
-                    print(tracers)
                     for tracer in tracers:
                         tracer.translate( versor )
-                    print(tracers)
-                    print('~~')
 
                     if overlap(tracers, populated_box):
-                        print('~~surprising overlap~~')
                         if_overlap = True
 
                     for tracer in tracers:
                         tracer.translate( -versor )
 
-                    print(tracers)
-
                 if not if_overlap:
-
-                    print('~~fit~~')
                     populated_box += tracers
                     thrown += 1
-                # }
-
-                # commented out {
-                # populated_box += tracers
-                # thrown += 1
-                # }
-
-    # print( distance_matrix(populated_box) )
 
     return [[populated_box[i].x, populated_box[i].y, populated_box[i].z]
             for i in range( len(populated_box) )]
