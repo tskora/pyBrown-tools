@@ -21,7 +21,7 @@ sys.path.insert(0, '../pyBrown')
 import numpy as np
 import copy as cp
 
-from pyBrown.sphere import Sphere
+from pyBrown.sphere import Sphere, _overlap
 
 #-------------------------------------------------------------------------------
 
@@ -348,6 +348,42 @@ class TestSphere(unittest.TestCase):
 			for coord, answer_coord in zip( case.coords, answer ):
 
 				self.assertAlmostEqual( coord, answer_coord, places = 7 )
+
+	#---------------------------------------------------------------------------
+
+	def test_overlap(self):
+
+		self.assertTrue(_overlap(self.s, self.s1, 0.0))
+		self.assertTrue(_overlap(self.s, self.s2, 0.0))
+		self.assertTrue(_overlap(self.s, self.s3, 0.0))
+		self.assertTrue(_overlap(self.s1, self.s2, 0.0))
+		self.assertTrue(_overlap(self.s1, self.s3, 0.0))
+		self.assertTrue(_overlap(self.s2, self.s3, 0.0))
+
+		self.s1.translate([1.0, 0.0, 0.0])
+		self.s2.translate([0.0, 1.0, 0.0])
+		self.s3.translate([0.0, 0.0, 1.0])
+
+		self.assertFalse(_overlap(self.s, self.s1, 0.0))
+		self.assertFalse(_overlap(self.s, self.s2, 0.0))
+		self.assertFalse(_overlap(self.s, self.s3, 0.0))
+		self.assertFalse(_overlap(self.s1, self.s2, 0.0))
+		self.assertFalse(_overlap(self.s1, self.s3, 0.0))
+		self.assertFalse(_overlap(self.s2, self.s3, 0.0))
+
+		self.s.r = 2.0
+
+		self.assertTrue(_overlap(self.s, self.s1, 0.0))
+		self.assertTrue(_overlap(self.s, self.s2, 0.0))
+		self.assertTrue(_overlap(self.s, self.s3, 0.0))
+
+		self.s_copy = cp.copy( self.s )
+		self.s.r = 0.0
+		self.assertTrue(_overlap(self.s, self.s_copy, 0.0))
+
+	def test_overlap_lists(self):
+
+		# TODO: further testing
 
 #-------------------------------------------------------------------------------
 
