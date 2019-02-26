@@ -32,13 +32,31 @@ class TestSphere(unittest.TestCase):
 
 		self.s1 = Sphere([1.0, 0.0, 0.0], 1.0)
 
+		self.s2 = Sphere([0.0, 1.0, 0.0], 1.0)
+
+		self.s3 = Sphere([0.0, 0.0, 1.0], 1.0)
+
 	#---------------------------------------------------------------------------
 
 	def test_translate_unit(self):
 
-		self.s.translate( [1.0, 1.0, 1.0] )
+		vector_of_translation = [1.0, 1.0, 1.0]
+
+		self.s.translate( vector_of_translation )
+
+		self.s1.translate( vector_of_translation )
+
+		self.s2.translate( vector_of_translation )
+
+		self.s3.translate( vector_of_translation )
 
 		self.assertSequenceEqual( list( self.s.coords ), [1.0, 1.0, 1.0] )
+
+		self.assertSequenceEqual( list( self.s1.coords ), [2.0, 1.0, 1.0] )
+
+		self.assertSequenceEqual( list( self.s2.coords ), [1.0, 2.0, 1.0] )
+
+		self.assertSequenceEqual( list( self.s3.coords ), [1.0, 1.0, 2.0] )
 
 	#---------------------------------------------------------------------------
 
@@ -46,7 +64,19 @@ class TestSphere(unittest.TestCase):
 
 		self.s.translate( [0.0, 0.0, 0.0] )
 
+		self.s1.translate( [0.0, 0.0, 0.0] )
+
+		self.s2.translate( [0.0, 0.0, 0.0] )
+
+		self.s3.translate( [0.0, 0.0, 0.0] )
+
 		self.assertSequenceEqual( list( self.s.coords ), [0.0, 0.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s1.coords ), [1.0, 0.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s2.coords ), [0.0, 1.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s3.coords ), [0.0, 0.0, 1.0] )
 
 	#---------------------------------------------------------------------------
 
@@ -54,7 +84,19 @@ class TestSphere(unittest.TestCase):
 
 		self.s.rotate( [0.0, 0.0, 0.0] )
 
+		self.s1.rotate( [0.0, 0.0, 0.0] )
+
+		self.s2.rotate( [0.0, 0.0, 0.0] )
+
+		self.s3.rotate( [0.0, 0.0, 0.0] )
+
 		self.assertSequenceEqual( list( self.s.coords ), [0.0, 0.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s1.coords ), [1.0, 0.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s2.coords ), [0.0, 1.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s3.coords ), [0.0, 0.0, 1.0] )
 
 	#---------------------------------------------------------------------------
 
