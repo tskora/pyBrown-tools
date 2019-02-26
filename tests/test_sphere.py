@@ -18,9 +18,10 @@ import unittest
 
 import sys
 sys.path.insert(0, '../pyBrown')
+import numpy as np
+import copy as cp
 
 from pyBrown.sphere import Sphere
-import numpy as np
 
 #-------------------------------------------------------------------------------
 
@@ -80,7 +81,7 @@ class TestSphere(unittest.TestCase):
 
 	#---------------------------------------------------------------------------
 
-	def test_rotate_null_center(self):
+	def test_rotate_null(self):
 
 		self.s.rotate( [0.0, 0.0, 0.0] )
 
@@ -104,51 +105,249 @@ class TestSphere(unittest.TestCase):
 
 		self.s1.rotate( [0.0, 0.0, 0.0] )
 
+		self.s2.rotate( [0.0, 0.0, 0.0] )
+
+		self.s3.rotate( [0.0, 0.0, 0.0] )
+
 		self.assertSequenceEqual( list( self.s1.coords ), [1.0, 0.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s2.coords ), [0.0, 1.0, 0.0] )
+
+		self.assertSequenceEqual( list( self.s3.coords ), [0.0, 0.0, 1.0] )
 
 	#---------------------------------------------------------------------------
 
 	def test_rotate_unit_90(self):
 
-		self.s1.rotate( [0.0, 0.0, np.pi / 2] )
-		answers = [0.0, 1.0, 0.0]
+		cases = []
+		answers = []
 
-		for coord, answer in zip( self.s1.coords, answers ):
-			
-			self.assertAlmostEqual( coord, answer, places = 7 )
+		self.s1.rotate( [0.0, 0.0, np.pi / 2] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s1.rotate( [0.0, 0.0, -np.pi / 2] )
+
+		self.s1.rotate( [0.0, np.pi / 2, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [0.0, 0.0, -1.0] )
+		self.s1.rotate( [0.0, -np.pi / 2, 0.0] )
+
+		self.s1.rotate( [np.pi / 2, 0.0, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s1.rotate( [-np.pi / 2, 0.0, 0.0] )
+
+		self.s2.rotate( [0.0, 0.0, np.pi / 2] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [-1.0, 0.0, 0.0] )
+		self.s2.rotate( [0.0, 0.0, -np.pi / 2] )
+
+		self.s2.rotate( [0.0, np.pi / 2, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s2.rotate( [0.0, -np.pi / 2, 0.0] )
+
+		self.s2.rotate( [np.pi / 2, 0.0, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s2.rotate( [np.pi / 2, 0.0, 0.0] )
+
+		self.s3.rotate( [0.0, 0.0, np.pi / 2] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s3.rotate( [0.0, 0.0, -np.pi / 2] )
+
+		self.s3.rotate( [0.0, np.pi / 2, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s3.rotate( [0.0, -np.pi / 2, 0.0] )
+		
+		self.s3.rotate( [np.pi / 2, 0.0, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, -1.0, 0.0] )
+		self.s3.rotate( [-np.pi / 2, 0.0, 0.0] )
+
+		for case, answer in zip( cases, answers ):
+
+			for coord, answer_coord in zip( case.coords, answer ):
+
+				self.assertAlmostEqual( coord, answer_coord, places = 7 )
 
 	#---------------------------------------------------------------------------
 
 	def test_rotate_unit_180(self):
 
-		self.s1.rotate( [0.0, 0.0, np.pi] )
-		answers = [-1.0, 0.0, 0.0]
+		# IN PROGRESS
 
-		for coord, answer in zip( self.s1.coords, answers ):
-			
-			self.assertAlmostEqual( coord, answer, places = 7 )
+		cases = []
+		answers = []
+
+		self.s1.rotate( [0.0, 0.0, np.pi] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [-1.0, 0.0, 0.0] )
+		self.s1.rotate( [0.0, 0.0, -np.pi] )
+
+		self.s1.rotate( [0.0, np.pi, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [-1.0, 0.0, 0.0] )
+		self.s1.rotate( [0.0, -np.pi, 0.0] )
+
+		self.s1.rotate( [np.pi, 0.0, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s1.rotate( [-np.pi, 0.0, 0.0] )
+
+		self.s2.rotate( [0.0, 0.0, np.pi] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, -1.0, 0.0] )
+		self.s2.rotate( [0.0, 0.0, -np.pi] )
+
+		self.s2.rotate( [0.0, np.pi, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s2.rotate( [0.0, -np.pi, 0.0] )
+
+		self.s2.rotate( [np.pi, 0.0, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, -1.0, 0.0] )
+		self.s2.rotate( [np.pi, 0.0, 0.0] )
+
+		self.s3.rotate( [0.0, 0.0, np.pi] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s3.rotate( [0.0, 0.0, -np.pi] )
+
+		self.s3.rotate( [0.0, np.pi, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, -1.0] )
+		self.s3.rotate( [0.0, -np.pi, 0.0] )
+		
+		self.s3.rotate( [np.pi, 0.0, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, -1.0] )
+		self.s3.rotate( [-np.pi, 0.0, 0.0] )
+
+		for case, answer in zip( cases, answers ):
+
+			for coord, answer_coord in zip( case.coords, answer ):
+
+				self.assertAlmostEqual( coord, answer_coord, places = 7 )
 
 	#---------------------------------------------------------------------------
 
 	def test_rotate_unit_270(self):
 
+		cases = []
+		answers = []
+
 		self.s1.rotate( [0.0, 0.0, 3 * np.pi / 2] )
-		answers = [0.0, -1.0, 0.0]
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [0.0, -1.0, 0.0] )
+		self.s1.rotate( [0.0, 0.0, -3 * np.pi / 2] )
 
-		for coord, answer in zip( self.s1.coords, answers ):
+		self.s1.rotate( [0.0, 3 * np.pi / 2, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s1.rotate( [0.0, -3 * np.pi / 2, 0.0] )
 
-			self.assertAlmostEqual( coord, answer, places = 7 )
+		self.s1.rotate( [3 * np.pi / 2, 0.0, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s1.rotate( [-3 * np.pi / 2, 0.0, 0.0] )
+
+		self.s2.rotate( [0.0, 0.0, 3 * np.pi / 2] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s2.rotate( [0.0, 0.0, -3 * np.pi / 2] )
+
+		self.s2.rotate( [0.0, 3 * np.pi / 2, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s2.rotate( [0.0, -3 * np.pi / 2, 0.0] )
+
+		self.s2.rotate( [3 * np.pi / 2, 0.0, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 0.0, -1.0] )
+		self.s2.rotate( [-3 * np.pi / 2, 0.0, 0.0] )
+
+		self.s3.rotate( [0.0, 0.0, 3 * np.pi / 2] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s3.rotate( [0.0, 0.0, -3 * np.pi / 2] )
+
+		self.s3.rotate( [0.0, 3 * np.pi / 2, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [-1.0, 0.0, 0.0] )
+		self.s3.rotate( [0.0, -3 * np.pi / 2, 0.0] )
+		
+		self.s3.rotate( [3 * np.pi / 2, 0.0, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s3.rotate( [-3 * np.pi / 2, 0.0, 0.0] )
+
+		for case, answer in zip( cases, answers ):
+
+			for coord, answer_coord in zip( case.coords, answer ):
+
+				self.assertAlmostEqual( coord, answer_coord, places = 7 )
 
 	#---------------------------------------------------------------------------
 
 	def test_rotate_unit_360(self):
 
+		cases = []
+		answers = []
+
 		self.s1.rotate( [0.0, 0.0, 2 * np.pi] )
-		answers = [1.0, 0.0, 0.0]
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s1.rotate( [0.0, 0.0, -2 * np.pi] )
 
-		for coord, answer in zip( self.s1.coords, answers ):
+		self.s1.rotate( [0.0, 2 * np.pi, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s1.rotate( [0.0, -2 * np.pi, 0.0] )
 
-			self.assertAlmostEqual( coord, answer, places = 7 )
+		self.s1.rotate( [2 * np.pi, 0.0, 0.0] )
+		cases.append( cp.copy( self.s1 ) )
+		answers.append( [1.0, 0.0, 0.0] )
+		self.s1.rotate( [-2 * np.pi, 0.0, 0.0] )
+
+		self.s2.rotate( [0.0, 0.0, 2 * np.pi] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s2.rotate( [0.0, 0.0, -2 * np.pi] )
+
+		self.s2.rotate( [0.0, 2 * np.pi, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s2.rotate( [0.0, -2 * np.pi, 0.0] )
+
+		self.s2.rotate( [2 * np.pi, 0.0, 0.0] )
+		cases.append( cp.copy( self.s2) )
+		answers.append( [0.0, 1.0, 0.0] )
+		self.s2.rotate( [-2 * np.pi, 0.0, 0.0] )
+
+		self.s3.rotate( [0.0, 0.0, 2 * np.pi] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s3.rotate( [0.0, 0.0, -2 * np.pi] )
+
+		self.s3.rotate( [0.0, 2 * np.pi, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s3.rotate( [0.0, -2 * np.pi, 0.0] )
+		
+		self.s3.rotate( [2 * np.pi, 0.0, 0.0] )
+		cases.append( cp.copy( self.s3 ) )
+		answers.append( [0.0, 0.0, 1.0] )
+		self.s3.rotate( [-2 * np.pi, 0.0, 0.0] )
+
+		for case, answer in zip( cases, answers ):
+
+			for coord, answer_coord in zip( case.coords, answer ):
+
+				self.assertAlmostEqual( coord, answer_coord, places = 7 )
 
 #-------------------------------------------------------------------------------
 
