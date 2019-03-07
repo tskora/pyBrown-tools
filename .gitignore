@@ -1,7 +1,9 @@
 .idea/
 venv/
 venv*/
+.DS_Store
 __pycache__/
+.DS_Store/
 .pytest_cache/
 *.pyc
 *.str
