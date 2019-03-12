@@ -64,20 +64,20 @@ class Sphere:
 
 #-------------------------------------------------------------------------------
 
-def _overlap(sphere1, sphere2):
+def _overlap(sphere1, sphere2, minimal_distance):
 
-    eps = 0.01
-
-    return ( np.sqrt( np.transpose(sphere1.coords - sphere2.coords) @
-     (sphere1.coords - sphere2.coords) ) ) - ( sphere1.r + sphere2.r ) < eps
+    return ( np.sqrt( np.transpose(sphere1.coords - sphere2.coords) @ \
+            (sphere1.coords - sphere2.coords) ) ) - \
+            ( sphere1.r + sphere2.r ) < minimal_distance
 
 #-------------------------------------------------------------------------------
 
-def overlap(sphere1, sphere2):
+def overlap(sphere1, sphere2, minimal_distance):
     if not isinstance(sphere1, list): sphere1 = [sphere1]
     if not isinstance(sphere2, list): sphere2 = [sphere2]
 
-    return any([_overlap(s1, s2) for s1 in sphere1 for s2 in sphere2])
+    return any([_overlap(s1, s2, minimal_distance)
+                for s1 in sphere1 for s2 in sphere2])
 
 #-------------------------------------------------------------------------------
 

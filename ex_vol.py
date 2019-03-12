@@ -54,7 +54,7 @@ if __name__ == '__main__':
 	# print(crowders)
 	for i in range(number_of_trials):
 	    tracers = place_tracers_linearly(r_crowders, box_size)
-	    if overlap(crowders, tracers):
+	    if overlap(crowders, tracers, 0.0):
 	        count += 1
 	    print( '{}\t{}'.format(i, count / (i + 1) * box_size**3) )
 	

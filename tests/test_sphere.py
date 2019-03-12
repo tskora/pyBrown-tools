@@ -381,7 +381,7 @@ class TestSphere(unittest.TestCase):
 		self.s.r = 0.0
 		self.assertTrue(_overlap(self.s, self.s_copy, 0.0))
 
-	def test_overlap_lists(self):
+	# def test_overlap_lists(self):
 
 		# TODO: further testing
 

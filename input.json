@@ -9,7 +9,8 @@
   "masses": [[1.0], [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
   "bond_force_constants": [[], [0.0986589, 0.0986589, 0.0986589, 0.0986589, 0.0986589, 0.0986589, 0.0986589]],
   "angle_force_constants": [[], [100, 100, 100, 100, 100, 100]],
-  "numbers_of_molecules": [139, 139],
+  "numbers_of_molecules": [147, 49],
   "labels_of_molecules": ["FIC", "DNA"],
-  "output_structure_filename": "fix_occ_05_comp.str"
+  "minimal_distance_between_surfaces": 20.0,
+  "output_structure_filename": "fix_occ_075_comp.str"
 }

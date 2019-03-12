@@ -65,6 +65,9 @@ def write_structure(input_data_object, coordinates):
                                          masses[i][j])
                     write_file.write(line + '\n')
 
+                    # WARNINR: Here i artificialy put the small shift between
+                    # beads forming a sequence. How to do it in a smart way?
+
                     if if_bonds and j < len(hydrodynamic_radii[i]) - 1:
                         bonds += _bond_pattern(count, count + 1, hydrodynamic_radii[i][j] + hydrodynamic_radii[i][j+1], 2.5e+07, bond_force_constants[i][j]) + '\n'
 

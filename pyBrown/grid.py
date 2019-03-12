@@ -93,6 +93,7 @@ def _populate_monte_carlo(input_data_object):
     numbers_of_molecules = input_data["numbers_of_molecules"]
     box_size = input_data["box_size"]
     radii = input_data["hydrodynamic_radii"]
+    min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
     populated_box = []
 
@@ -103,8 +104,10 @@ def _populate_monte_carlo(input_data_object):
         while thrown < n_mol:
 
             # works correctly only for cubic boxes
+            print('{} / {}'.format(thrown, n_mol))
+
             tracers = place_tracers_linearly(radii[i], box_size[0])
-            if overlap(tracers, populated_box):
+            if overlap(tracers, populated_box, min_dist_between_surfaces):
                 continue
 
             elif not fit(tracers, box_size[0]):
@@ -125,7 +128,7 @@ def _populate_monte_carlo(input_data_object):
                     for tracer in tracers:
                         tracer.translate( versor )
 
-                    if overlap(tracers, populated_box):
+                    if overlap(tracers, populated_box, min_dist_between_surfaces):
                         if_overlap = True
 
                     for tracer in tracers:

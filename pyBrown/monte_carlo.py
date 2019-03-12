@@ -76,9 +76,9 @@ def place_tracers_linearly(radii, box_size):
     length = 0.0
 
     for radius in radii:
-        length += radius + 0.01
+        length += radius
         tracers.append( Sphere([0.0, 0.0, 0.0 + length], radius) )
-        length += radius + 0.01
+        length += radius
 
     for tracer in tracers:
         tracer.translate([0.0, 0.0, -length / 2])
