@@ -38,8 +38,8 @@ class H_cell:
 
 		if cs is None:
 		
-			self.cs = np.array( [1 for i in range( int(grid_points / 2) )] +
-						    	[0 for i in range( grid_points - int(grid_points / 2) )] )
+			self.cs = np.array( [1.0 for i in range( int(grid_points / 2) )] +
+						    	[0.0 for i in range( grid_points - int(grid_points / 2) )] )
 
 		else:
 
@@ -51,10 +51,11 @@ class H_cell:
 
 	def __str__(self):
 
-		return '{}x{}; D={}; n={}'.format(self.a,
+		return '{}x{}; D={}; n={};\n{}'.format(self.a,
 										  self.b,
 										  self.diff_coef,
-										  self.grid_points)
+										  self.grid_points,
+										  self.cs)
 
 	#---------------------------------------------------------------------------
 
@@ -66,11 +67,9 @@ class H_cell:
 
 	def flow_velocity(self, y):
 
-		return 1
+		m = 1.7 + 0.5 * ( self.b / self.a )**( -1.4 )
 
-		# m = 1.7 + 0.5 * ( self.b / self.a )**( -1.4 )
-
-		# return ( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
+		return 1.0#( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
 
 	#---------------------------------------------------------------------------
 
@@ -86,9 +85,13 @@ class H_cell:
 
 			return self.cs[i]
 
+		elif i < 0:
+
+			return self.cs[0]
+
 		else:
 
-			return 0.0
+			return self.cs[-1]
 
 	#---------------------------------------------------------------------------
 
@@ -104,31 +107,73 @@ class H_cell:
 
 	#---------------------------------------------------------------------------
 
-	def propagate(self, dx):
-
-		b = np.array( [ ( ( 1 - 2 * self.alpha(i, dx) ) * self.c(i) +
-						  self.alpha(i, dx) * self.c(i - 1) +
-						  self.alpha(i, dx) * self.c(i + 1) )
-						for i in range(self.grid_points) ] )
-
-		A = np.zeros( (self.grid_points, self.grid_points), float )
+	def propagate_euler(self, dx):
 
 		for i in range(self.grid_points):
 
-			A[i, i] = 1 + 2 * self.alpha(i, dx)
+			incr =  2 * self.alpha(i, dx) * \
+					( self.c(i + 1) - 2 * self.c(i) + self.c(i - 1) )
 
-			if i > 0: A[i, i - 1] = -self.alpha(i, dx)
+			self.cs[i] += incr
 
-			if i < self.grid_points - 1: A[i, i + 1] = -self.alpha(i, dx)
+	#---------------------------------------------------------------------------
 
-		ab0 = np.array( [0.0] + [ A[i, i + 1] for i in range(self.grid_points - 1) ] ) 
-		ab1 = np.array( [ A[i, i] for i in range(self.grid_points) ] )
-		ab2 = np.array( [ A[i, i - 1] for i in range(1, self.grid_points) ] + [0.0] )
-		ab = np.array( [ab0, ab1, ab2] )
+	def propagate_cn(self, dx):
 
-		self.cs = solve_banded((1, 1), ab, b)
+		# --- CRANK-NICOLSON VERSION ---
 
-		print( np.sum(self.cs) )
+		# b = np.array( [ ( ( 1 - 2 * self.alpha(i, dx) ) * self.c(i) +
+		# 				  self.alpha(i, dx) * self.c(i - 1) +
+		# 				  self.alpha(i, dx) * self.c(i + 1) )
+		# 				for i in range(self.grid_points) ] )
+
+		# A = np.zeros( (self.grid_points, self.grid_points), float )
+
+		# for i in range(self.grid_points):
+
+		# 	A[i, i] = 1 + 2 * self.alpha(i, dx)
+
+		# 	if i > 0: A[i, i - 1] = -self.alpha(i, dx)
+
+		# 	if i < self.grid_points - 1: A[i, i + 1] = -self.alpha(i, dx)
+
+		# ab0 = np.array( [0.0] + [ A[i, i + 1] for i in range(self.grid_points - 1) ] ) 
+		# ab1 = np.array( [ A[i, i] for i in range(self.grid_points) ] )
+		# ab2 = np.array( [ A[i, i - 1] for i in range(1, self.grid_points) ] + [0.0] )
+		# ab = np.array( [ab0, ab1, ab2] )
+
+		# self.cs = solve_banded((1, 1), ab, b)
+
+		# --- CRANK-NICOLSON WITH BOUNDARIES
+
+		# assert len(self.cs) == self.grid_points, 'Concentration array has incorrect size'
+
+		# b = np.array( [1.0] + [ ( ( 1 - 2 * self.alpha(i, dx) ) * self.c(i) +
+		# 				  self.alpha(i, dx) * self.c(i - 1) +
+		# 				  self.alpha(i, dx) * self.c(i + 1) )
+		# 				for i in range(self.grid_points) ] + [0.0] )
+
+		# A = np.zeros( (self.grid_points + 2, self.grid_points + 2), float )
+
+		# A[0, 0] = 1.0
+		# A[self.grid_points + 1, self.grid_points + 1] = 1.0
+
+		# for i in range(self.grid_points):
+
+		# 	A[i + 1, i + 1] = 1 + 2 * self.alpha(i, dx)
+
+		# 	A[i + 1, i] = -self.alpha(i, dx)
+
+		# 	A[i + 1, i + 2] = -self.alpha(i, dx)
+
+		# ab0 = np.array( [0.0] + [ A[i, i + 1] for i in range(self.grid_points + 1) ] ) 
+		# ab1 = np.array( [ A[i, i] for i in range(self.grid_points + 2) ] )
+		# ab2 = np.array( [ A[i, i - 1] for i in range(1, self.grid_points + 2) ] + [0.0] )
+		# ab = np.array( [ab0, ab1, ab2] )
+
+		# self.cs = solve_banded((1, 1), ab, b)[1:-1]
+
+		return 0
 
 	#---------------------------------------------------------------------------
 
@@ -142,11 +187,12 @@ class H_cell:
 
 			for i in range(self.grid_points):
 
-				output.write( '{} {}'.format( self.ys[i], self.cs[i] ) )
+				output.write( '{} {}\n'.format( self.ys[i], self.cs[i] ) )
 
 	#---------------------------------------------------------------------------
 
-	def read_cell_from_file(filename):
+	@classmethod
+	def read_cell_from_file(cls, filename):
 
 		with open(filename, 'r') as input:
 
@@ -163,54 +209,69 @@ class H_cell:
 
 				cs.append( float( line.split()[1] ) )
 
-		return H(a, b, diff_coef, grid_points, cs)
+		return cls(a, b, diff_coef, grid_points, cs)
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-	a = 1.0
-	b = 1.0
-	D = 1.0
-	D_enh = 1.3
-	step = 0.0001
-	n_snapshots = 5
-	x_max = 0.5
-	grid_points = 100
+	h = H_cell.read_cell_from_file('h_cell.txt')
+	print(h)
 
-	h = H_cell(a, b, D, grid_points)
-	h_up = H_cell(a, b, D * D_enh, grid_points)
+	# a = 1.0
+	# b = 1.0
+	# D = 1.0
+	# step = 0.001
+	# n_snapshots = 5
+	# x_max = 1
+	# grid_points = 40
 
-	plt.xlabel(r'$y$')
-	plt.ylabel(r'$c$')
+	# h = H_cell(a, b, D, grid_points)
+	# h1 = H_cell(a, b, D, grid_points)
 
-	handles, labels = plt.gca().get_legend_handles_labels()
-	h_patch = mpatches.Patch(color='red', label=r'$D = 1$')
-	h_up_patch = mpatches.Patch(color='blue', label=r'$D = 1.3$')
-	handles.append(h_patch)
-	handles.append(h_up_patch)
-	labels.append(r'$D = 1$')
-	labels.append(r'$D = 1.3$')
+	# # a = 1.0
+	# # b = 1.0
+	# # D = 1.0
+	# # D_enh = 1.3
+	# # step = 0.000001
+	# # n_snapshots = 5
+	# # x_max = 0.5
+	# # grid_points = 50
 
-	plt.legend(handles, labels)
+	# # h = H_cell(a, b, D, grid_points)
+	# # h1 = H_cell(a, b, D, grid_points)
+	# # h_up = H_cell(a, b, D_enh, grid_points)
+
+	# handles, labels = plt.gca().get_legend_handles_labels()
+	# h_patch = mpatches.Patch(color='red', label=r'cn')
+	# h_up_patch = mpatches.Patch(color='blue', label=r'euler')
+	# handles.append(h_patch)
+	# handles.append(h_up_patch)
+	# labels.append(r'$D = 1$')
+	# labels.append(r'$D = 1.3$')
+
+	# plt.legend(handles, labels)
 	
-	plt.plot(h.ys, h.cs, '--', color='black')
-	print(h.cs)
-	h.propagate(step)
-	print(h.cs)
+	# plt.plot(h.ys, h.cs, '--', color='black')
 
 	# for j in tqdm( range(n_snapshots) ):
 	
-	# 	for i in range( int( x_max / n_snapshots / step ) ):
+	# 	for i in tqdm( range( int( x_max / n_snapshots / step ) ) ):
 	
 	# 		h.propagate(step)
 
-	# 		h_up.propagate(step)
-	
-	# 	plt.plot( h.ys, h.cs, '--', label = str( ( j * 10000 + i ) * step ), color = 'red' )
+	# 		h1.propagate_euler(step)
 
-	# 	plt.plot( h_up.ys, h_up.cs, '-', label = str( ( j * 10000 + i ) * step ), color = 'blue' )
+	# 		# h_up.propagate(step)
 	
-	plt.savefig('hcell.jpg', dpi = 300)
+	# 	plt.plot( h.ys, h.cs, '--', color = 'red' )
 
-	plt.close()
+	# 	plt.plot( h1.ys, h1.cs, '-', color = 'blue'  )
+
+	# 	# plt.plot( h_up.ys, h_up.cs, '-', label = str( ( j * 10000 + i ) * step ), color = 'blue' )
+	
+	# plt.savefig('hcell.jpg', dpi = 300)
+
+	# plt.close()
+
+	# h.save_cell_to_file('h_cell.txt')
