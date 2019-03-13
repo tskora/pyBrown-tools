@@ -53,12 +53,19 @@ from pyBrown.h_cell import H_cell, h_cell_simulation
 	help = 'cell length in the x direction'
 	)
 @click.option(
+	'--snapshots', '-s',
+	default = "",
+	show_default = True,
+	help = 'x values for concentration profiles to be plotted')
+@click.option(
 	'--output-filename', '-o',
 	help = 'output filename'
 	)
-def main(a_len, b_len, diff_coefs, grid_points, step, x_max, output_filename):
+def main(a_len, b_len, diff_coefs, grid_points, step, x_max, output_filename, snapshots):
 
 	Ds = np.array( [ float( element ) for element in diff_coefs.split() ] )
+	ss = [ float( element ) for element in snapshots.split() ]
+
 	a = float(a_len)
 	b = float(b_len)
 	n_grid = int(grid_points)
@@ -71,7 +78,7 @@ def main(a_len, b_len, diff_coefs, grid_points, step, x_max, output_filename):
 
 		hs.append( H_cell(a, b, D, n_grid) )
 
-	h_cell_simulation( hs, dx, x, output_filename )
+	h_cell_simulation( hs, dx, x, output_filename, ss )
 
 #-------------------------------------------------------------------------------
 

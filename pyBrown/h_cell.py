@@ -16,7 +16,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.linalg import solve_banded
+# from scipy.linalg import solve_banded
 
 from tqdm import tqdm
 
@@ -37,9 +37,9 @@ class H_cell:
 
 		if cs is None:
 		
-			self.cs = np.array( [0.0 for i in range( int(self.grid_points / 2) )] +
-						    	[1.0 for i in range( self.grid_points - int(self.grid_points / 2) )],
-						    	float )
+			self.cs = np.array( [0.0 for i in range( int(self.grid_points / 2) )] + 
+				[1.0 for i in range( self.grid_points - int(self.grid_points / 2) )],
+				float )
 
 		else:
 
@@ -72,7 +72,7 @@ class H_cell:
 
 		m = 1.7 + 0.5 * ( self.b / self.a )**( -1.4 )
 
-		return 1#( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
+		return ( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
 
 	#---------------------------------------------------------------------------
 
@@ -126,8 +126,6 @@ class H_cell:
 			new_cs.append( new_c )
 
 		self.cs = np.array( new_cs, float )
-
-		print( self.cs )
 
 	#---------------------------------------------------------------------------
 
@@ -186,7 +184,7 @@ class H_cell:
 
 		# self.cs = solve_banded((1, 1), ab, b)[1:-1]
 
-		return 0
+		return None
 
 	#---------------------------------------------------------------------------
 
@@ -234,32 +232,39 @@ class H_cell:
 
 #-------------------------------------------------------------------------------
 
-def h_cell_simulation(h_cells, dx, x_max, output):
+def h_cell_simulation(h_cells, dx, x_max, output, snapshots = []):
 
-	plot_config()
+	colors, symbols = plot_config()
 
 	if not isinstance( h_cells, list ): h_cells = [ h_cells ]
 
+	snapshots.append(x_max)
+	snapshots.sort()
+
 	plt.grid()
-
 	plt.xlabel(r'$y$')
-
 	plt.ylabel(r'$c$')
+	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}'.format(
+		h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx) )
 
-	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}; $x = $ {}'.format(h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx, x_max) )
+	for i, h in enumerate( h_cells ):
 
-	for i, h in enumerate(h_cells):
+		x0 = 0.0
 
-		h.propagate_euler(dx, x_max)
+		for j, x_snapshot in enumerate( snapshots ):
 
-		h.save_cell_to_file(output + '_' + str(i) + '.txt')
+			x = x_snapshot - x0
+			x0 = x_snapshot
 
-		plt.plot(h.ys, h.cs, '-', label = str(h.diff_coef))
+			h.propagate_euler(dx, x)
+			h.save_cell_to_file(output + '_' + str(i) + '_snapshot_' + str(x_snapshot) + '.txt')
+
+			plt.plot(h.ys, h.cs,
+					 symbols[j % len(symbols)],
+					 color = colors[i % len(colors)],
+					 label = r'$D = $ {}; $x = $ {}'.format(h.diff_coef, x_snapshot))
 
 	plt.legend()
-
 	plt.ylim((0,1))
-
 	plt.savefig(output + '.jpg', dpi = 300)
-
 	plt.close()

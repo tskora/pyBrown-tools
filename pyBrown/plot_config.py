@@ -26,11 +26,16 @@ def plot_config():
 	
 	plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 	plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-	plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+	plt.rc('axes', labelsize=SMALL_SIZE)     # fontsize of the x and y labels
 	plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 	plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 	plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 	plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 	plt.rc('lines', linewidth=4)			 # line width
 	plt.rc('lines', markersize=8)			 # marker size	
+
+	colors = [ 'red', 'blue', 'green', 'orange', 'black', 'pink' ]
+	symbols = [ '-', '--', ':', '-.' ]
+
+	return colors, symbols
 	
