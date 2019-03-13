@@ -16,12 +16,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from scipy.linalg import solve_banded
 
 from tqdm import tqdm
 
-import plot_config
+from pyBrown.plot_config import plot_config
 
 #-------------------------------------------------------------------------------
 
@@ -38,24 +37,28 @@ class H_cell:
 
 		if cs is None:
 		
-			self.cs = np.array( [1.0 for i in range( int(grid_points / 2) )] +
-						    	[0.0 for i in range( grid_points - int(grid_points / 2) )] )
+			self.cs = np.array( [0.0 for i in range( int(self.grid_points / 2) )] +
+						    	[1.0 for i in range( self.grid_points - int(self.grid_points / 2) )],
+						    	float )
 
 		else:
 
 			self.cs = np.array( cs )
+			assert len( self.cs ) == self.grid_points, 'Wrong size of concentration array'
 
-		self.ys = np.linspace(-self.a + self.dy, self.a - self.dy, grid_points)
+		self.ys = np.linspace(-self.a + self.dy, self.a - self.dy, self.grid_points)
 
 	#---------------------------------------------------------------------------
 
 	def __str__(self):
 
-		return '{}x{}; D={}; n={};\n{}'.format(self.a,
-										  self.b,
-										  self.diff_coef,
-										  self.grid_points,
-										  self.cs)
+		return '{}x{}; D={}; n={};\n{}'.format(
+												self.a,
+										  		self.b,
+										  		self.diff_coef,
+										  		self.grid_points,
+										  		self.cs
+										  	  )
 
 	#---------------------------------------------------------------------------
 
@@ -69,7 +72,7 @@ class H_cell:
 
 		m = 1.7 + 0.5 * ( self.b / self.a )**( -1.4 )
 
-		return 1.0#( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
+		return 1#( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
 
 	#---------------------------------------------------------------------------
 
@@ -107,18 +110,28 @@ class H_cell:
 
 	#---------------------------------------------------------------------------
 
-	def propagate_euler(self, dx):
+	def _propagate_euler_step(self, dx):
+
+		new_cs = []
 
 		for i in range(self.grid_points):
 
 			incr =  2 * self.alpha(i, dx) * \
 					( self.c(i + 1) - 2 * self.c(i) + self.c(i - 1) )
 
-			self.cs[i] += incr
+			new_c = self.cs[i] + incr
+
+			assert new_c >= 0.0, 'Concentration becomes negative during propagation'
+
+			new_cs.append( new_c )
+
+		self.cs = np.array( new_cs, float )
+
+		print( self.cs )
 
 	#---------------------------------------------------------------------------
 
-	def propagate_cn(self, dx):
+	def _propagate_cn_step(self, dx):
 
 		# --- CRANK-NICOLSON VERSION ---
 
@@ -177,6 +190,14 @@ class H_cell:
 
 	#---------------------------------------------------------------------------
 
+	def propagate_euler(self, dx, x_max):
+
+		for j in tqdm( range( int( x_max / dx ) ) ):
+
+			self._propagate_euler_step(dx)
+
+	#---------------------------------------------------------------------------
+
 	def save_cell_to_file(self, filename):
 
 		with open(filename, 'w') as output:
@@ -213,65 +234,32 @@ class H_cell:
 
 #-------------------------------------------------------------------------------
 
-if __name__ == '__main__':
+def h_cell_simulation(h_cells, dx, x_max, output):
 
-	h = H_cell.read_cell_from_file('h_cell.txt')
-	print(h)
+	plot_config()
 
-	# a = 1.0
-	# b = 1.0
-	# D = 1.0
-	# step = 0.001
-	# n_snapshots = 5
-	# x_max = 1
-	# grid_points = 40
+	if not isinstance( h_cells, list ): h_cells = [ h_cells ]
 
-	# h = H_cell(a, b, D, grid_points)
-	# h1 = H_cell(a, b, D, grid_points)
+	plt.grid()
 
-	# # a = 1.0
-	# # b = 1.0
-	# # D = 1.0
-	# # D_enh = 1.3
-	# # step = 0.000001
-	# # n_snapshots = 5
-	# # x_max = 0.5
-	# # grid_points = 50
+	plt.xlabel(r'$y$')
 
-	# # h = H_cell(a, b, D, grid_points)
-	# # h1 = H_cell(a, b, D, grid_points)
-	# # h_up = H_cell(a, b, D_enh, grid_points)
+	plt.ylabel(r'$c$')
 
-	# handles, labels = plt.gca().get_legend_handles_labels()
-	# h_patch = mpatches.Patch(color='red', label=r'cn')
-	# h_up_patch = mpatches.Patch(color='blue', label=r'euler')
-	# handles.append(h_patch)
-	# handles.append(h_up_patch)
-	# labels.append(r'$D = 1$')
-	# labels.append(r'$D = 1.3$')
+	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}; $x = $ {}'.format(h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx, x_max) )
 
-	# plt.legend(handles, labels)
-	
-	# plt.plot(h.ys, h.cs, '--', color='black')
+	for i, h in enumerate(h_cells):
 
-	# for j in tqdm( range(n_snapshots) ):
-	
-	# 	for i in tqdm( range( int( x_max / n_snapshots / step ) ) ):
-	
-	# 		h.propagate(step)
+		h.propagate_euler(dx, x_max)
 
-	# 		h1.propagate_euler(step)
+		h.save_cell_to_file(output + '_' + str(i) + '.txt')
 
-	# 		# h_up.propagate(step)
-	
-	# 	plt.plot( h.ys, h.cs, '--', color = 'red' )
+		plt.plot(h.ys, h.cs, '-', label = str(h.diff_coef))
 
-	# 	plt.plot( h1.ys, h1.cs, '-', color = 'blue'  )
+	plt.legend()
 
-	# 	# plt.plot( h_up.ys, h_up.cs, '-', label = str( ( j * 10000 + i ) * step ), color = 'blue' )
-	
-	# plt.savefig('hcell.jpg', dpi = 300)
+	plt.ylim((0,1))
 
-	# plt.close()
+	plt.savefig(output + '.jpg', dpi = 300)
 
-	# h.save_cell_to_file('h_cell.txt')
+	plt.close()
