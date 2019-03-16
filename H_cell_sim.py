@@ -41,6 +41,11 @@ from pyBrown.h_cell import H_cell, h_cell_simulation
 	help = 'diffusion coefficients'
 	)
 @click.option(
+	'--flow-velocity', '-v',
+	default = 1.0,
+	show_default = True,
+	help = 'flow velocity')
+@click.option(
 	'--grid-points', '-n',
 	help = 'number of grid points along y direction'
 	)
@@ -61,7 +66,8 @@ from pyBrown.h_cell import H_cell, h_cell_simulation
 	'--output-filename', '-o',
 	help = 'output filename'
 	)
-def main(a_len, b_len, diff_coefs, grid_points, step, x_max, output_filename, snapshots):
+def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
+	output_filename, snapshots, flow_velocity):
 
 	Ds = np.array( [ float( element ) for element in diff_coefs.split() ] )
 	ss = [ float( element ) for element in snapshots.split() ]
@@ -71,12 +77,13 @@ def main(a_len, b_len, diff_coefs, grid_points, step, x_max, output_filename, sn
 	n_grid = int(grid_points)
 	dx = float(step)
 	x = float(x_max)
+	v = float(flow_velocity)
 
 	hs = []
 
 	for D in Ds:
 
-		hs.append( H_cell(a, b, D, n_grid) )
+		hs.append( H_cell(a, b, D, n_grid, v = v) )
 
 	h_cell_simulation( hs, dx, x, output_filename, ss )
 

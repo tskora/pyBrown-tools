@@ -26,12 +26,13 @@ from pyBrown.plot_config import plot_config
 
 class H_cell:
 
-	def __init__(self, a, b, diff_coef, grid_points, cs = None):
+	def __init__(self, a, b, diff_coef, grid_points, cs = None, v = 1):
 
 		self.a = a
 		self.b = b
 		self.diff_coef = diff_coef
 		self.grid_points = grid_points
+		self.v = v
 
 		self.dy = 2 * self.a / ( self.grid_points + 1 )
 
@@ -52,11 +53,12 @@ class H_cell:
 
 	def __str__(self):
 
-		return '{}x{}; D={}; n={};\n{}'.format(
+		return '{}x{}; D={}; n={}; v={};\n{}'.format(
 												self.a,
 										  		self.b,
 										  		self.diff_coef,
 										  		self.grid_points,
+										  		self.v,
 										  		self.cs
 										  	  )
 
@@ -72,7 +74,7 @@ class H_cell:
 
 		m = 1.7 + 0.5 * ( self.b / self.a )**( -1.4 )
 
-		return ( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
+		return self.v * ( m + 1 ) / m * ( 1 - ( np.abs(y) / self.a )**m )
 
 	#---------------------------------------------------------------------------
 
@@ -200,9 +202,10 @@ class H_cell:
 
 		with open(filename, 'w') as output:
 
-			output.write( '{} {} {} {}\n'.format(self.a, self.b,
+			output.write( '{} {} {} {} {}\n'.format(self.a, self.b,
 												 self.diff_coef,
-												 self.grid_points) )
+												 self.grid_points,
+												 self.v) )
 
 			for i in range(self.grid_points):
 
@@ -221,6 +224,7 @@ class H_cell:
 			b = float( first_line.split()[1] )
 			diff_coef = float( first_line.split()[2] )
 			grid_points = int( first_line.split()[3] )
+			v = float( first_line.split()[4] )
 
 			cs = [ ]
 
@@ -228,7 +232,7 @@ class H_cell:
 
 				cs.append( float( line.split()[1] ) )
 
-		return cls(a, b, diff_coef, grid_points, cs)
+		return cls(a, b, diff_coef, grid_points, cs, v)
 
 #-------------------------------------------------------------------------------
 
@@ -244,8 +248,8 @@ def h_cell_simulation(h_cells, dx, x_max, output, snapshots = []):
 	plt.grid()
 	plt.xlabel(r'$y$')
 	plt.ylabel(r'$c$')
-	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}'.format(
-		h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx) )
+	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}; $v = $ {}'.format(
+		h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx, h_cells[0].v) )
 
 	for i, h in enumerate( h_cells ):
 
