@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 
 def plot_config():
 
-	SMALL_SIZE = 14
-	MEDIUM_SIZE = 18
+	SMALL_SIZE = 12
+	MEDIUM_SIZE = 14
 	BIGGER_SIZE = 24
 	
 	plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
@@ -31,8 +31,8 @@ def plot_config():
 	plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 	plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 	plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-	plt.rc('lines', linewidth=4)			 # line width
-	plt.rc('lines', markersize=8)			 # marker size	
+	plt.rc('lines', linewidth=2)			 # line width
+	plt.rc('lines', markersize=2)			 # marker size	
 
 	colors = [ 'red', 'blue', 'green', 'orange', 'black', 'pink' ]
 	symbols = [ '-', '--', ':', '-.' ]

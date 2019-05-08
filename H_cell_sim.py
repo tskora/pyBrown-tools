@@ -66,8 +66,13 @@ from pyBrown.h_cell import H_cell, h_cell_simulation
 	'--output-filename', '-o',
 	help = 'output filename'
 	)
+@click.option(
+	'--profile', '-p',
+	default = 'step',
+	show_default = True,
+	help = 'initial concentration profile')
 def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
-	output_filename, snapshots, flow_velocity):
+	output_filename, snapshots, flow_velocity, profile):
 
 	Ds = np.array( [ float( element ) for element in diff_coefs.split() ] )
 	ss = [ float( element ) for element in snapshots.split() ]
@@ -83,7 +88,22 @@ def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
 
 	for D in Ds:
 
-		hs.append( H_cell(a, b, D, n_grid, v = v) )
+		if profile == 'step': hs.append( H_cell(a, b, D, n_grid, v = v) )
+		elif profile == 'well':
+			if n_grid % 3 == 0:
+				cs = [1.0 for i in range(n_grid // 3)] +\
+				[0.0 for i in range(n_grid // 3)] +\
+				[1.0 for i in range(n_grid // 3)]
+			elif n_grid %3 == 1:
+				cs = [1.0 for i in range(n_grid // 3)] +\
+				[0.0 for i in range(n_grid // 3 + 1)] +\
+				[1.0 for i in range(n_grid // 3)]
+			else:
+				cs = [1.0 for i in range(n_grid // 3 + 1)] +\
+				[0.0 for i in range(n_grid // 3)] +\
+				[1.0 for i in range(n_grid // 3 + 1)]
+
+			hs.append( H_cell(a, b, D, n_grid, cs, v) )
 
 	h_cell_simulation( hs, dx, x, output_filename, ss )
 

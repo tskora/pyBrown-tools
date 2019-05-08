@@ -82,9 +82,9 @@ def msd_cm(trajectory):
 
 		for j in range(len(trajectory)):
 
-			cm += np.array(trajectory[j][i]) / len(trajectory)
+			cm += np.array(trajectory[j][i])
         
-		trajectory_cm.append(cm)
+		trajectory_cm.append(cm / len(trajectory))
             
 	return msd( [trajectory_cm] )
 
@@ -187,19 +187,23 @@ def prepare_time_and_msd_cm(start, end, steps, filename_template):
 	### SOMETHING DOES NOT WORK HERE WHEN STEPS < STEPS IN FILE
 
 	number_of_samples = end - start + 1
+
+	_, traj = read_trajectory(filename_template + '1' + '.xyz')
+	steps = len( msd_cm(traj) )
+	print( steps )
 	
 	m = [ np.zeros(steps, float) ]
 	counter = 0
 	
 	for i in range(start, end + 1):
 		time, trajectory = read_trajectory(filename_template + str(i) + '.xyz')
-		m += np.array( msd_cm(trajectory), float ) / number_of_samples
+		m += np.array( msd_cm(trajectory), float )
 		counter += 1
 		print(str(counter) + '/' + str(number_of_samples))
 	
 	print('---')
 
-	return time, m
+	return time, m / number_of_samples
 
 #-------------------------------------------------------------------------------
 
@@ -252,12 +256,12 @@ def elongation_of_dna_wrapped():
 def hydrodynamic_radius_of_dna_wrapped():
 
 	start = 1
-	end = 25
-	steps = 500000
+	end = 150
+	steps = 0
 	
-	filename_template = '/Users/tomaszskora/Documents/plgtskora/long_check/dna_986589_'
-	filename_template_d = '/Users/tomaszskora/Documents/plgtskora/long_check/dna_986589_d_av'
-	filename_template_msd = '/Users/tomaszskora/Documents/plgtskora/long_check/dna_986589_msd_av'
+	filename_template = '/Users/tomaszskora/computing_results/crowddiff/DNA_'
+	filename_template_d = '/Users/tomaszskora/computing_results/crowddiff/DNA_D_av'
+	filename_template_msd = '/Users/tomaszskora/computing_results/crowddiff/DNA_MSD'
 	
 	# PREPARE TIME AND MSD
 	time, m = prepare_time_and_msd_cm(start, end, steps, filename_template)
