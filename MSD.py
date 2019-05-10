@@ -17,8 +17,8 @@
 from pyBrown.input import InputData
 from pyBrown.trajectories import read_trajectories, read_energies, \
 								 separate_center_of_mass, \
-								 compute_msds_and_mjumps, compute_menergies, \
-								 plot_msds, plot_mjumps, plot_menergies
+								 compute_msds, compute_menergies, \
+								 plot_msds, plot_menergies
 from pyBrown.parse import parse_input_filename
 
 #-------------------------------------------------------------------------------
@@ -29,13 +29,21 @@ if __name__ == '__main__':
 
 	input_filename = parse_input_filename()
 	i = InputData(input_filename, required_keywords)
-	trajectories, times, labels = read_trajectories(i)
-	energies, _ = read_energies(i)
 
-	cm_trajectories, cm_labels = separate_center_of_mass(i, trajectories, labels)
-	msds, mjumps = compute_msds_and_mjumps(i, cm_trajectories, cm_labels)
+	energies, times = read_energies(i)
 	menergies = compute_menergies(energies)
-	
-	plot_msds(i, times, msds)
-	plot_mjumps(i, times, mjumps)
+	del energies
 	plot_menergies(i, times, menergies)
+	del times
+	del menergies
+
+	trajectories, times, labels = read_trajectories(i)
+	cm_trajectories, cm_labels = separate_center_of_mass(i, trajectories, labels)
+	del trajectories
+	del labels
+	msds = compute_msds(i, cm_trajectories, cm_labels)
+	del cm_trajectories
+	del cm_labels
+	plot_msds(i, times, msds)
+	del times
+	del msds
