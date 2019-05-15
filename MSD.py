@@ -30,19 +30,17 @@ if __name__ == '__main__':
 	input_filename = parse_input_filename()
 	i = InputData(input_filename, required_keywords)
 
-	energies, times = read_energies(i)
-	menergies = compute_menergies(energies)
-	del energies
-	plot_menergies(i, times, menergies)
-	del times
-	del menergies
+	# energies, times = read_energies(i)
+	# menergies = compute_menergies(energies)
+	# del energies
+	# plot_menergies(i, times, menergies)
+	# del times
+	# del menergies
 
-	trajectories, times, labels = read_trajectories(i)
-	cm_trajectories, cm_labels = separate_center_of_mass(i, trajectories, labels)
-	del trajectories
+	temporary_filename, times, labels = read_trajectories(i)
+	temporary_filename_2, cm_labels = separate_center_of_mass(i, temporary_filename, labels)
 	del labels
-	msds = compute_msds(i, cm_trajectories, cm_labels)
-	del cm_trajectories
+	msds = compute_msds(i, temporary_filename_2, cm_labels)
 	del cm_labels
 	plot_msds(i, times, msds)
 	del times
