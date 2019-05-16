@@ -37,11 +37,11 @@ if __name__ == '__main__':
 	del times
 	del menergies
 
-	# temporary_filename, times, labels = read_trajectories(i)
-	# temporary_filename_2, cm_labels = separate_center_of_mass(i, temporary_filename, labels)
-	# del labels
-	# msds = compute_msds(i, temporary_filename_2, cm_labels)
-	# del cm_labels
-	# plot_msds(i, times, msds)
-	# del times
-	# del msds
+	temporary_filename, times, labels = read_trajectories(i)
+	temporary_filename_2, cm_labels = separate_center_of_mass(i, temporary_filename, labels)
+	del labels
+	msds = compute_msds(i, temporary_filename_2, cm_labels)
+	del cm_labels
+	plot_msds(i, times, msds)
+	del times
+	del msds
