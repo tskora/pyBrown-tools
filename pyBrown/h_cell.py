@@ -247,7 +247,7 @@ def h_cell_simulation(h_cells, dx, x_max, output, snapshots = []):
 
 	plt.grid()
 	plt.xlabel(r'$y$')
-	plt.ylabel(r'$c$')
+	plt.ylabel(r'$c$/$c_{input}$')
 	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}; $v = $ {}'.format(
 		h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx, h_cells[0].v) )
 

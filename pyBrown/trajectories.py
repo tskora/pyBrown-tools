@@ -94,7 +94,7 @@ def read_energies(input_data_object):
 
 	if input_data["verbose"]: print('enrs read')
 
-	return np.array(energies, float), np.array(times, float)
+	return np.array(energies), np.array(times, float)
 
 #-------------------------------------------------------------------------------
 
