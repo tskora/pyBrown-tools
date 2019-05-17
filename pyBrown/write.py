@@ -20,23 +20,102 @@ def write_structure(input_data_object, coordinates):
 
     output_str_filename = input_data["output_structure_filename"]
 
+    numbers_of_molecules = input_data["numbers_of_molecules"]
+
+    hydrodynamic_radii = input_data["hydrodynamic_radii"]
+    charges = input_data["charges"]
+    lennard_jones_radii = input_data["lennard-jones_radii"]
+    lennard_jones_energies = input_data["lennard-jones_energies"]
+    masses = input_data["masses"]
+    labels_of_molecules = input_data["labels_of_molecules"]
+
+    bond_force_constants = input_data["bond_force_constants"]
+    angle_force_constants = input_data["angle_force_constants"]
+
+    bonds = ""
+    angles = ""
+
     with open(output_str_filename, "w") as write_file:
-        for i, molecule in enumerate(coordinates):
-            line = _line_pattern(input_data, i, molecule)
-            write_file.write(line+"\n")
 
-def _line_pattern(input_data, index, coords):
+        count = 0
 
-    return "sub ATM {} {:.1f} {:.1f} {:.1f} {} {} {} {} {}".format(
-        index+1,
+        for i, n_mol in enumerate(numbers_of_molecules):
+
+            if len( hydrodynamic_radii[i] ) > 3:
+                if_bonds = True
+                if_angles = True 
+            elif len( hydrodynamic_radii[i] ) > 2:
+                if_bonds = True
+                if_angles = False
+            else:
+                if_bonds = False
+                if_angles = False
+
+            for id_mol in range(n_mol):
+
+                for j, r_bead in enumerate(hydrodynamic_radii[i]):
+
+                    line = _bead_pattern(labels_of_molecules[i],
+                                         count,
+                                         coordinates[count],
+                                         r_bead,
+                                         charges[i][j],
+                                         lennard_jones_radii[i][j],
+                                         lennard_jones_energies[i][j],
+                                         masses[i][j])
+                    write_file.write(line + '\n')
+
+                    # WARNINR: Here i artificialy put the small shift between
+                    # beads forming a sequence. How to do it in a smart way?
+
+                    if if_bonds and j < len(hydrodynamic_radii[i]) - 1:
+                        bonds += _bond_pattern(count, count + 1, hydrodynamic_radii[i][j] + hydrodynamic_radii[i][j+1], 2.5e+07, bond_force_constants[i][j]) + '\n'
+
+                    if if_angles and j < len(hydrodynamic_radii[i]) - 2:
+                        angles += _angle_pattern(count, count + 1, count + 2, 180.0, angle_force_constants[i][j]) + '\n'
+
+                    count += 1
+
+        write_file.write(bonds)
+        write_file.write(angles)
+
+#-------------------------------------------------------------------------------
+
+def _bead_pattern(label, index, coords, rh, charge, rlj, elj, m):
+
+    return "sub {} {} {:.2f} {:.2f} {:.2f} {} {} {} {} {}".format(
+        label,
+        index + 1,
         coords[0],
         coords[1],
         coords[2],
-        input_data["hydrodynamic_radius"],
-        input_data["charge"],
-        2*input_data["lennard-jones_radius"],
-        input_data["lennard-jones_energy"],
-        input_data["mass"]
+        rh,
+        charge,
+        2 * rlj,
+        elj,
+        m
     )
 
+#-------------------------------------------------------------------------------
 
+def _bond_pattern(index1, index2, r_eq, r_max, force_constant):
+
+    return "bond {} {} {} {} {}".format(
+        index1 + 1,
+        index2 + 1,
+        r_eq,
+        r_max,
+        force_constant
+    )
+
+#-------------------------------------------------------------------------------
+
+def _angle_pattern(index1, index2, index3, phi_eq, force_constant):
+
+    return "angle angle {} {} {} {} {}".format(
+        index1 + 1,
+        index2 + 1,
+        index3 + 1,
+        phi_eq,
+        force_constant
+    )

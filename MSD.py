@@ -15,17 +15,37 @@
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
 from pyBrown.input import InputData
-from pyBrown.grid import pack_molecules
-from pyBrown.write import write_structure
+from pyBrown.trajectories import read_trajectories, read_energies, \
+								 separate_center_of_mass, \
+								 compute_msds, compute_menergies, \
+								 plot_msds, plot_menergies
 from pyBrown.parse import parse_input_filename
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
-	required_keywords = []
+	required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
+						 "input_xyz_template", "input_enr_template", "input_xyz_range",
+						 "input_enr_range"]
+	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
+				"probing_frequency": 1}
 
 	input_filename = parse_input_filename()
-	i = InputData(input_filename, required_keywords)
-	coords = pack_molecules(i)
-	write_structure(i, coords)
+	i = InputData(input_filename, required_keywords, defaults)
+
+	energies, times = read_energies(i)
+	menergies = compute_menergies(energies)
+	del energies
+	plot_menergies(i, times, menergies)
+	del times
+	del menergies
+
+	temporary_filename, times, labels = read_trajectories(i)
+	temporary_filename_2, cm_labels = separate_center_of_mass(i, temporary_filename, labels)
+	del labels
+	msds = compute_msds(i, temporary_filename_2, cm_labels)
+	del cm_labels
+	plot_msds(i, times, msds)
+	del times
+	del msds

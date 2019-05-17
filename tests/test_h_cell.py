@@ -1,4 +1,4 @@
-# pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simulations
+# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics simulations
 # Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,18 +14,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
-from pyBrown.input import InputData
-from pyBrown.grid import pack_molecules
-from pyBrown.write import write_structure
-from pyBrown.parse import parse_input_filename
+import unittest
+
+import sys
+sys.path.insert(0, '../pyBrown')
+import numpy as np
+import copy as cp
+
+#-------------------------------------------------------------------------------
+
+class TestSphere(unittest.TestCase):
+
+	def setUp(self):
+		
+		return 0
+
+	#---------------------------------------------------------------------------
+
+	def test_translate_unit(self):
+
+		return 0		
+
+		self.assertSequenceEqual( list( self.s3.coords ), [1.0, 1.0, 2.0] )
+
+	#---------------------------------------------------------------------------
+
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
-	required_keywords = []
-
-	input_filename = parse_input_filename()
-	i = InputData(input_filename, required_keywords)
-	coords = pack_molecules(i)
-	write_structure(i, coords)
+	unittest.main()

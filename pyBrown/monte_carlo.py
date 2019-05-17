@@ -17,12 +17,16 @@
 import numpy as np
 from pyBrown.sphere import Sphere
 
+#-------------------------------------------------------------------------------
+
 class MonteCarlo:
 
     def __init__(self, box_size, spherical = True):
 
         self.spherical = spherical
         self.box_size = box_size
+
+    #---------------------------------------------------------------------------
 
     def get_values(self):
 
@@ -36,6 +40,8 @@ class MonteCarlo:
             draw[3:6] = 2 * np.pi * draw[3:6]
 
         return draw
+
+    #---------------------------------------------------------------------------
 
 def place_crowders_linearly(radii, box_size):
 
@@ -53,6 +59,8 @@ def place_crowders_linearly(radii, box_size):
         crowder.translate([0.0, 0.0, -length / 2])
 
     return crowders
+
+#-------------------------------------------------------------------------------
 
 def place_tracers_linearly(radii, box_size):
 

@@ -1,5 +1,5 @@
 # pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simultions
-# Copyright (C) 2018  Tomasz Skóra (tskora@ichf.edu.pl)
+# Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,12 @@
 from pyBrown.input import InputData
 from pyBrown.parse import parse_input_filename
 
-input_filename = parse_input_filename()
-i = InputData(input_filename, [])
-print(i.input_data)
+#-------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+	required_keywords = []
+
+	input_filename = parse_input_filename()
+	i = InputData(input_filename, [])
+	print(i.input_data)
