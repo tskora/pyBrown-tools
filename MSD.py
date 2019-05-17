@@ -25,10 +25,14 @@ from pyBrown.parse import parse_input_filename
 
 if __name__ == '__main__':
 
-	required_keywords = []
+	required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
+						 "input_xyz_template", "input_enr_template", "input_xyz_range",
+						 "input_enr_range"]
+	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
+				"probing_frequency": 1}
 
 	input_filename = parse_input_filename()
-	i = InputData(input_filename, required_keywords)
+	i = InputData(input_filename, required_keywords, defaults)
 
 	energies, times = read_energies(i)
 	menergies = compute_menergies(energies)
