@@ -64,3 +64,11 @@ class InputData:
         for keyword in obligatory_keywords:
             assert keyword in self.input_data.keys(),\
                 'Missing {} keyword in input JSON file.'.format(keyword)
+
+#-------------------------------------------------------------------------------
+
+def print_input(input_data):
+
+    for keyword in input_data.keys():
+        print( '{}: {}'.format(keyword, input_data[keyword]) )
+    print('')
