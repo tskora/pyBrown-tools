@@ -26,15 +26,26 @@ def read_trajectories(input_data_object):
 
 	input_data = input_data_object.input_data
 
+	if input_data["debug"]:
+		print( 'input data from JSON file: {}'.format(input_data) )
+
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
 
-	number_of_timeframes = _count_timeframes( input_xyz_filenames[0], input_data["probing_frequency"] )
+	if input_data["debug"]:
+		print( 'input xyz filenames: {}'.format(input_xyz_filenames) )
+
+	number_of_timeframes = _count_timeframes( input_xyz_filenames[0],
+											input_data["probing_frequency"] )
 
 	number_of_beads = _count_beads( input_xyz_filenames[0] )
 
-	if input_data["verbose"]: print( 'timeframes: {}\nbeads: {}\nfiles: {}'.format( number_of_timeframes, number_of_beads, len( input_xyz_filenames ) ) )
+	if input_data["verbose"] or input_data["debug"]:
+		print( 'timeframes: {}\nbeads: {}\nfiles: {}'.format( number_of_timeframes,
+															number_of_beads,
+															len( input_xyz_filenames ) ) )
 
+	# temporary binary file which will contain the trajectories
 	temporary_filename = 'temp.dat'
 
 	trajectories = np.memmap( temporary_filename, dtype = np.float32,
@@ -44,7 +55,7 @@ def read_trajectories(input_data_object):
 
 	for i in range(number_of_beads * len(input_xyz_filenames)):
 		for j in range(number_of_timeframes):
-			trajectories[i, j, :] = np.zeros(3, float)
+			trajectories[i, j, :] = np.zeros(3, np.float32)
 
 	del trajectories
 
@@ -53,7 +64,8 @@ def read_trajectories(input_data_object):
 
 	for i, input_xyz_filename in enumerate(input_xyz_filenames):
 
-		if input_data["verbose"]: print( 'xyz file {}/{}'.format( i + 1, len(input_xyz_filenames) ) )
+		if input_data["verbose"] or input_data["debug"]:
+			print( 'xyz file {}/{}'.format( i + 1, len(input_xyz_filenames) ) )
 
 		with open(input_xyz_filename, 'r') as input_xyz_file:
 
@@ -68,7 +80,7 @@ def read_trajectories(input_data_object):
 
 			del temp
 
-	if input_data["verbose"]: print('xyzs read')
+	if input_data["verbose"] or input_data["debug"]: print('xyzs read')
 
 	return temporary_filename, times, labels
 
