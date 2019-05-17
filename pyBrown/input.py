@@ -20,11 +20,13 @@ import json
 
 class InputData:
 
-    def __init__(self, input_filename, keywords):
+    def __init__(self, input_filename, obligatory_keywords = [], defaults = {}):
 
         self._read_input_file(input_filename)
 
-        self._check_for_missing_keywords(keywords)
+        self._complete_with_defaults(defaults)
+
+        self._check_for_missing_keywords(obligatory_keywords)
 
     #---------------------------------------------------------------------------
 
@@ -47,8 +49,18 @@ class InputData:
 
     #---------------------------------------------------------------------------
 
-    def _check_for_missing_keywords(self, keywords):
+    def _complete_with_defaults(self, defaults):
 
-        for keyword in keywords:
+        for default_keyword in defaults.keys():
+
+            if default_keyword not in self.input_data.keys():
+
+                self.input_data[default_keyword] = defaults[default_keyword]
+
+    #---------------------------------------------------------------------------
+
+    def _check_for_missing_keywords(self, obligatory_keywords):
+
+        for keyword in obligatory_keywords:
             assert keyword in self.input_data.keys(),\
                 'Missing {} keyword in input JSON file.'.format(keyword)
