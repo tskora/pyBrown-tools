@@ -17,33 +17,34 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from pyBrown.plot_config import plot_config
+
 from scipy.constants import Boltzmann
+
+from pyBrown.input import print_input
+from pyBrown.messaging import timestamp
+from pyBrown.plot_config import plot_config
 
 #-------------------------------------------------------------------------------
 
-def read_trajectories(input_data_object):
-
-	input_data = input_data_object.input_data
-
-	if input_data["debug"]:
-		print( 'input data from JSON file: {}'.format(input_data) )
+def read_trajectories(input_data):
 
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
 
-	if input_data["debug"]:
-		print( 'input xyz filenames: {}'.format(input_xyz_filenames) )
-
 	number_of_timeframes = _count_timeframes( input_xyz_filenames[0],
-											input_data["probing_frequency"] )
+											  input_data["probing_frequency"] )
 
 	number_of_beads = _count_beads( input_xyz_filenames[0] )
 
-	if input_data["verbose"] or input_data["debug"]:
-		print( 'timeframes: {}\nbeads: {}\nfiles: {}'.format( number_of_timeframes,
-															number_of_beads,
-															len( input_xyz_filenames ) ) )
+	number_of_xyz_files = len( input_xyz_filenames )
+
+	if input_data["debug"]:
+		print_input( input_data )
+		print( 'Input xyz filenames: {}'.format(input_xyz_filenames) )
+	if input_data["debug"] or input_data["verbose"]:
+		print( 'Number of timeframes: {}'.format(number_of_timeframes) )
+		print( 'Number of beads: {}'.format(number_of_beads) )
+		print( 'Number of files: {}'.format(number_of_xyz_files) )
 
 	# temporary binary file which will contain the trajectories
 	temporary_filename = 'temp.dat'
@@ -80,15 +81,11 @@ def read_trajectories(input_data_object):
 
 			del temp
 
-	if input_data["verbose"] or input_data["debug"]: print('xyzs read')
-
 	return temporary_filename, times, labels
 
 #-------------------------------------------------------------------------------
 
-def read_energies(input_data_object):
-
-	input_data = input_data_object.input_data
+def read_energies(input_data):
 
 	input_enr_filenames = [ input_data["input_enr_template"] + str(i) + '.enr'
 							for i in range( *input_data["input_enr_range"] ) ]
@@ -110,9 +107,8 @@ def read_energies(input_data_object):
 
 #-------------------------------------------------------------------------------
 
-def separate_center_of_mass(input_data_object, temporary_filename, labels):
+def separate_center_of_mass(input_data, temporary_filename, labels):
 
-	input_data = input_data_object.input_data
 	bead_dict = {}
 
 	which_trajectory = 0
@@ -275,9 +271,7 @@ def separate_center_of_mass(input_data_object, temporary_filename, labels):
 
 #-------------------------------------------------------------------------------
 
-def compute_msds(input_data_object, temporary_filename_2, cm_labels):
-
-	input_data = input_data_object.input_data
+def compute_msds(input_data, temporary_filename_2, cm_labels):
 
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
@@ -376,9 +370,7 @@ def compute_menergies(energies):
 
 #-------------------------------------------------------------------------------
 
-def plot_msds(input_data_object, times, msds):
-
-	input_data = input_data_object.input_data
+def plot_msds(input_data, times, msds):
 
 	colors, _ = plot_config()
 
@@ -414,9 +406,7 @@ def plot_msds(input_data_object, times, msds):
 
 #-------------------------------------------------------------------------------
 
-def plot_menergies(input_data_object, times, menergies):
-
-	input_data = input_data_object.input_data
+def plot_menergies(input_data, times, menergies):
 
 	plot_config()
 
