@@ -50,29 +50,30 @@ def read_trajectories(input_data):
 	temporary_filename = 'temp.dat'
 
 	trajectories = np.memmap( temporary_filename, dtype = np.float32,
-							mode = 'w+',
-							shape = ( number_of_beads * len(input_xyz_filenames),
-									  number_of_timeframes, 3 ) )
+							  mode = 'w+',
+							  shape = ( number_of_beads * number_of_xyz_files,
+									    number_of_timeframes, 3 ) )
 
-	for i in range(number_of_beads * len(input_xyz_filenames)):
+	for i in range( number_of_beads * number_of_xyz_files ):
 		for j in range(number_of_timeframes):
 			trajectories[i, j, :] = np.zeros(3, np.float32)
 
 	del trajectories
 
 	times = np.zeros( number_of_timeframes, dtype = np.float32 )
-	labels = [ '___' for _ in range( len(input_xyz_filenames) * number_of_beads ) ]
+	labels = [ '___' for _ in range( number_of_xyz_files * number_of_beads ) ]
 
 	for i, input_xyz_filename in enumerate(input_xyz_filenames):
 
 		if input_data["verbose"] or input_data["debug"]:
-			print( 'xyz file {}/{}'.format( i + 1, len(input_xyz_filenames) ) )
+			timestamp( 'XYZ file {} / {}', i + 1, number_of_xyz_files )
+			# print( 'xyz file {}/{}'.format( i + 1, len(input_xyz_filenames) ) )
 
 		with open(input_xyz_filename, 'r') as input_xyz_file:
 
 			temp = np.memmap( temporary_filename, dtype = np.float32,
-						   shape = ( number_of_beads * len(input_xyz_filenames),
-						   number_of_timeframes, 3 ) )
+						   	  shape = ( number_of_beads * len(input_xyz_filenames),
+						      			number_of_timeframes, 3 ) )
 
 			trajectories = temp[i * number_of_beads : (i + 1) * number_of_beads, :, :]
 
