@@ -70,12 +70,12 @@ from pyBrown.h_cell import H_cell, h_cell_simulation
 	'--profile', '-p',
 	default = 'step',
 	show_default = True,
-	help = 'initial concentration profile')
+	help = 'initial concentration profile (step and well are implemented)')
 def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
-	output_filename, snapshots, flow_velocity, profile):
+		 output_filename, snapshots, flow_velocity, profile):
 
-	Ds = np.array( [ float( element ) for element in diff_coefs.split() ] )
-	ss = [ float( element ) for element in snapshots.split() ]
+	Ds = parse_diff_coefs(diff_coefs)
+	ss = parse_snapshots(snapshots)
 
 	a = float(a_len)
 	b = float(b_len)
@@ -88,7 +88,8 @@ def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
 
 	for D in Ds:
 
-		if profile == 'step': hs.append( H_cell(a, b, D, n_grid, v = v) )
+		if profile == 'step':
+			hs.append( H_cell(a, b, D, n_grid, v = v) )
 		elif profile == 'well':
 			if n_grid % 3 == 0:
 				cs = [1.0 for i in range(n_grid // 3)] +\
@@ -106,6 +107,33 @@ def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
 			hs.append( H_cell(a, b, D, n_grid, cs, v) )
 
 	h_cell_simulation( hs, dx, x, output_filename, ss )
+
+#-------------------------------------------------------------------------------
+
+def parse_diff_coefs(diff_coefs):
+
+	if not ( ":" in diff_coefs ):
+
+		return np.array( [ float( element )
+			for element in diff_coefs.split() ] )
+
+	else:
+
+		return np.linspace( *[ float( diff_coefs.split(':')[i] )
+			for i in range(3) ] )
+
+#-------------------------------------------------------------------------------
+
+def parse_snapshots(snapshots):
+
+	if not ( ":" in snapshots ):
+
+		return [ float( element ) for element in snapshots.split() ]
+
+	else:
+
+		return list( np.linspace( *[ float( snapshots.split(':')[i] )
+			for i in range(3) ] ) )
 
 #-------------------------------------------------------------------------------
 

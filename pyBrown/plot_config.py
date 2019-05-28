@@ -32,7 +32,7 @@ def plot_config():
 	plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
 	plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 	plt.rc('lines', linewidth=3)			 # line width
-	plt.rc('lines', markersize=3)			 # marker size	
+	plt.rc('lines', markersize=5)			 # marker size	
 
 	colors = [ 'red', 'blue', 'green', 'orange', 'black', 'pink' ]
 	symbols = [ '-', '--', ':', '-.' ]

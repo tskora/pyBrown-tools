@@ -236,20 +236,45 @@ class H_cell:
 
 #-------------------------------------------------------------------------------
 
-def h_cell_simulation(h_cells, dx, x_max, output, snapshots = []):
+def init_plot_concentration_profile(a, b, grid_points, dx, v):
 
 	colors, symbols = plot_config()
 
+	plt.grid()
+
+	plt.xlabel(r'$y$')
+
+	plt.ylabel(r'$c$/$c_{input}$')
+
+	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}; $v = $ {}'.format(
+				a, b, grid_points, dx, v) )
+
+	return colors, symbols
+
+#-------------------------------------------------------------------------------
+
+def finish_plot_concentration_profile(output):
+
+	plt.legend()
+
+	plt.ylim((0, 1))
+
+	plt.savefig(output + '.jpg', dpi = 300)
+
+	plt.close()
+
+#-------------------------------------------------------------------------------
+
+def h_cell_simulation(h_cells, dx, x_max, output, snapshots = []):
+
 	if not isinstance( h_cells, list ): h_cells = [ h_cells ]
 
+	colors, symbols = init_plot_concentration_profile(h_cells[0].a, h_cells[0].b,
+						h_cells[0].grid_points, dx, h_cells[0].v)
+
+	for snapshot in snapshots: assert x_max > snapshot, 'x_max has to be greater than x for any snapshot'
 	snapshots.append(x_max)
 	snapshots.sort()
-
-	plt.grid()
-	plt.xlabel(r'$y$')
-	plt.ylabel(r'$c$/$c_{input}$')
-	plt.title( r'$a = $ {}; $b = $ {}; $n_g = $ {}; $dx = $ {}; $v = $ {}'.format(
-		h_cells[0].a, h_cells[0].b, h_cells[0].grid_points, dx, h_cells[0].v) )
 
 	for i, h in enumerate( h_cells ):
 
@@ -268,7 +293,126 @@ def h_cell_simulation(h_cells, dx, x_max, output, snapshots = []):
 					 color = colors[i % len(colors)],
 					 label = r'$D = $ {}; $x = $ {}'.format(h.diff_coef, x_snapshot))
 
+	finish_plot_concentration_profile(output)
+
+#-------------------------------------------------------------------------------
+
+def read_cells_from_files(input_template, snapshots, number_of_substances):
+
+	hs = []
+
+	for s in snapshots:
+
+		hs.append(
+			[ H_cell.read_cell_from_file(
+				'{}_{}_snapshot_{}.txt'.format(input_template, i, s) )
+			for i in range(number_of_substances) ]
+			)
+
+	Ds = [ h.diff_coef for h in hs[0] ]
+
+	return hs, Ds
+
+#-------------------------------------------------------------------------------
+
+def _integrate_concentration_profile(cs, outlets = 2):
+
+	assert len(cs) % outlets == 0, 'number of grid points should be a multiple of number of outputs'
+
+	segment_length = len(cs) // outlets
+
+	c_int = np.array( [ np.mean( cs[ i * segment_length: (i + 1) * segment_length ] )
+		for i in range(outlets) ], float )
+
+	return c_int
+
+#-------------------------------------------------------------------------------
+
+def perform_differential_analysis_for_2_substances(h_cells, diff_coefs, snapshots, number_of_outlets, input_template):
+
+	dcps = integrate_differential_concentration_profiles(h_cells, len(snapshots), number_of_outlets)
+
+	a = h_cells[0][0].a
+	b = h_cells[0][0].b
+	v = h_cells[0][0].v
+
+	plot_differential_concentration_profiles(snapshots, dcps, diff_coefs, a, b, v, input_template)
+
+#-------------------------------------------------------------------------------
+
+def perform_analysis_for_many_substances(h_cells, diff_coefs, snapshots, number_of_outlets, outlet_index, input_template):
+
+	a = h_cells[0][0].a
+	b = h_cells[0][0].b
+	v = h_cells[0][0].v
+
+	cs = np.array( [ [ h_cells[i][j].cs for j in range( len(diff_coefs) ) ]
+					for i in range( len(snapshots) ) ], float )
+
+	colors, symbols = plot_config()
+
+	plt.grid()
+
+	plt.xlabel(r'$D [\frac{m^2}{s}]$')
+
+	plt.ylabel(r'$c$/$c_{input}$')
+
+	plt.ylim((0.0,0.5))
+
+	plt.title( 'Concentration (in outlet {}/{}) dependence on diffusion coefficient\n'.format(outlet_index, number_of_outlets) +
+				r'$a = $ {}; $b = $ {}; $v = $ {}'.format(
+				a, b, v) )
+
+	for i in range( len(snapshots) ):
+
+		cs_int_D = []
+
+		for j in range( len(diff_coefs) ):
+
+			cs_int_D.append( _integrate_concentration_profile(cs[i][j], number_of_outlets)[outlet_index - 1] )
+
+		plt.plot( diff_coefs, cs_int_D, '-o', label = r'snapshot $x =$ {}'.format(snapshots[i]), color = colors[i] )
+
 	plt.legend()
-	plt.ylim((0,1))
-	plt.savefig(output + '.jpg', dpi = 300)
+
+	plt.savefig(input_template + '_{}_of_{}_outs.jpg'.format(outlet_index, number_of_outlets), dpi = 300)
+
+	plt.close()
+
+#-------------------------------------------------------------------------------
+
+def integrate_differential_concentration_profiles(hs, num_of_snapshots, num_of_outlets):
+
+	num=of_subs = len(hs)
+
+	dcps = np.array(
+		[ _integrate_concentration_profile(hs[i][0].cs - hs[i][1].cs, num_of_outlets)
+		for i in range( num_of_snapshots ) ], float )
+
+	return dcps
+
+#-------------------------------------------------------------------------------
+
+def plot_differential_concentration_profiles(ss, dcps, Ds, a, b, v, input_template):
+
+	colors, symbols = plot_config()
+
+	plt.grid()
+
+	plt.xlabel(r'$x [m]$')
+
+	plt.ylabel(r'$\Delta c$/$c_{input}$')
+
+	plt.title( 'Differential concentration profiles\n' +
+				r'$a = $ {}; $b = $ {}; $v = $ {}; $D = $ {}'.format(
+				a, b, v, Ds) )
+
+	for i in range(len(dcps[0])):
+		plt.plot( ss, dcps[:,i], '-o', label = 'outlet nr {}'.format(i + 1),
+									   color = colors[i % len(colors)] )
+	
+	plt.legend()
+
+	plt.savefig(input_template + '_dcp.jpg', dpi = 300)
+
 	plt.close()
