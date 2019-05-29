@@ -196,6 +196,8 @@ class H_cell:
 
 			self._propagate_euler_step(dx)
 
+			print( np.sum( self.cs ) / len( self.cs ) )
+
 	#---------------------------------------------------------------------------
 
 	def save_cell_to_file(self, filename):
@@ -357,7 +359,7 @@ def perform_analysis_for_many_substances(h_cells, diff_coefs, snapshots, number_
 
 	plt.ylabel(r'$c$/$c_{input}$')
 
-	plt.ylim((0.0,0.5))
+	plt.ylim((0.0,1.0))
 
 	plt.title( 'Concentration (in outlet {}/{}) dependence on diffusion coefficient\n'.format(outlet_index, number_of_outlets) +
 				r'$a = $ {}; $b = $ {}; $v = $ {}'.format(
@@ -371,7 +373,7 @@ def perform_analysis_for_many_substances(h_cells, diff_coefs, snapshots, number_
 
 			cs_int_D.append( _integrate_concentration_profile(cs[i][j], number_of_outlets)[outlet_index - 1] )
 
-		plt.plot( diff_coefs, cs_int_D, '-o', label = r'snapshot $x =$ {}'.format(snapshots[i]), color = colors[i] )
+		plt.plot( diff_coefs, cs_int_D, '-o', label = r'snapshot $x =$ {}'.format(snapshots[i]), color = colors[i % len(colors)] )
 
 	plt.legend()
 
