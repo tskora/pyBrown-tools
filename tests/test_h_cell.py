@@ -21,21 +21,36 @@ sys.path.insert(0, '../pyBrown')
 import numpy as np
 import copy as cp
 
+from pyBrown.h_cell import H_cell
+
 #-------------------------------------------------------------------------------
 
-class TestSphere(unittest.TestCase):
+class TestH_cell(unittest.TestCase):
 
 	def setUp(self):
-		
-		return 0
+
+		self.grid_sizes = [10, 25, 99]
+
+		self.hs = [ H_cell(a = 1.0, b = 1.0, diff_coef = 1.0,
+			grid_points = g, v = 1) for g in self.grid_sizes ]
 
 	#---------------------------------------------------------------------------
 
-	def test_translate_unit(self):
+	def test_ygrid(self):
 
-		return 0		
+		for g, h in zip( self.grid_sizes, self.hs ):
+			# checking correct y grid initialization
+			self.assertEqual( h.grid_points, g )
+			# checking correct cs and ys build
+			self.assertEqual( len( h.cs ), len( h.ys ) )
+			# checking ys comprising the grid
+			self.assertEqual( 2 * h.a / ( g + 1 ), h.dy )
 
-		self.assertSequenceEqual( list( self.s3.coords ), [1.0, 1.0, 2.0] )
+		# checking initial concentration profile
+		# BEWARE, IT IS NOT FLEXIBLE SO CHANGING SETUP MAY DISRUPT IT
+		self.assertSequenceEqual( list( self.hs[0].cs ), [ 0 ]*5 + [ 1 ]*5 )
+		self.assertSequenceEqual( list( self.hs[2].cs ), [ 0 ]*49 + [ 1 ]*50 )
+		self.assertSequenceEqual( list( self.hs[1].cs ), [ 0 ]*12 + [ 1 ]*13 )
 
 	#---------------------------------------------------------------------------
 
