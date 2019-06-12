@@ -196,7 +196,7 @@ class H_cell:
 
 			self._propagate_euler_step(dx)
 
-			print( np.sum( self.cs ) / len( self.cs ) )
+			# print( np.sum( self.cs ) / len( self.cs ) )
 
 	#---------------------------------------------------------------------------
 
