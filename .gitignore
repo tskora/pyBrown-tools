@@ -9,4 +9,6 @@ __pycache__/
 *.str
 *.eps
 *.txt
+*.jpg
+*.json
 work/
