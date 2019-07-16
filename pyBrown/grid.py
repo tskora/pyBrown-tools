@@ -19,6 +19,9 @@ import numpy as np
 from pyBrown.monte_carlo import place_tracers_linearly
 from pyBrown.sphere import overlap, fit
 
+from pyBrown.sphere import distance_matrix
+from pyBrown.monte_carlo import MonteCarlo
+
 #-------------------------------------------------------------------------------
 
 def pack_molecules(input_data_object):
@@ -31,7 +34,8 @@ def pack_molecules(input_data_object):
 
         return _populate_grid(grid, input_data_object)
 
-    elif input_data['packing_mode'] == 'monte_carlo':
+    elif input_data['packing_mode'] == 'monte_carlo' or \
+         input_data['packing_mode'] == 'monte_carlo_fluct':
 
         return _populate_monte_carlo(input_data_object)
 
@@ -107,6 +111,18 @@ def _populate_monte_carlo(input_data_object):
             print('{} / {}'.format(thrown, n_mol))
 
             tracers = place_tracers_linearly(radii[i], box_size[0])
+
+            print( distance_matrix( tracers ) )
+            
+            if input_data["packing_mode"] == 'monte_carlo_fluct':
+
+                mc = MonteCarlo( input_data["fluct_length"] )
+                
+                for tracer in tracers:
+                    tracer.translate( mc.get_values() )
+
+            print( distance_matrix( tracers ) )
+
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 continue
 
