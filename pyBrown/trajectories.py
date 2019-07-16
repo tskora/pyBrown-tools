@@ -31,10 +31,19 @@ def read_trajectories(input_data):
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
 
-	number_of_timeframes = _count_timeframes( input_xyz_filenames[0],
+	number_of_xyz_files = len( input_xyz_filenames )
+
+	numbers_of_timeframes = [ _count_timeframes( input_xyz_filenames[i],
 											  input_data["probing_frequency"] )
+							  for i in range( number_of_xyz_files ) ]
+
+	number_of_timeframes = min( numbers_of_timeframes )
 
 	number_of_beads = _count_beads( input_xyz_filenames[0] )
+
+	for i in range( 1, number_of_xyz_files ):
+
+		assert _count_beads( input_xyz_filenames[i] ) == number_of_beads
 
 	number_of_xyz_files = len( input_xyz_filenames )
 
@@ -67,7 +76,6 @@ def read_trajectories(input_data):
 
 		if input_data["verbose"] or input_data["debug"]:
 			timestamp( 'XYZ file {} / {}', i + 1, number_of_xyz_files )
-			# print( 'xyz file {}/{}'.format( i + 1, len(input_xyz_filenames) ) )
 
 		with open(input_xyz_filename, 'r') as input_xyz_file:
 
@@ -91,18 +99,31 @@ def read_energies(input_data):
 	input_enr_filenames = [ input_data["input_enr_template"] + str(i) + '.enr'
 							for i in range( *input_data["input_enr_range"] ) ]
 
+	number_of_enr_files = len( input_enr_filenames )
+
+	numbers_of_timeframes = [ _file_length(input_enr_filenames[i]) - 1
+							  for i in range( number_of_enr_files ) ]
+
+	number_of_timeframes = min(numbers_of_timeframes)
+
 	energies = []
 	times = []
 
 	for i, input_enr_filename in enumerate(input_enr_filenames):
 
-		if input_data["verbose"]: print('enr file {}/{}'.format( i + 1, len(input_enr_filenames) ))
+		if input_data["verbose"]: timestamp('enr file {}/{}'.format( i + 1, len(input_enr_filenames) ))
 
 		with open(input_enr_filename, 'r') as input_enr_file:
 
 			_read_energies_from_enr_file(input_enr_file, energies, times)
 
-	if input_data["verbose"]: print('enrs read')
+	if input_data["verbose"]: timestamp('enrs read')
+
+	for i in range(number_of_enr_files):
+
+		energies[i] = energies[i][:number_of_timeframes]
+
+	times = times[:number_of_timeframes]
 
 	return np.array(energies), np.array(times, float)
 
@@ -277,7 +298,13 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
 
-	number_of_timeframes = _count_timeframes( input_xyz_filenames[0], input_data["probing_frequency"] )
+	number_of_xyz_files = len( input_xyz_filenames )
+
+	numbers_of_timeframes = [ _count_timeframes( input_xyz_filenames[i],
+											  input_data["probing_frequency"] )
+							  for i in range( number_of_xyz_files ) ]
+
+	number_of_timeframes = min( numbers_of_timeframes )
 
 	bead_dict = {}
 
@@ -371,6 +398,35 @@ def compute_menergies(energies):
 
 #-------------------------------------------------------------------------------
 
+def save_msds_to_file(input_data, times, msds):
+
+	output_filename = input_data["input_xyz_template"] + 'msd.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = 'time/ps '
+		line = '{} '
+
+		for label in input_data["labels"]:
+
+			first_line += ( label + ' ' )
+
+			line += '{} '
+
+		output_file.write(first_line + '\n')
+
+		for i in range( len(times) ):
+
+			line_values = [ times[i] ]
+
+			for j in range( len(input_data["labels"]) ):
+
+				line_values.append( msds[j][i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
+
+#-------------------------------------------------------------------------------
+
 def plot_msds(input_data, times, msds):
 
 	colors, _ = plot_config()
@@ -437,6 +493,8 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 
 	for i, line in enumerate(xyz_file):
 
+		if counter // number_of_beads // probing_frequency >= len(times): break
+
 		if 'xyz' in line.split()[0].split('.'):
 
 			# print('counter: {}; counter // number_of_beads // probing_frequency: {}; len(times): {}'.format(counter, counter // number_of_beads // probing_frequency, len(times)))
@@ -465,16 +523,24 @@ def _read_energies_from_enr_file(enr_file, energies, times):
 
 	energies_from_current_file = []
 
-	if len(times) == 0: add_times = True
-	else: add_times = False
+	if len(times) == 0:
+		add_times = True
+	else:
+		add_times = False
+		len_i = len(times)
 
 	enr_file.readline()
 
 	for i, line in enumerate(enr_file):
 
-		if add_times: times.append( float( line.split()[0] ) )
+		if add_times:
+			times.append( float( line.split()[0] ) )
 
-		else: assert( float( line.split()[0] ) == times[i] )
+		else:
+			if i >= len_i:
+				break
+			else:
+				assert( float( line.split()[0] ) == times[i] )
 
 		energies_from_current_file.append( float( line.split()[1] ) )
 

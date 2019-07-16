@@ -1,4 +1,4 @@
-# pyVrown is a bound of tools useful for Brownian and Stokesian dynamics simulations
+# pyBrown is a bound of tools useful for Brownian and Stokesian dynamics simulations
 # Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@ from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, read_energies, \
 								 separate_center_of_mass, \
 								 compute_msds, compute_menergies, \
+								 save_msds_to_file, \
 								 plot_msds, plot_menergies
 
 #-------------------------------------------------------------------------------
@@ -61,6 +62,8 @@ def main(input_filename):
 	timestamp( 'Computing mean square displacements' )
 	msds = compute_msds(i, temporary_filename_2, cm_labels)
 	del cm_labels
+	timestamp( 'Saving mean square displacements to a file' )
+	save_msds_to_file(i, times, msds)
 	timestamp( 'Plotting mean square displacements' )
 	plot_msds(i, times, msds)
 	del times
