@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
-def write_structure(input_data_object, coordinates):
-
-    input_data = input_data_object.input_data
+def write_structure(input_data, coordinates):
 
     output_str_filename = input_data["output_structure_filename"]
 
@@ -30,7 +28,13 @@ def write_structure(input_data_object, coordinates):
     labels_of_molecules = input_data["labels_of_molecules"]
 
     bond_force_constants = input_data["bond_force_constants"]
+    max_bond_lengths = input_data["max_bond_lengths"]
+    bond_lengths = input_data["bond_lengths"]
     angle_force_constants = input_data["angle_force_constants"]
+
+    open_radii = input_data["open_radii"]
+    close_radii = input_data["close_radii"]
+    packing_mode = input_data["packing_mode"]
 
     bonds = ""
     angles = ""
@@ -41,10 +45,10 @@ def write_structure(input_data_object, coordinates):
 
         for i, n_mol in enumerate(numbers_of_molecules):
 
-            if len( hydrodynamic_radii[i] ) > 3:
+            if len( hydrodynamic_radii[i] ) >= 3:
                 if_bonds = True
                 if_angles = True 
-            elif len( hydrodynamic_radii[i] ) > 2:
+            elif len( hydrodynamic_radii[i] ) >= 2:
                 if_bonds = True
                 if_angles = False
             else:
@@ -65,11 +69,12 @@ def write_structure(input_data_object, coordinates):
                                          masses[i][j])
                     write_file.write(line + '\n')
 
-                    # WARNINR: Here i artificialy put the small shift between
-                    # beads forming a sequence. How to do it in a smart way?
-
                     if if_bonds and j < len(hydrodynamic_radii[i]) - 1:
-                        bonds += _bond_pattern(count, count + 1, hydrodynamic_radii[i][j] + hydrodynamic_radii[i][j+1], 2.5e+07, bond_force_constants[i][j]) + '\n'
+
+                        if packing_mode == 'monte_carlo_fluct':
+                            bonds += _bond_pattern(count, count + 1, close_radii[i][j], open_radii[i][j], bond_force_constants[i][j]) + '\n'
+                        else:
+                            bonds += _bond_pattern(count, count + 1, bond_lengths[i][j], max_bond_lengths[i][j], bond_force_constants[i][j]) + '\n'
 
                     if if_angles and j < len(hydrodynamic_radii[i]) - 2:
                         angles += _angle_pattern(count, count + 1, count + 2, 180.0, angle_force_constants[i][j]) + '\n'

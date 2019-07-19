@@ -16,6 +16,11 @@
 
 import random
 import numpy as np
+
+from scipy.constants import Boltzmann
+import scipy.interpolate as interpolate
+from scipy.integrate import quad
+
 from pyBrown.monte_carlo import place_tracers_linearly
 from pyBrown.sphere import overlap, fit
 
@@ -24,20 +29,22 @@ from pyBrown.monte_carlo import MonteCarlo
 
 #-------------------------------------------------------------------------------
 
-def pack_molecules(input_data_object):
-
-    input_data = input_data_object.input_data
+def pack_molecules(input_data):
 
     if input_data['packing_mode'] == 'regular':
 
-        grid = _generate_grid(input_data_object)
+        grid = _generate_grid(input_data)
 
-        return _populate_grid(grid, input_data_object)
+        return _populate_grid(grid, input_data)
 
     elif input_data['packing_mode'] == 'monte_carlo' or \
          input_data['packing_mode'] == 'monte_carlo_fluct':
 
-        return _populate_monte_carlo(input_data_object)
+        return _populate_monte_carlo(input_data)
+
+    else:
+
+        return None
 
 #-------------------------------------------------------------------------------
 
@@ -90,13 +97,19 @@ def pack_molecules(input_data_object):
 
 #-------------------------------------------------------------------------------
 
-def _populate_monte_carlo(input_data_object):
-
-    input_data = input_data_object.input_data
+def _populate_monte_carlo(input_data):
 
     numbers_of_molecules = input_data["numbers_of_molecules"]
     box_size = input_data["box_size"]
+    temperature = input_data["temperature"]
+
     radii = input_data["hydrodynamic_radii"]
+    open_radii = input_data["open_radii"]
+    close_radii = input_data["close_radii"]
+    bond_lengths = input_data["bond_lengths"]
+    bond_force_constants = input_data["bond_force_constants"]
+    bond_potential = input_data["bond_potential"]
+
     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
     populated_box = []
@@ -110,18 +123,25 @@ def _populate_monte_carlo(input_data_object):
             # works correctly only for cubic boxes
             print('{} / {}'.format(thrown, n_mol))
 
-            tracers = place_tracers_linearly(radii[i], box_size[0])
-
-            print( distance_matrix( tracers ) )
-            
             if input_data["packing_mode"] == 'monte_carlo_fluct':
 
-                mc = MonteCarlo( input_data["fluct_length"] )
-                
-                for tracer in tracers:
-                    tracer.translate( mc.get_values() )
+                random_bond_lengths = draw_bond_lengths( open_radii[i], close_radii[i], bond_force_constants[i], bond_potential, temperature )
 
-            print( distance_matrix( tracers ) )
+                print( 'random bond lengths: {}'.format(random_bond_lengths) )
+
+                tracers = place_tracers_linearly(radii[i], box_size[0], random_bond_lengths)
+
+            else:
+
+                tracers = place_tracers_linearly(radii[i], box_size[0])
+
+            print('radii: {}'.format( radii) )
+
+            print('bond_lengths: {}'.format( bond_lengths ) )
+
+            print('tracers: {}'.format( tracers ) )
+
+            print( distance_matrix(tracers) )
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 continue
@@ -156,3 +176,81 @@ def _populate_monte_carlo(input_data_object):
 
     return [[populated_box[i].x, populated_box[i].y, populated_box[i].z]
             for i in range( len(populated_box) )]
+
+#-------------------------------------------------------------------------------
+
+def draw_bond_lengths(open_radii, close_radii, bond_force_constants,
+                      bond_potential, temperature):
+
+    random_bond_lengths = [ ]
+
+    for n, bond_force_constant in enumerate( bond_force_constants ):
+
+        open_length = open_radii[n] + open_radii[n + 1]
+        close_length = close_radii[n] + close_radii[n + 1]
+
+        random_bond_lengths.append(
+            _draw_bond_length( open_length, close_length, bond_force_constant,
+                               bond_potential, temperature )
+            )
+
+    return random_bond_lengths
+
+#-------------------------------------------------------------------------------
+
+def _double_potential(length, open_length, close_length, bond_force_constant):
+
+    mult = 16 * bond_force_constant / ( open_length - close_length )**4
+
+    return mult * ( length - open_length )**2 * ( length - close_length )**2
+
+#-------------------------------------------------------------------------------
+
+def _close_potential(length, open_length, close_length, bond_force_constant):
+
+    mult = 16 * bond_force_constant / ( open_length - close_length )**4 * \
+           ( length - close_length )**2
+
+    if length < close_length:
+        return mult * ( length - open_length )**2
+    else:
+        return mult * ( length - 2 * close_length + open_length )**2
+
+#-------------------------------------------------------------------------------
+
+def _open_potential(length, open_length, close_length, bond_force_constant):
+
+    mult = 16 * bond_force_constant / ( open_length - close_length )**4 * \
+           ( length - open_length )**2
+
+    if length > open_length:
+        return mult * ( length - close_length )**2
+    else:
+        return mult * ( length - 2 * open_length + close_length )**2
+
+#-------------------------------------------------------------------------------
+
+def _draw_bond_length(open_length, close_length, bond_force_constant,
+                      bond_potential, temperature):
+
+    lengths = np.linspace(0.0, 2 * open_length, 1000)
+
+    kb_T = ( temperature / 298.15 ) * 0.5924812013256604
+
+    if bond_potential == 'double': potential = _double_potential
+    elif bond_potential == 'open': potential = _open_potential
+    elif bond_potential == 'close': potential = _close_potential
+
+    boltz_factor = lambda l: l**2 * \
+     np.exp( -potential(l, open_length, close_length, bond_force_constant) / kb_T )
+
+    I= []
+    norm, _ = quad(boltz_factor, lengths[0], lengths[-1])
+    for i in range( len( lengths ) ):
+        integral, _ = quad(boltz_factor, lengths[0], lengths[i])
+        I.append( integral / norm )
+
+    inv_cdf = interpolate.interp1d(I, lengths)
+
+    r = np.random.rand(1)
+    return inv_cdf(r)
