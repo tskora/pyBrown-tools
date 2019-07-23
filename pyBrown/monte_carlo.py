@@ -82,7 +82,9 @@ def place_tracers_linearly(radii, box_size, bond_lengths = None):
             tracers.append( Sphere([0.0, 0.0, 0.0 + length], radius) )
             length += radius
 
-        assert length == 2 * np.sum( radii ) - radii[0] - radii[-1]
+        # print(radii)
+
+        # assert length == 2 * np.sum( radii ) - radii[0] - radii[-1]
 
     else:
 
@@ -92,7 +94,7 @@ def place_tracers_linearly(radii, box_size, bond_lengths = None):
 
         length += radii[0] + radii[-1]
 
-        assert length == np.sum( bond_lengths ) + radii[0] + radii[-1]
+        # assert length == np.sum( bond_lengths ) + radii[0] + radii[-1]
 
     for tracer in tracers:
             tracer.translate([0.0, 0.0, -length / 2])

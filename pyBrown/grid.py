@@ -101,14 +101,14 @@ def _populate_monte_carlo(input_data):
 
     numbers_of_molecules = input_data["numbers_of_molecules"]
     box_size = input_data["box_size"]
-    temperature = input_data["temperature"]
+    if "temperature" in input_data.keys(): temperature = input_data["temperature"]
 
     radii = input_data["hydrodynamic_radii"]
-    open_radii = input_data["open_radii"]
-    close_radii = input_data["close_radii"]
-    bond_lengths = input_data["bond_lengths"]
-    bond_force_constants = input_data["bond_force_constants"]
-    bond_potential = input_data["bond_potential"]
+    if "open_radii" in input_data.keys(): open_radii = input_data["open_radii"]
+    if "close_radii" in input_data.keys(): close_radii = input_data["close_radii"]
+    if "bond_lengths" in input_data.keys():bond_lengths = input_data["bond_lengths"]
+    if "bond_force_constants" in input_data.keys(): bond_force_constants = input_data["bond_force_constants"]
+    if "bond_potential" in input_data.keys(): bond_potential = input_data["bond_potential"]
 
     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
@@ -134,14 +134,6 @@ def _populate_monte_carlo(input_data):
             else:
 
                 tracers = place_tracers_linearly(radii[i], box_size[0])
-
-            print('radii: {}'.format( radii) )
-
-            print('bond_lengths: {}'.format( bond_lengths ) )
-
-            print('tracers: {}'.format( tracers ) )
-
-            print( distance_matrix(tracers) )
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 continue
@@ -231,9 +223,9 @@ def _open_potential(length, open_length, close_length, bond_force_constant):
 #-------------------------------------------------------------------------------
 
 def _draw_bond_length(open_length, close_length, bond_force_constant,
-                      bond_potential, temperature):
+                      bond_potential, temperature, n_samples = 1):
 
-    lengths = np.linspace(0.0, 2 * open_length, 1000)
+    lengths = np.linspace(close_length - 10.0, open_length + 10.0, 10000)
 
     kb_T = ( temperature / 298.15 ) * 0.5924812013256604
 
@@ -252,5 +244,5 @@ def _draw_bond_length(open_length, close_length, bond_force_constant,
 
     inv_cdf = interpolate.interp1d(I, lengths)
 
-    r = np.random.rand(1)
+    r = np.random.rand(n_samples)
     return inv_cdf(r)
