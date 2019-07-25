@@ -132,6 +132,7 @@ def read_energies(input_data):
 def separate_center_of_mass(input_data, temporary_filename, labels):
 
 	bead_dict = {}
+	mol_dict = {}
 
 	which_trajectory = 0
 	which_cm_trajectory = 0
@@ -139,7 +140,13 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
 
-	number_of_timeframes = _count_timeframes( input_xyz_filenames[0], input_data["probing_frequency"] )
+	number_of_xyz_files = len( input_xyz_filenames )
+
+	numbers_of_timeframes = [ _count_timeframes( input_xyz_filenames[i],
+											  input_data["probing_frequency"] )
+							  for i in range( number_of_xyz_files ) ]
+
+	number_of_timeframes = min( numbers_of_timeframes )
 
 	number_of_cm_trajectories = 0
 
@@ -147,11 +154,19 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 
 		bead_dict[label] = size
 
-	for label in labels: # thad division not works perfect with integers
+		mol_dict[label] = 0
 
-		number_of_cm_trajectories += 1 / bead_dict[label]
+	for label in labels:
 
-	number_of_cm_trajectories = int( number_of_cm_trajectories )
+		mol_dict[label] += 1
+
+	for label in input_data["labels"]:
+
+		mol_dict[label] = mol_dict[label] // bead_dict[label]
+
+		number_of_cm_trajectories += mol_dict[label]
+
+	print( 'number of cm trajectories: {}'.format(number_of_cm_trajectories) )
 
 	temporary_filename_2 = 'temp2.dat'
 
@@ -197,13 +212,13 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 			temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
 							shape = ( len(cm_labels), number_of_timeframes, 3 ) )
 
-			temp2[which_cm_trajectory, :, :] = temp[which_trajectory, :, :]
+			# temp2[which_cm_trajectory, :, :] = temp[which_trajectory, :, :]
 
-			for i in range( 1, multiplicity ):
+			# for i in range( 1, multiplicity ):
 
-				temp2[which_cm_trajectory, :, :] += temp[which_trajectory + i, :, :]
+			# 	temp2[which_cm_trajectory, :, :] += temp[which_trajectory + i, :, :]
 
-			temp2[which_cm_trajectory, :, :] /= multiplicity
+			# temp2[which_cm_trajectory, :, :] /= multiplicity
 
 			###{
 
@@ -325,6 +340,44 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 
 	msds = np.zeros( ( len( input_data["labels"] ), number_of_timeframes ), float )
 	amounts = np.zeros( len( input_data["labels"] ), float )
+
+	### testing with freud
+
+	# temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
+	# 					   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
+
+	# trajs = np.array( [ [ temp2[i][j] for i in range( len(cm_labels) ) ] for j in range( number_of_timeframes ) ] )
+	# trajs = np.array( [ [[374.0, 374.0, 374.0], [1.0, 1.0, 1.0]], [[374.0, 374.0, 374.0], [2.0, 2.0, 2.0]], [[374.0, 374.0, 374.0], [3.0, 3.0, 3.0]], [[374.0, 374.0, 374.0], [4.0, 4.0, 4.0]] ] )
+
+	# print( trajs )
+	# naive = np.linalg.norm( trajs - trajs[0,:,:], axis = -1 )**2
+	# 1/0
+
+	# import freud.box
+	# import freud.msd
+
+	# box = freud.box.Box.cube(750.0)
+	# for i in range( len(trajs) ): box.wrap(trajs[i])
+	# msd = freud.msd.MSD(box, 'direct')
+	# msd.compute( positions = trajs )
+	# # print(msd.msd)
+	# # 1/0
+	# plt.plot(msd.msd, '--', label = 'freud')
+	# # plt.plot(np.mean( naive, axis = 0 ), '-', label = 'naive')
+
+	# plt.title('Mean Squared Displacement')
+	# plt.xlabel('$t$')
+	# plt.ylabel('MSD$(t)$')
+	# plt.legend()
+	# plt.show()
+
+	# del trajs
+
+	# del temp2
+
+	# 1/0
+
+	###
 
 	for label, size  in zip( input_data["labels"], input_data["sizes"] ):
 

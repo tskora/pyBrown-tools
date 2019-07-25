@@ -21,9 +21,11 @@ sys.path.insert(0, '../pyBrown')
 import numpy as np
 import copy as cp
 
+from pyBrown.trajectories import _compute_sd
+
 #-------------------------------------------------------------------------------
 
-class TestSphere(unittest.TestCase):
+class TestTrajectory(unittest.TestCase):
 
 	def setUp(self):
 		
@@ -31,11 +33,37 @@ class TestSphere(unittest.TestCase):
 
 	#---------------------------------------------------------------------------
 
-	def test_translate_unit(self):
+	def test_compute_sd(self):
 
-		return 0		
+		t = np.array([ [ 25.0, 25.0, 25.0 ], [ 26.0, 25.0, 25.0 ], [27.0, 25.0, 25.0] ],
+			float)
 
-		self.assertSequenceEqual( list( self.s3.coords ), [1.0, 1.0, 2.0] )
+		s1 = _compute_sd(t, 50.0)
+		s2 = _compute_sd(t, 24.0)
+		s3 = _compute_sd(t, 25.0)
+		s4 = _compute_sd(t, 26.5)
+
+		self.assertSequenceEqual( list( s1 ), [0.0, 1.0, 4.0] )
+		self.assertSequenceEqual( list( s2 ), [0.0, 1.0, 4.0] )
+		self.assertSequenceEqual( list( s3 ), [0.0, 1.0, 4.0] )
+		self.assertSequenceEqual( list( s4 ), [0.0, 1.0, 4.0] )
+
+		t = np.array([ [ 25.0, 24.0, 27.0 ], [ 26.0, 25.0, 26.0 ], [25.0, 24.0, 30.0] ],
+			float)
+
+		s1 = _compute_sd(t, 50.0)
+		s2 = _compute_sd(t, 24.0)
+		s3 = _compute_sd(t, 25.0)
+		s4 = _compute_sd(t, 26.5)
+
+		init = t[0]
+
+		ans = [ np.sum( ( t[i] - t[0] )**2 ) for i in range( len(t) ) ]
+
+		self.assertSequenceEqual( list( s1 ), ans )
+		self.assertSequenceEqual( list( s2 ), ans )
+		self.assertSequenceEqual( list( s3 ), ans )
+		self.assertSequenceEqual( list( s4 ), ans )
 
 	#---------------------------------------------------------------------------
 
