@@ -343,27 +343,24 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 
 	### testing with freud
 
-	# temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
-	# 					   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
+	temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
+						   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
+
+	unify_coordinates(temp2, input_data["box_size"])
+
+	del temp2
 
 	# trajs = np.array( [ [ temp2[i][j] for i in range( len(cm_labels) ) ] for j in range( number_of_timeframes ) ] )
-	# trajs = np.array( [ [[374.0, 374.0, 374.0], [1.0, 1.0, 1.0]], [[374.0, 374.0, 374.0], [2.0, 2.0, 2.0]], [[374.0, 374.0, 374.0], [3.0, 3.0, 3.0]], [[374.0, 374.0, 374.0], [4.0, 4.0, 4.0]] ] )
-
-	# print( trajs )
-	# naive = np.linalg.norm( trajs - trajs[0,:,:], axis = -1 )**2
-	# 1/0
 
 	# import freud.box
 	# import freud.msd
 
 	# box = freud.box.Box.cube(750.0)
-	# for i in range( len(trajs) ): box.wrap(trajs[i])
+
 	# msd = freud.msd.MSD(box, 'direct')
 	# msd.compute( positions = trajs )
-	# # print(msd.msd)
-	# # 1/0
+
 	# plt.plot(msd.msd, '--', label = 'freud')
-	# # plt.plot(np.mean( naive, axis = 0 ), '-', label = 'naive')
 
 	# plt.title('Mean Squared Displacement')
 	# plt.xlabel('$t$')
@@ -670,3 +667,21 @@ def _count_timeframes(filename, frequency):
 		return _file_length(filename) // (number_of_beads + 2)
 	else:
 		return _file_length(filename) // (number_of_beads + 2) // frequency# + 1
+
+#-------------------------------------------------------------------------------
+
+def unify_coordinates(trajectories, box_length):
+
+	for particle in trajectories:
+		for i in range(1, len(particle)):
+			_coord_unify(particle[i-1], particle[i], box_length)
+
+#-------------------------------------------------------------------------------
+
+def _coord_unify(past, present, box_length):
+
+	for i in range(3):
+		while( present[i] - past[i] >= box_length * np.sqrt(3) / 2 ):
+			present[i] -= box_length
+		while( past[i] - present[i] >= box_length * np.sqrt(3) / 2 ):
+			present[i] += box_length
