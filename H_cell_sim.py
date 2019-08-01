@@ -103,6 +103,19 @@ def main(a_len, b_len, diff_coefs, grid_points, step, x_max,
 				cs = [1.0 for i in range(n_grid // 3 + 1)] +\
 				[0.0 for i in range(n_grid // 3)] +\
 				[1.0 for i in range(n_grid // 3 + 1)]
+		elif profile == 'quarter':
+			if n_grid % 4 == 0:
+				cs = [1.0 for i in range(n_grid//4)] +\
+				[0.0 for i in range(3*n_grid//4)]
+			elif n_grid % 4 == 1:
+				# TODO
+				cs = [0.0 for i in range(n_grid)]
+			elif n_grid % 4 == 2:
+				# TODO
+				cs = [0.0 for i in range(n_grid)]
+			else:
+				# TODO
+				cs = [0.0 for i in range(n_grid)]
 
 			hs.append( H_cell(a, b, D, n_grid, cs, v) )
 

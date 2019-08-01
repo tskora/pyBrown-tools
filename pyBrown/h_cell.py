@@ -319,12 +319,19 @@ def read_cells_from_files(input_template, snapshots, number_of_substances):
 
 def _integrate_concentration_profile(cs, outlets = 2):
 
-	assert len(cs) % outlets == 0, 'number of grid points should be a multiple of number of outputs'
+	assert len(cs) % outlets == 0, 'number of grid points should be a multiple of number of outlets'
 
 	segment_length = len(cs) // outlets
 
+	# dump_length = 3
+
+	# c_int = np.array( [ np.mean( cs[ i * segment_length: (i + 1) * segment_length - dump_length ] )
+	# 	for i in range(outlets) ], float )
+
 	c_int = np.array( [ np.mean( cs[ i * segment_length: (i + 1) * segment_length ] )
 		for i in range(outlets) ], float )
+
+	print(c_int)
 
 	return c_int
 
