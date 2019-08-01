@@ -32,8 +32,8 @@ def write_structure(input_data, coordinates):
     bond_lengths = input_data["bond_lengths"]
     angle_force_constants = input_data["angle_force_constants"]
 
-    open_radii = input_data["open_radii"]
-    close_radii = input_data["close_radii"]
+    if 'open_radii' in input_data.keys(): open_radii = input_data["open_radii"]
+    if 'close_radii' in input_data.keys(): close_radii = input_data["close_radii"]
     packing_mode = input_data["packing_mode"]
 
     bonds = ""
