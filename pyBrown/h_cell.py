@@ -331,7 +331,7 @@ def _integrate_concentration_profile(cs, outlets = 2):
 	c_int = np.array( [ np.mean( cs[ i * segment_length: (i + 1) * segment_length ] )
 		for i in range(outlets) ], float )
 
-	print(c_int)
+	# print(c_int)
 
 	return c_int
 
@@ -339,12 +339,18 @@ def _integrate_concentration_profile(cs, outlets = 2):
 
 def perform_differential_analysis_for_2_substances(h_cells, diff_coefs, snapshots, number_of_outlets, input_template):
 
+	cps = integrate_concentration_profiles(h_cells, len(snapshots), number_of_outlets)
+
 	dcps = integrate_differential_concentration_profiles(h_cells, len(snapshots), number_of_outlets)
+
+	print(np.max(dcps))
+	print(cps)
 
 	a = h_cells[0][0].a
 	b = h_cells[0][0].b
 	v = h_cells[0][0].v
 
+	plot_concentration_profiles(snapshots, cps, diff_coefs, a, b, v, input_template)
 	plot_differential_concentration_profiles(snapshots, dcps, diff_coefs, a, b, v, input_template)
 
 #-------------------------------------------------------------------------------
@@ -392,13 +398,21 @@ def perform_analysis_for_many_substances(h_cells, diff_coefs, snapshots, number_
 
 def integrate_differential_concentration_profiles(hs, num_of_snapshots, num_of_outlets):
 
-	num=of_subs = len(hs)
-
 	dcps = np.array(
 		[ _integrate_concentration_profile(hs[i][0].cs - hs[i][1].cs, num_of_outlets)
 		for i in range( num_of_snapshots ) ], float )
 
 	return dcps
+
+#-------------------------------------------------------------------------------
+
+def integrate_concentration_profiles(hs, num_of_snapshots, num_of_outlets):
+
+	cps = np.array(
+		[ [ _integrate_concentration_profile(hs[i][j].cs, num_of_outlets) for j in range(2) ]
+		for i in range( num_of_snapshots ) ], float )
+
+	return cps
 
 #-------------------------------------------------------------------------------
 
@@ -423,5 +437,30 @@ def plot_differential_concentration_profiles(ss, dcps, Ds, a, b, v, input_templa
 	plt.legend()
 
 	plt.savefig(input_template + '_dcp.jpg', dpi = 300)
+
+	plt.close()
+
+def plot_concentration_profiles(ss, cps, Ds, a, b, v, input_template):
+
+	colors, symbols = plot_config()
+
+	plt.grid()
+
+	plt.xlabel(r'$x [m]$')
+
+	plt.ylabel(r'$c$/$c_{input}$')
+
+	plt.title( 'Concentration profiles\n' +
+				r'$a = $ {}; $b = $ {}; $v = $ {}; $D = $ {}'.format(
+				a, b, v, Ds) )
+
+	for i in range(2):
+		for j in range(len(cps[0][0])):
+			plt.plot( ss, cps[:,i,j], symbols[j % len(symbols)], label = 'substance {} outlet {}'.format(i + 1, j + 1),
+									   	color = colors[i % len(colors)] )
+
+	plt.legend()
+
+	plt.savefig(input_template + '_cp.jpg', dpi = 300)
 
 	plt.close()
