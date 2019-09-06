@@ -37,8 +37,7 @@ def pack_molecules(input_data):
 
         return _populate_grid(grid, input_data)
 
-    elif input_data['packing_mode'] == 'monte_carlo':# or \
-         # input_data['packing_mode'] == 'monte_carlo_fluct':
+    elif input_data['packing_mode'] == 'monte_carlo':
 
         return _populate_monte_carlo(input_data)
 
@@ -211,26 +210,28 @@ def _populate_monte_carlo_fluct(input_data, n_buff = 100000):
 
                 # random_bond_lengths = draw_bond_lengths( open_radii[i], close_radii[i], bond_force_constants[i], bond_potential, temperature )
 
-                rbl = [ random_bond_lengths[i][counter][drawn] for counter in range( len(bond_force_constants[i]) )]
-
-                print(rbl)
-
-                # 1/0
+                rbl = [ random_bond_lengths[i][counter][thrown] for counter in range( len(bond_force_constants[i]) )]
 
                 print( 'random bond lengths: {}'.format(random_bond_lengths) )
 
                 tracers = place_tracers_linearly(radii[i], box_size[0], rbl)
 
+                print('coordinates: {}'.format(tracers) )
+
+                print('distance matrix: {}'.format( distance_matrix(tracers) ) )
+
                 drawn += 1
 
-            else:
+            # else:
 
-                tracers = place_tracers_linearly(radii[i], box_size[0])
+            #     tracers = place_tracers_linearly(radii[i], box_size[0])
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
+                print('overlap')
                 continue
 
             elif not fit(tracers, box_size[0]):
+                print('not fit')
                 continue
 
             else:
