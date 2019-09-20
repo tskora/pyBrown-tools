@@ -341,93 +341,123 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 	msds = np.zeros( ( len( input_data["labels"] ), number_of_timeframes ), float )
 	amounts = np.zeros( len( input_data["labels"] ), float )
 
-	### testing with freud
+	for label, size  in zip( input_data["labels"], input_data["sizes"] ):
+
+		bead_dict[label] = size
+
+	### FREUD VERSION START
 
 	temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
 						   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
 
 	unify_coordinates(temp2, input_data["box_size"])
 
-	del temp2
+	trajs_all = []
 
-	# trajs = np.array( [ [ temp2[i][j] for i in range( len(cm_labels) ) ] for j in range( number_of_timeframes ) ] )
+	for k in range(len(input_data["labels"])):
 
-	# import freud.box
-	# import freud.msd
+		trajs_list = [ [ temp2[i][j] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes ) ]
 
-	# box = freud.box.Box.cube(750.0)
+		trajs = np.array( trajs_list )
 
-	# msd = freud.msd.MSD(box, 'direct')
-	# msd.compute( positions = trajs )
+		trajs_all.append(trajs)
 
-	# plt.plot(msd.msd, '--', label = 'freud')
+	import freud.box
+	import freud.msd
+
+	msds = []
+
+	for k in range(len(input_data["labels"])):
+
+		box = freud.box.Box.cube(750.0)
+		box2 = freud.box.Box.cube(750.0)
+
+		msd = freud.msd.MSD(box, 'direct')
+		msd2 = freud.msd.MSD(box2, 'window')
+		msd.compute( positions = trajs_all[k] )
+		msd2.compute( positions = trajs_all[k] )
+
+		if (input_data["mode"] == "direct"):
+			msds.append(msd.msd)
+		elif (input_data["mode"] == "window"):
+			msds.append(msd2.msd)
+
+		# plt.plot(msd.msd, 'o', label = 'direct')
+		# plt.plot(msd2.msd, '+', label = 'window')
 
 	# plt.title('Mean Squared Displacement')
 	# plt.xlabel('$t$')
 	# plt.ylabel('MSD$(t)$')
 	# plt.legend()
+	# plt.savefig('test.jpg', dpi=300)
+
+	# print(msd.msd)
+	# print(msd2.msd)
+
 	# plt.show()
+
+	# 1/0
+
+	### FREUD VERSION END
+
+	### OLD VERSION START
 
 	# del trajs
 
 	# del temp2
 
-	# 1/0
+	# ###
 
-	###
+	# for i in range( len(cm_labels) ):
 
-	for label, size  in zip( input_data["labels"], input_data["sizes"] ):
+	# 	if input_data["verbose"]: print('computing sd: {} / {}'.format(i, len(cm_labels)))
 
-		bead_dict[label] = size
+	# 	temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
+	# 					   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
 
-	for i in range( len(cm_labels) ):
+	# 	cm_trajectory = temp2[i]
 
-		if input_data["verbose"]: print('computing sd: {} / {}'.format(i, len(cm_labels)))
+	# 	del temp2
 
-		temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
-						   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
+	# 	sd = _compute_sd(cm_trajectory, input_data["box_size"])
 
-		cm_trajectory = temp2[i]
+	# 	temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
+	# 				 	   shape = ( len(cm_labels), number_of_timeframes ) )
 
-		del temp2
+	# 	temp3[i] = sd
 
-		sd = _compute_sd(cm_trajectory, input_data["box_size"])
+	# 	del temp3
 
-		temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
-					 	   shape = ( len(cm_labels), number_of_timeframes ) )
+	# for i in range( len(cm_labels) ):
 
-		temp3[i] = sd
+	# 	if input_data["verbose"]: print('averaging: {} / {}'.format(i, len(cm_labels)))
 
-		del temp3
+	# 	counter = 0
 
-	for i in range( len(cm_labels) ):
+	# 	for input_label in input_data["labels"] :
 
-		if input_data["verbose"]: print('averaging: {} / {}'.format(i, len(cm_labels)))
+	# 		if cm_labels[i] == input_label:
 
-		counter = 0
+	# 			break
 
-		for input_label in input_data["labels"] :
+	# 		counter += 1
 
-			if cm_labels[i] == input_label:
+	# 	temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
+	# 				 	   shape = ( len(cm_labels), number_of_timeframes ) )
 
-				break
+	# 	sds = temp3[i]
 
-			counter += 1
+	# 	msds[counter] += sds
 
-		temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
-					 	   shape = ( len(cm_labels), number_of_timeframes ) )
+	# 	del temp3
 
-		sds = temp3[i]
+	# 	amounts[counter] += 1
 
-		msds[counter] += sds
+	# for msd, amount in zip( msds, amounts ):
 
-		del temp3
+	# 	msd /= amount
 
-		amounts[counter] += 1
-
-	for msd, amount in zip( msds, amounts ):
-
-		msd /= amount
+	### OLD VERSION END
 
 	os.remove(temporary_filename_2)
 	os.remove(temporary_filename_3)
@@ -489,6 +519,94 @@ def plot_msds(input_data, times, msds):
 	for i, msd in enumerate(msds):
 
 		plt.plot( times / 1000000, msd, '-', label = input_data["labels"][i], color = colors[i] )
+		###
+		# M1 = [0., 1246.0022, 2532.1602, 3825.5596, 5116.626, 6366.3667,\
+		# 7579.986,    8753.173,   10035.295,   11044.939,   12464.446,   13869.375,\
+		# 14804.468,   16271.135,   17103.334,   18242.799,   19509.38 ,   20975.828,\
+		# 22015.893,   23295.648,   24582.496,   25975.95 ,   27107.523,   28601.045,\
+		# 30230.736,   31809.893,   32862.04 ,   34215.918,   35210.367,   36058.445,\
+		# 37397.77 ,   38873.633,   39922.15 ,   41460.73 ,   43001.266,   44665.52,\
+		# 45899.973,   46985.992,   48113.758,   49475.652,   50679.477,   52023.867,\
+		# 52793.035,   53951.918,   55073.332,   56086.375,   57149.48 ,   58714.406,\
+		# 59968.043,   61164.332,   62932.805,   64342.75 ,   65396.984,   66588.27,\
+		# 67911.53 ,   69166.49 ,   70285.03 ,   71828.59 ,   73010.58 ,   74359.26,\
+		# 75756.12 ,   77339.64 ,   78576.42 ,   79267.33 ,   80428.04 ,   81985.61,\
+		# 82749.34 ,   84365.22 ,   86237.586,   87111.055,   88242.44 ,   89471.195,\
+		# 90779.516,   91899.15 ,   93661.97 ,   94915.21 ,   96089.89 ,   97442.16,\
+		# 98179.03 ,   99122.52 ,  100565.31 ,  101971.63 ,  103023.305,  104673.18,\
+		# 106190.29 ,  107579.914,  109123.305,  110563.41 ,  111790.234,  112988.41,\
+		# 114616.664,  115803.555,  117083.35 ,  119206.336,  120394.05 ,  121738.15,\
+		# 123370.03 ,  124204.65 ,  125741.41 ,  126307.66 ,  127838.66 ,  129446.96,\
+		# 130932.586,  132259.05 ,  134096.33 ,  135243.62 ,  136783.42 ,  137894.98,\
+		# 138973.8  ,  139796.28 ,  140380.38 ,  141418.81 ,  142595.86 ,  143493.11,\
+		# 144297.69 ,  145539.69 ,  146826.34 ,  147807.3  ,  149334.88 ,  149926.06,\
+		# 151321.75 ,  152607.62 ,  153540.27 ,  154351.86 ,  155831.47 ,  156805.73,\
+		# 158000.52 ,  159072.8  ,  160179.06 ,  161219.52 ,  162102.42 ,  163154.27,\
+		# 164814.83 ,  165668.67 ,  166246.75 ,  167451.73 ,  168869.36 ,  170067.42,\
+		# 171586.14 ,  172582.97 ,  173771.06 ,  175669.31 ,  176895.98 ,  177741.56,\
+		# 178144.52 ,  179595.98 ,  180744.84 ,  181897.12 ,  182716.72 ,  183575.6,\
+		# 184376.16 ,  185454.88 ,  186773.03 ,  188430.53 ,  190201.78 ,  191279.28,\
+		# 191763.48 ,  193033.17 ,  194146.39 ,  195841.53 ,  197517.42 ,  198998.27,\
+		# 200101.69 ,  201258.53 ,  202317.86 ,  203344.94 ,  204459.84 ,  205859.28,\
+		# 206596.73 ,  207479.39 ,  209463.44 ,  211008.44 ,  212376.2  ,  213445.52,\
+		# 214535.34 ,  216172.03 ,  217436.5  ,  218389.33 ,  219291.28 ,  219466.,\
+		# 220881.38 ,  222059.48 ,  224078.02 ,  225536.17 ,  226562.23 ,  228279.14,\
+		# 229326.67 ,  230481.06 ,  231739.9  ,  233774.78 ,  234496.25 ,  235599.14,\
+		# 236731.61 ,  238121.38 ,  239102.88 ,  241044.58 ,  242547.7  ,  243218.31,\
+		# 244784.36 ,  246451.78 ]
+		# M2 = [2.74313486e-03, 1.24715484e+03, 2.48381490e+03, 3.71929854e+03,\
+		# 4.94982572e+03, 6.17564631e+03, 7.40140089e+03, 8.62852459e+03,\
+		# 9.85367837e+03, 1.10815858e+04, 1.23085221e+04, 1.35349160e+04,\
+		# 1.47539785e+04, 1.59735761e+04, 1.71964367e+04, 1.84195795e+04,\
+		# 1.96440735e+04, 2.08688894e+04, 2.20913731e+04, 2.33195665e+04,\
+		# 2.45516099e+04, 2.57782713e+04, 2.70070729e+04, 2.82378716e+04,\
+		# 2.94681800e+04, 3.06929469e+04, 3.19172546e+04, 3.31444588e+04,\
+		# 3.43756874e+04, 3.56045305e+04, 3.68393909e+04, 3.80758210e+04,\
+		# 3.93092208e+04, 4.05474825e+04, 4.17872714e+04, 4.30287591e+04,\
+		# 4.42737299e+04, 4.55167034e+04, 4.67585105e+04, 4.80010430e+04,\
+		# 4.92391994e+04, 5.04757705e+04, 5.17111132e+04, 5.29515880e+04,\
+		# 5.41952216e+04, 5.54369951e+04, 5.66793486e+04, 5.79234098e+04,\
+		# 5.91677697e+04, 6.04097508e+04, 6.16465879e+04, 6.28799587e+04,\
+		# 6.41117968e+04, 6.53463693e+04, 6.65832058e+04, 6.78238650e+04,\
+		# 6.90692785e+04, 7.03111085e+04, 7.15583058e+04, 7.28082151e+04,\
+		# 7.40571983e+04, 7.53050311e+04, 7.65480983e+04, 7.77939268e+04,\
+		# 7.90432228e+04, 8.02889234e+04, 8.15343149e+04, 8.27822228e+04,\
+		# 8.40331640e+04, 8.52741149e+04, 8.65201266e+04, 8.77627843e+04,\
+		# 8.90062372e+04, 9.02518280e+04, 9.15064211e+04, 9.27545597e+04,\
+		# 9.40051356e+04, 9.52622255e+04, 9.65152662e+04, 9.77750487e+04,\
+		# 9.90414639e+04, 1.00309860e+05, 1.01580695e+05, 1.02845179e+05,\
+		# 1.04109397e+05, 1.05376984e+05, 1.06640826e+05, 1.07901690e+05,\
+		# 1.09150722e+05, 1.10410195e+05, 1.11668894e+05, 1.12923430e+05,\
+		# 1.14168104e+05, 1.15409423e+05, 1.16650125e+05, 1.17891038e+05,\
+		# 1.19130629e+05, 1.20360977e+05, 1.21593274e+05, 1.22815158e+05,\
+		# 1.24040651e+05, 1.25260096e+05, 1.26476270e+05, 1.27680110e+05,\
+		# 1.28886567e+05, 1.30090506e+05, 1.31302698e+05, 1.32513323e+05,\
+		# 1.33722888e+05, 1.34937113e+05, 1.36161214e+05, 1.37380175e+05,\
+		# 1.38594444e+05, 1.39807493e+05, 1.41021094e+05, 1.42242689e+05,\
+		# 1.43461699e+05, 1.44686444e+05, 1.45920825e+05, 1.47163487e+05,\
+		# 1.48417598e+05, 1.49662162e+05, 1.50909296e+05, 1.52155617e+05,\
+		# 1.53408091e+05, 1.54653759e+05, 1.55892954e+05, 1.57138773e+05,\
+		# 1.58398073e+05, 1.59648252e+05, 1.60902932e+05, 1.62149561e+05,\
+		# 1.63395737e+05, 1.64630774e+05, 1.65868960e+05, 1.67123626e+05,\
+		# 1.68390011e+05, 1.69654942e+05, 1.70922672e+05, 1.72185897e+05,\
+		# 1.73448029e+05, 1.74703904e+05, 1.75938296e+05, 1.77158045e+05,\
+		# 1.78390794e+05, 1.79633904e+05, 1.80871902e+05, 1.82112928e+05,\
+		# 1.83351231e+05, 1.84586591e+05, 1.85837536e+05, 1.87087811e+05,\
+		# 1.88346347e+05, 1.89602637e+05, 1.90853864e+05, 1.92095503e+05,\
+		# 1.93339658e+05, 1.94599944e+05, 1.95857271e+05, 1.97144913e+05,\
+		# 1.98422388e+05, 1.99657681e+05, 2.00874319e+05, 2.02071932e+05,\
+		# 2.03269076e+05, 2.04458361e+05, 2.05667875e+05, 2.06885203e+05,\
+		# 2.08111733e+05, 2.09341987e+05, 2.10557514e+05, 2.11735853e+05,\
+		# 2.12899396e+05, 2.14046228e+05, 2.15225112e+05, 2.16431356e+05,\
+		# 2.17655900e+05, 2.18882797e+05, 2.20113370e+05, 2.21365518e+05,\
+		# 2.22676132e+05, 2.23961250e+05, 2.25254075e+05, 2.26522305e+05,\
+		# 2.27784577e+05, 2.29046768e+05, 2.30258695e+05, 2.31494138e+05,\
+		# 2.32753685e+05, 2.34068071e+05, 2.35265377e+05, 2.36406683e+05,\
+		# 2.37530669e+05, 2.38721050e+05, 2.39945570e+05, 2.41259878e+05,\
+		# 2.42600813e+05, 2.43652594e+05, 2.44875710e+05, 2.46450412e+05]
+		# plt.plot( times / 1000000, M1, 'o', label = input_data["labels"][i], color = 'black' )
+		# plt.plot( times / 1000000, M2, '+', label = input_data["labels"][i], color = 'blue' )
+		###
 
 		if input_data["fit_MSD"]:
 			a, b = np.polyfit(times, msd, 1)
