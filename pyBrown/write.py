@@ -72,7 +72,7 @@ def write_structure(input_data, coordinates):
                     if if_bonds and j < len(hydrodynamic_radii[i]) - 1:
 
                         if packing_mode == 'monte_carlo_fluct':
-                            bonds += _bond_pattern(count, count + 1, close_radii[i][j], open_radii[i][j], bond_force_constants[i][j]) + '\n'
+                            bonds += _bond_pattern(count, count + 1, 2*close_radii[i][j], 2*open_radii[i][j], bond_force_constants[i][j]) + '\n'
                         else:
                             bonds += _bond_pattern(count, count + 1, bond_lengths[i][j], max_bond_lengths[i][j], bond_force_constants[i][j]) + '\n'
 
