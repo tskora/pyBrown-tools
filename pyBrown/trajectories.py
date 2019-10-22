@@ -85,13 +85,15 @@ def read_trajectories(input_data):
 
 			trajectories = temp[i * number_of_beads : (i + 1) * number_of_beads, :, :]
 
-			_read_trajectories_from_xyz_file(input_xyz_file, trajectories, times,
-											 labels, input_data["probing_frequency"],
-											 input_data["min_time"])
+			min_time_index = _read_trajectories_from_xyz_file(input_xyz_file, trajectories, times,
+											 				  labels, input_data["probing_frequency"],
+											 				  input_data["min_time"])
 
 			del temp
 
-	return temporary_filename, times, labels
+	times = times[min_time_index:] - times[min_time_index]
+
+	return temporary_filename, times, labels, min_time_index
 
 #-------------------------------------------------------------------------------
 
@@ -315,7 +317,7 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 
 #-------------------------------------------------------------------------------
 
-def compute_msds(input_data, temporary_filename_2, cm_labels):
+def compute_msds(input_data, temporary_filename_2, cm_labels, min_time_index):
 
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
@@ -334,18 +336,18 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 
 	sds = np.memmap( temporary_filename_3, dtype = np.float32,
 					 mode = 'w+',
-					 shape = ( len(cm_labels), number_of_timeframes ) )
+					 shape = ( len(cm_labels), number_of_timeframes - min_time_index ) )
 
 	if input_data["verbose"]: print("filling sds")
 
 	for i in range( len(cm_labels) ):
-		sds[i, :] = np.zeros( number_of_timeframes, dtype = np.float32 ) 
+		sds[i, :] = np.zeros( number_of_timeframes - min_time_index, dtype = np.float32 ) 
 
 	del sds
 
 	if input_data["verbose"]: print("end filling sds")
 
-	msds = np.zeros( ( len( input_data["labels"] ), number_of_timeframes ), float )
+	msds = np.zeros( ( len( input_data["labels"] ), number_of_timeframes - min_time_index ), float )
 	amounts = np.zeros( len( input_data["labels"] ), float )
 
 	for label, size  in zip( input_data["labels"], input_data["sizes"] ):
@@ -363,7 +365,7 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 
 	for k in range(len(input_data["labels"])):
 
-		trajs_list = [ [ temp2[i][j] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes ) ]
+		trajs_list = [ [ temp2[i][j + min_time_index] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes - min_time_index ) ]
 
 		trajs = np.array( trajs_list )
 
@@ -702,17 +704,19 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 					trajectories[counter % number_of_beads, counter // number_of_beads // probing_frequency] = coords
 			counter += 1
 
+	return min_time_index
+
 	# print(min_time_index)
 
 	# print(times)
 
-	times = times[min_time_index:] - times[min_time_index]
+	# times = times[min_time_index:] - times[min_time_index]
 
 	# print(times)
 
 	# print(trajectories)
 
-	trajectories = trajectories[:,min_time_index:]
+	# trajectories = trajectories[:,min_time_index:]
 
 	# print(trajectories)
 

@@ -55,12 +55,12 @@ def main(input_filename):
 	del menergies
 
 	timestamp( 'Reading trajectories' )
-	temporary_filename, times, labels = read_trajectories(i)
+	temporary_filename, times, labels, min_time_index = read_trajectories(i)
 	timestamp( 'Separating the center of mass movement' )
 	temporary_filename_2, cm_labels = separate_center_of_mass(i, temporary_filename, labels)
 	del labels
 	timestamp( 'Computing mean square displacements' )
-	msds = compute_msds(i, temporary_filename_2, cm_labels)
+	msds = compute_msds(i, temporary_filename_2, cm_labels, min_time_index)
 	del cm_labels
 	timestamp( 'Saving mean square displacements to a file' )
 	save_msds_to_file(i, times, msds)
