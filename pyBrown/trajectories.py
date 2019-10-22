@@ -86,7 +86,8 @@ def read_trajectories(input_data):
 			trajectories = temp[i * number_of_beads : (i + 1) * number_of_beads, :, :]
 
 			_read_trajectories_from_xyz_file(input_xyz_file, trajectories, times,
-											 labels, input_data["probing_frequency"])
+											 labels, input_data["probing_frequency"],
+											 input_data["min_time"])
 
 			del temp
 
@@ -652,11 +653,12 @@ def plot_menergies(input_data, times, menergies):
 
 #-------------------------------------------------------------------------------
 
-def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, probing_frequency):
+def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, probing_frequency, min_time):
 
 	number_of_beads = int( xyz_file.readline() )
 
 	counter = 0
+	min_time_index = 0
 
 	label_index = 0
 	for label in labels:
@@ -675,7 +677,15 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 
 			if ( ( counter // number_of_beads ) % probing_frequency ) == 0:
 
-				times[ counter // number_of_beads // probing_frequency ] = float( line.split()[3] )
+				time = float( line.split()[3] )
+
+				if time >= min_time:
+
+					times[ counter // number_of_beads // probing_frequency ] = time
+
+				else:
+
+					min_time_index += 1
 
 				# print(times)
 
@@ -687,9 +697,24 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 			if counter < number_of_beads:
 				labels[label_index + counter] = line.split()[0]
 			if ( ( counter // number_of_beads ) % probing_frequency ) == 0:
-				coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
-				trajectories[counter % number_of_beads, counter // number_of_beads // probing_frequency] = coords
+				if time >= min_time:
+					coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
+					trajectories[counter % number_of_beads, counter // number_of_beads // probing_frequency] = coords
 			counter += 1
+
+	# print(min_time_index)
+
+	# print(times)
+
+	times = times[min_time_index:] - times[min_time_index]
+
+	# print(times)
+
+	# print(trajectories)
+
+	trajectories = trajectories[:,min_time_index:]
+
+	# print(trajectories)
 
 #-------------------------------------------------------------------------------
 
@@ -786,11 +811,12 @@ def _count_beads(filename):
 def _count_timeframes(filename, frequency):
 
 	number_of_beads = _count_beads(filename)
+	file_length = _file_length(filename)
 
 	if frequency == 1:
-		return _file_length(filename) // (number_of_beads + 2)
+		return file_length // (number_of_beads + 2)
 	else:
-		return _file_length(filename) // (number_of_beads + 2) // frequency# + 1
+		return file_length // (number_of_beads + 2) // frequency
 
 #-------------------------------------------------------------------------------
 
