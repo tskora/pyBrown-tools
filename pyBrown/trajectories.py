@@ -379,17 +379,14 @@ def compute_msds(input_data, temporary_filename_2, cm_labels, min_time_index):
 	for k in range(len(input_data["labels"])):
 
 		box = freud.box.Box.cube(750.0)
-		box2 = freud.box.Box.cube(750.0)
-
-		msd = freud.msd.MSD(box, 'direct')
-		msd2 = freud.msd.MSD(box2, 'window')
-		msd.compute( positions = trajs_all[k] )
-		msd2.compute( positions = trajs_all[k] )
 
 		if (input_data["mode"] == "direct"):
-			msds.append(msd.msd)
+			msd = freud.msd.MSD(box, 'direct')
 		elif (input_data["mode"] == "window"):
-			msds.append(msd2.msd)
+			msd = freud.msd.MSD(box, 'window')
+
+		msd.compute( positions = trajs_all[k] )
+		msds.append(msd.msd)
 
 	### FREUD VERSION END
 
