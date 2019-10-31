@@ -325,7 +325,7 @@ def _open_potential(length, open_length, close_length, bond_force_constant):
 def _draw_bond_length(open_length, close_length, bond_force_constant,
                       bond_potential, temperature, n_samples = 1):
 
-    lengths = np.linspace(close_length - 10.0, open_length + 10.0, 10000)
+    lengths = np.linspace(close_length - np.min(10.0, close_length), open_length + 10.0, 10000)
 
     kb_T = ( temperature / 298.15 ) * 0.5924812013256604
 
