@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
-def write_structure(input_data, coordinates):
-
-    output_str_filename = input_data["output_structure_filename"]
+def write_structure(input_data, coordinates, output_str_filename):
 
     numbers_of_molecules = input_data["numbers_of_molecules"]
 

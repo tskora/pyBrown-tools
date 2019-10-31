@@ -39,7 +39,7 @@ def main(input_filename):
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"minimal_distance_between_surfaces":0.0, "max_bond_lengths":2.5e+07,
-				"bond_lengths":'hydrodynamic_radii'}
+				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputData(input_filename, required_keywords, defaults).input_data
@@ -62,9 +62,15 @@ def main(input_filename):
 		i["bond_lengths"] = bond_lengths
 	###
 
-	coords = pack_molecules(i)
+	for file_count in range(1, i["number_of_structures"] + 1):
 
-	write_structure(i, coords)
+		coords = pack_molecules(i)
+
+		output_structure_filename = i["output_structure_filename"].split('.')[0] +\
+									'_{}.'.format(file_count) +\
+									i["output_structure_filename"].split('.')[1]
+
+		write_structure(i, coords, output_structure_filename)
 
 #-------------------------------------------------------------------------------
 
