@@ -16,7 +16,7 @@
 
 import click
 
-from pyBrown.input import InputData
+from pyBrown.input_Pack import InputDataPack
 from pyBrown.grid import pack_molecules
 from pyBrown.write import write_structure
 from pyBrown.parse import parse_input_filename
@@ -42,35 +42,18 @@ def main(input_filename):
 				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputData(input_filename, required_keywords, defaults).input_data
+	i = InputDataPack(input_filename, required_keywords, defaults)
+	timestamp( 'Input data:\n{}', i )
 
-	### TO BE REFACTORED
-	if not isinstance( i["max_bond_lengths"], list ):
-		max_bond_lengths = [ ]
-		for bfc in i["bond_force_constants"]:
-			max_bond_lengths.append( [ i["max_bond_lengths"]
-									for j in range( len( bfc ) ) ] )
-		i["max_bond_lengths"] = max_bond_lengths
+	for file_count in range(1, i.input_data["number_of_structures"] + 1):
 
-	if i["bond_lengths"] == 'hydrodynamic_radii':
-		bond_lengths = [ ]
-		for j, bfc in enumerate( i["bond_force_constants"] ):
-			bond_lengths.append( [ ] )
-			for k in range( len( bfc ) ):
-				bond_lengths[j].append( i["hydrodynamic_radii"][j][k] +
-										i["hydrodynamic_radii"][j][k+1] )
-		i["bond_lengths"] = bond_lengths
-	###
+		coords = pack_molecules(i.input_data)
 
-	for file_count in range(1, i["number_of_structures"] + 1):
-
-		coords = pack_molecules(i)
-
-		output_structure_filename = i["output_structure_filename"].split('.')[0] +\
+		output_structure_filename = i.input_data["output_structure_filename"].split('.')[0] +\
 									'_{}.'.format(file_count) +\
-									i["output_structure_filename"].split('.')[1]
+									i.input_data["output_structure_filename"].split('.')[1]
 
-		write_structure(i, coords, output_structure_filename)
+		write_structure(i.input_data, coords, output_structure_filename)
 
 #-------------------------------------------------------------------------------
 
