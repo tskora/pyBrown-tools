@@ -17,7 +17,6 @@
 import random
 import numpy as np
 
-from scipy.constants import Boltzmann
 import scipy.interpolate as interpolate
 from scipy.integrate import quad
 
@@ -32,6 +31,8 @@ from pyBrown.monte_carlo import MonteCarlo
 def pack_molecules(input_data):
 
     if input_data['packing_mode'] == 'regular':
+
+        # that option does not work
 
         grid = _generate_grid(input_data)
 
@@ -52,8 +53,9 @@ def pack_molecules(input_data):
 #-------------------------------------------------------------------------------
 
 # TODO: how to use grid for mixtures?
+def _generate_grid(input_data):
 
-# def _generate_grid(input_data_object):
+    return None
 
 #     input_data = input_data_object.input_data
 
@@ -79,8 +81,9 @@ def pack_molecules(input_data):
 #-------------------------------------------------------------------------------
 
 # TODO: how to use grid for mixtures?
+def _populate_grid(grid, input_data):
 
-# def _populate_grid(grid, input_data_object):
+    return None
 
 #     input_data = input_data_object.input_data
 
@@ -100,18 +103,15 @@ def pack_molecules(input_data):
 
 #-------------------------------------------------------------------------------
 
+# TODO: it should work also for noncubic boxes
+# TODO: bond lengths not utilised
 def _populate_monte_carlo(input_data):
 
     numbers_of_molecules = input_data["numbers_of_molecules"]
     box_size = input_data["box_size"]
-    if "temperature" in input_data.keys(): temperature = input_data["temperature"]
 
     radii = input_data["hydrodynamic_radii"]
-    if "open_radii" in input_data.keys(): open_radii = input_data["open_radii"]
-    if "close_radii" in input_data.keys(): close_radii = input_data["close_radii"]
-    if "bond_lengths" in input_data.keys():bond_lengths = input_data["bond_lengths"]
-    if "bond_force_constants" in input_data.keys(): bond_force_constants = input_data["bond_force_constants"]
-    if "bond_potential" in input_data.keys(): bond_potential = input_data["bond_potential"]
+    # bond_lengths = input_data["bond_lengths"]
 
     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
@@ -123,20 +123,9 @@ def _populate_monte_carlo(input_data):
 
         while thrown < n_mol:
 
-            # works correctly only for cubic boxes
             print('{} / {}'.format(thrown, n_mol))
 
-            if input_data["packing_mode"] == 'monte_carlo_fluct':
-
-                random_bond_lengths = draw_bond_lengths( open_radii[i], close_radii[i], bond_force_constants[i], bond_potential, temperature )
-
-                print( 'random bond lengths: {}'.format(random_bond_lengths) )
-
-                tracers = place_tracers_linearly(radii[i], box_size[0], random_bond_lengths)
-
-            else:
-
-                tracers = place_tracers_linearly(radii[i], box_size[0])
+            tracers = place_tracers_linearly(radii[i], box_size[0])
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 continue
@@ -174,21 +163,23 @@ def _populate_monte_carlo(input_data):
 
 #-------------------------------------------------------------------------------
 
+# TODO: ad hoc solution -- drawing predefined amount of random numbers
+# TODO: bond lengths and open/close radii are redundant info, bond lengths should be removed
 def _populate_monte_carlo_fluct(input_data, n_buff = 100000):
 
     numbers_of_molecules = input_data["numbers_of_molecules"]
     box_size = input_data["box_size"]
-    if "temperature" in input_data.keys(): temperature = input_data["temperature"]
+    temperature = input_data["temperature"]
 
     radii = input_data["hydrodynamic_radii"]
-    if "open_radii" in input_data.keys(): open_radii = input_data["open_radii"]
-    if "close_radii" in input_data.keys(): close_radii = input_data["close_radii"]
-    if "bond_lengths" in input_data.keys():bond_lengths = input_data["bond_lengths"]
-    if "bond_force_constants" in input_data.keys(): bond_force_constants = input_data["bond_force_constants"]
-    if "bond_potential" in input_data.keys(): bond_potential = input_data["bond_potential"]
+    bond_potential = input_data["bond_potential"]
+    bond_force_constants = input_data["bond_force_constants"]
+    open_radii = input_data["open_radii"]
+    close_radii = input_data["close_radii"]
 
     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
+    # ad hoc solution
     random_bond_lengths = [ draw_bond_lengths(open_radii[n], close_radii[n], bond_force_constants[n], bond_potential, temperature, n_samples = n_buff) for n in range( len( numbers_of_molecules) ) ]
 
     print( random_bond_lengths )
@@ -199,32 +190,20 @@ def _populate_monte_carlo_fluct(input_data, n_buff = 100000):
 
         thrown = 0
 
-        drawn = 0
-
         while thrown < n_mol:
 
             # works correctly only for cubic boxes
             print('{} / {}'.format(thrown, n_mol))
 
-            if input_data["packing_mode"] == 'monte_carlo_fluct':
+            rbl = [ random_bond_lengths[i][counter][thrown] for counter in range( len(bond_force_constants[i]) )]
 
-                # random_bond_lengths = draw_bond_lengths( open_radii[i], close_radii[i], bond_force_constants[i], bond_potential, temperature )
+            print( 'random bond lengths: {}'.format(random_bond_lengths) )
 
-                rbl = [ random_bond_lengths[i][counter][thrown] for counter in range( len(bond_force_constants[i]) )]
+            tracers = place_tracers_linearly(radii[i], box_size[0], rbl)
 
-                print( 'random bond lengths: {}'.format(random_bond_lengths) )
+            print('coordinates: {}'.format(tracers) )
 
-                tracers = place_tracers_linearly(radii[i], box_size[0], rbl)
-
-                print('coordinates: {}'.format(tracers) )
-
-                print('distance matrix: {}'.format( distance_matrix(tracers) ) )
-
-                drawn += 1
-
-            # else:
-
-            #     tracers = place_tracers_linearly(radii[i], box_size[0])
+            print('distance matrix: {}'.format( distance_matrix(tracers) ) )
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 print('overlap')
@@ -268,13 +247,6 @@ def draw_bond_lengths(open_radii, close_radii, bond_force_constants,
                       bond_potential, temperature, n_samples = 1):
 
     random_bond_lengths = [ ]
-
-    # print('open radii: {}'.format(open_radii))
-    # print('close radii: {}'.format(close_radii))
-    # print('bfcs: {}'.format(bond_force_constants))
-    # print('bp: {}'.format(bond_potential))
-    # print('T: {}'.format(temperature))
-    # print('n samples: {}'.format(n_samples))
 
     for n, bond_force_constant in enumerate( bond_force_constants ):
 
@@ -322,6 +294,7 @@ def _open_potential(length, open_length, close_length, bond_force_constant):
 
 #-------------------------------------------------------------------------------
 
+# TODO: +10 and -10 as tresholds in lengths is an ad-hoc solution
 def _draw_bond_length(open_length, close_length, bond_force_constant,
                       bond_potential, temperature, n_samples = 1):
 

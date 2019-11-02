@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
+# TODO: correct writing in mc_fluct (sum of radii, not double the radius)
 def write_structure(input_data, coordinates, output_str_filename):
 
     numbers_of_molecules = input_data["numbers_of_molecules"]
