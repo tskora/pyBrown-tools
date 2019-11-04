@@ -51,12 +51,17 @@ if __name__ == '__main__':
 	count = 0
 
 	crowders = place_crowders_linearly(r_tracer, box_size)
+	for crowder in crowders:
+		crowder.r -= 1.5
 	# print(crowders)
 	for i in range(number_of_trials):
 	    tracers = place_tracers_linearly(r_crowders, box_size)
+	    for tracer in tracers:
+	    	tracer.r -= 1.5
+	    # print(tracers)
 	    if overlap(crowders, tracers, 0.0):
 	        count += 1
-	    print( '{}\t{}'.format(i, count / (i + 1) * box_size**3) )
+	    print( '{}\t{}'.format(i + 1, count / (i + 1) * box_size**3) )
 	
 	
 	ex_vol = count / number_of_trials * box_size**3

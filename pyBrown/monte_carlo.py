@@ -62,7 +62,7 @@ def place_crowders_linearly(radii, box_size):
 
 #-------------------------------------------------------------------------------
 
-def place_tracers_linearly(radii, box_size):
+def place_tracers_linearly(radii, box_size, bond_lengths = None):
 
     if not isinstance(radii, list):
         spherical = True
@@ -75,13 +75,29 @@ def place_tracers_linearly(radii, box_size):
     tracers = []
     length = 0.0
 
-    for radius in radii:
-        length += radius
-        tracers.append( Sphere([0.0, 0.0, 0.0 + length], radius) )
-        length += radius
+    if bond_lengths == None:
+
+        for radius in radii:
+            length += radius
+            tracers.append( Sphere([0.0, 0.0, 0.0 + length], radius) )
+            length += radius
+
+        # print(radii)
+
+        # assert length == 2 * np.sum( radii ) - radii[0] - radii[-1]
+
+    else:
+
+        for i, radius in enumerate(radii):
+            tracers.append( Sphere([0.0, 0.0, 0.0 + length], radius) )
+            if i < len(bond_lengths): length += bond_lengths[i]
+
+        length += radii[0] + radii[-1]
+
+        # assert length == np.sum( bond_lengths ) + radii[0] + radii[-1]
 
     for tracer in tracers:
-        tracer.translate([0.0, 0.0, -length / 2])
+            tracer.translate([0.0, 0.0, -length / 2])
 
     draw = mc.get_values()
 

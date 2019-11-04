@@ -32,7 +32,12 @@ class InputData:
 
     def __str__(self):
 
-        return str( self.input_data )
+        string_representation = ''
+
+        for keyword in self.input_data.keys():
+            string_representation += '{}: {}\n'.format(keyword, self.input_data[keyword])
+
+        return string_representation
 
     #---------------------------------------------------------------------------
 
@@ -64,11 +69,3 @@ class InputData:
         for keyword in obligatory_keywords:
             assert keyword in self.input_data.keys(),\
                 'Missing {} keyword in input JSON file.'.format(keyword)
-
-#-------------------------------------------------------------------------------
-
-def print_input(input_data):
-
-    for keyword in input_data.keys():
-        print( '{}: {}'.format(keyword, input_data[keyword]) )
-    print('')
