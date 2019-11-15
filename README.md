@@ -1,10 +1,22 @@
 # pyBrown
 
 `pyBrown` is a bundle of tools useful for **Brownian** and **Stokesian** dynamics
-simulations.
+simulations and squbsequent analysis of the results.
 
-Copyright © 2018-2019  Tomasz Skora [mailto](mailto:tskora@ichf.edu.pl)
+Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.pl)
 
+## Table of contents
+1. [Generating structure files](#strs)
+2. [Trajectory analysis](#traj)
+3. [H Cell simulator](#hcells)
+
+<a name="strs"></a>
+## Generating structure files
+
+<a name="traj"></a>
+## Trajectory analysis
+
+<a name="hcells"></a>
 ## H Cell simulator
 
 `H_cell_sim.py` enables one to compute the concentration profiles emerging in the H-cell experiments.
