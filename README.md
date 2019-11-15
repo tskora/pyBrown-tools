@@ -29,6 +29,7 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 <a name="traj.keywords"></a>
 ### Keywords
 **Required keywords:**
+
 * `"labels": [string, ...]` -- bead labels in input XYZ file
 * `"sizes": [integer, ...]` -- numbers of bead representing individual entities
 * `"box_size": float` -- size of simulation (cubic) box (*Å*)
@@ -52,6 +53,7 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 * `"mode": option` -- (options: `direct`/`window`, default: `window`)
 
 **Optional keywords:**
+
 *pyBrown demnands from input `enr` files a following naming scheme:
 ..., `TEMPLATE_NUMBER.enr`, 'TEMPLATE_NUMBER.enr', ...
 (where TEMPLATE is a string variable defined with the keyword `"input_enr_template"` and NUMBER is an integer from range defined with the keyword `"input_enr_range"`)*
