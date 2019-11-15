@@ -7,9 +7,9 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 
 ## Table of contents
 1. [Generating structure files](#strs)
-  1.1 [Keywords](#strs.keywords)
+* [Keywords](#strs.keywords)
 2. [Trajectory analysis](#traj)
-  2.1 [Keywords](#traj.keywords)
+* [Keywords](#traj.keywords)
 3. [H Cell simulator](#hcells)
 
 <a name="strs"></a>
