@@ -41,35 +41,39 @@ def main(input_filename):
 				"probing_frequency": 1, "min_time": 0.0}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataMSD(input_filename, required_keywords, defaults).input_data
+	i = InputDataMSD(input_filename, required_keywords, defaults)
+	timestamp( 'Input data:\n{}', i )
 
-	if "input_enr_template" in i.keys() and "input_enr_range" in i.keys():
+	if "input_enr_template" in i.input_data.keys() and \
+	   "input_enr_range" in i.input_data.keys():
+
 		timestamp( 'Reading energies')
-		energies, times = read_energies(i)
+		energies, times = read_energies(i.input_data)
 		timestamp( 'Computing mean energies' )
 		menergies = compute_menergies(energies)
 		del energies
 		timestamp( 'Plotting mean energies' )
-		plot_menergies(i, times, menergies)
+		plot_menergies(i.input_data, times, menergies)
 		del times
 		del menergies
 
 	timestamp( 'Reading trajectories' )
-	temporary_filename, times, labels, min_time_index = read_trajectories(i)
+	temporary_filename, times, labels, min_time_index = read_trajectories(i.input_data)
 	timestamp( 'Separating the center of mass movement' )
-	temporary_filename_2, cm_labels = separate_center_of_mass(i, temporary_filename, labels)
+	temporary_filename_2, cm_labels = separate_center_of_mass(i.input_data, temporary_filename, labels)
 	del labels
 	timestamp( 'Computing mean square displacements' )
-	msds = compute_msds(i, temporary_filename_2, cm_labels, min_time_index)
+	msds = compute_msds(i.input_data, temporary_filename_2, cm_labels, min_time_index)
 	del cm_labels
 	timestamp( 'Saving mean square displacements to a file' )
-	save_msds_to_file(i, times, msds)
+	save_msds_to_file(i.input_data, times, msds)
 	timestamp( 'Plotting mean square displacements' )
-	plot_msds(i, times, msds)
+	plot_msds(i.input_data, times, msds)
 	del times
 	del msds
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+	
 	main()
