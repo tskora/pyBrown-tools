@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 from scipy.constants import Boltzmann
 
-from pyBrown.input import print_input
+# from pyBrown.input import print_input
 from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
 
@@ -48,7 +48,7 @@ def read_trajectories(input_data):
 	number_of_xyz_files = len( input_xyz_filenames )
 
 	if input_data["debug"]:
-		print_input( input_data )
+		# print_input( input_data )
 		print( 'Input xyz filenames: {}'.format(input_xyz_filenames) )
 	if input_data["debug"] or input_data["verbose"]:
 		print( 'Number of timeframes: {}'.format(number_of_timeframes) )
