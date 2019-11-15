@@ -69,36 +69,36 @@ def Mii_rpy(p):
 
 def Mij_rpy(pi, pj):
 
-	Rh_larger = max( p1.Rh, p2.Rh )
-	Rh_smaller = min( p1.Rh, p2.Rh )
+	Rh_larger = max( pi.Rh, pj.Rh )
+	Rh_smaller = min( pi.Rh, pj.Rh )
 	
-	if p1.distance(p2) > ( p1.Rh + p2.Rh ):
+	if pi.distance(pj) > ( pi.Rh + pj.Rh ):
 	
-		coef_1 = 1.0 / ( 8 * np.pi * p1.distance(p2) * VISCOSITY )
-		coef_2 = 1.0 + ( p1.Rh**2 + p2.Rh**2) / ( 3 * p1.distance(p2)**2 )
-		coef_3 = 1.0 - ( p1.Rh**2 + p2.Rh**2) / p1.distance(p2)**2
+		coef_1 = 1.0 / ( 8 * np.pi * pi.distance(pj) * VISCOSITY )
+		coef_2 = 1.0 + ( pi.Rh**2 + pj.Rh**2) / ( 3 * pi.distance(pj)**2 )
+		coef_3 = 1.0 - ( pi.Rh**2 + pj.Rh**2) / pi.distance(pj)**2
 	
 		answer = coef_2 * np.identity(3)
-		answer += coef_3 * p1.outer_norm(p2)
+		answer += coef_3 * pi.outer_norm(pj)
 		answer *= coef_1
 	
 		return answer
         
-	elif p1.distance(p2) <= ( Rh_larger - Rh_smaller ):
+	elif pi.distance(pj) <= ( Rh_larger - Rh_smaller ):
 
 		return np.identity(3) / ( 6 * np.pi * Rh_larger * VISCOSITY )
 
 	else:
 
-		coef_1 = 1.0 / ( 6 * np.pi * p1.Rh * p2.Rh * VISCOSITY )
-		coef_2 = 16 * p1.distance(p2)**3 * ( p1.Rh + p2.Rh )
-		coef_3 = ( (p1.Rh - p2.Rh )**2 + 3 * p1.distance(p2)**2 )**2
-		coef_4 = ( coef_2 - coef_3 ) / ( 32 * p1.distance(p2)**3 )
-		coef_5 = 3 * ( (p1.Rh - p2.Rh)**2 - p1.distance(p2)**2 )**2
-		coef_6 = coef_5 / ( 32 * p1.distance(p2)**3 )
+		coef_1 = 1.0 / ( 6 * np.pi * pi.Rh * pj.Rh * VISCOSITY )
+		coef_2 = 16 * pi.distance(pj)**3 * ( pi.Rh + pj.Rh )
+		coef_3 = ( (pi.Rh - pj.Rh )**2 + 3 * pi.distance(pj)**2 )**2
+		coef_4 = ( coef_2 - coef_3 ) / ( 32 * pi.distance(pj)**3 )
+		coef_5 = 3 * ( (pi.Rh - pj.Rh)**2 - pi.distance(pj)**2 )**2
+		coef_6 = coef_5 / ( 32 * pi.distance(pj)**3 )
 
 		answer = coef_4 * np.identity(3)
-		answer += coef_6 * p1.outer_norm(p2)
+		answer += coef_6 * pi.outer_norm(pj)
 		answer *= coef_1
         
 		return answer
@@ -555,156 +555,165 @@ def corr(M):
 
 #-------------------------------------------------------------------------------
 
-p1 = Particle([0.0,0.0,0.0], 1.0)
-p2 = Particle([3.0,0.0,0.0], 1.0)
-p3 = Particle([0.0,0.0,0.0], 1.0)
-p4 = Particle([3.0,0.0,0.0], 1.0)
-p5 = Particle([0.0,0.0,0.0], 1.0)
-p6 = Particle([3.0,0.0,0.0], 1.0)
+def main():
 
-# rpy = M_rpy( [p1, p2] )
-# smith = M_rpy_smith( [p1, p2], L = 1000.0, alpha = np.sqrt( np.pi ), m = 1, n = 1 )
-# jeffrey = R_jeffrey( *[p1, p2] )
-# print( 'D RPY:\n{}\n'.format( KT * rpy ) )
-# print( 'D Smith:\n{}\n'.format( KT * smith ) )
-# print( 'R RPY:\n{}\n'.format( np.linalg.inv(rpy) ) )
-# # print( 'R2B RPY:\n{}\n'.format( block_inverse(rpy) ) )
-# print( 'R Smith:\n{}\n'.format( np.linalg.inv(smith) ) )
-# print( 'R Jeffrey:\n{}\n'.format( jeffrey ) )
-# print( 'R Jeffrey / R RPYL\n{}\n'.format( jeffrey / np.linalg.inv(rpy) ) )
-# # print( 'lub corr:\n{}\n'.format(R_lub_corr( [p1, p2] )) )
-# Dlubcorr = KT * np.linalg.inv( np.identity(len(smith)) + smith @ R_lub_corr( [p1, p2] ) ) @ smith
-# Dsmith = KT * smith
-# print( 'D lub corr:\n{}\n'.format( Dlubcorr ) )
-# print( 'D Smith:\n{}\n'.format( Dsmith ) )
-# print( 'D lub corr / D Smith:\n{}\n'.format( Dlubcorr/Dsmith ) )
-
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib.patches import Circle
-
-steps = 1
-dt = 0.0001
-force = np.array( [0.0, 0.0, 0.0, -0.0, 0.0, 0.0] )
-pointsize = 100
-
-fig,axs = plt.subplots(1,3)
-ax1,ax2,ax3 = axs
-ax1.set_aspect('equal')
-ax1.set_xlim( (0.0, 3.0) )
-ax1.set_ylim( (-1.5, 1.5) )
-ax2.set_aspect('equal')
-ax2.set_xlim( (0.0, 3.0) )
-ax2.set_ylim( (-1.5, 1.5) )
-ax3.set_aspect('equal')
-ax3.set_xlim( (0.0, 3.0) )
-ax3.set_ylim( (-1.5, 1.5) )
-point1, = ax1.plot([], [], 'o', ms=pointsize, color = 'blue')
-point2, = ax1.plot([], [], 'o', ms=pointsize, color = 'red')
-point3, = ax2.plot([], [], 'o', ms=pointsize, color = 'blue')
-point4, = ax2.plot([], [], 'o', ms=pointsize, color = 'red')
-point5, = ax3.plot([], [], 'o', ms=pointsize, color = 'blue')
-point6, = ax3.plot([], [], 'o', ms=pointsize, color = 'red')
-circle1 = Circle((0,0), 1, color = 'green')
-ax3.add_patch(circle1)
-
-def init():
-	"""initialize animation"""
-	point1.set_data([], [])
-	point2.set_data([], [])
-	point3.set_data([], [])
-	point4.set_data([], [])
-	point5.set_data([], [])
-	point6.set_data([], [])
-	circle1 = Circle( (0.0,0.0), 1.0, color = 'green' )
-	return point1,point2,point3,point4,point5,point6,circle1
-
-def animate(i):
-	"""perform animation step"""
-	global dt
-
+	p1 = Particle([0.0,0.0,0.0], 1.0)
+	p2 = Particle([3.0,0.0,0.0], 1.0)
+	# p3 = Particle([0.0,0.0,0.0], 1.0)
+	# p4 = Particle([3.0,0.0,0.0], 1.0)
+	# p5 = Particle([0.0,0.0,0.0], 1.0)
+	# p6 = Particle([3.0,0.0,0.0], 1.0)
+	
 	rpy = M_rpy( [p1, p2] )
-	coords1 = np.array( [ x for x in p1.r ] + [ x for x in p2.r ] )
-	coords1 += dt * rpy @ force
-	p1.r = np.array( coords1[0:3] )
-	p2.r = np.array( coords1[3:6] )
+	# smith = M_rpy_smith( [p1, p2], L = 1000.0, alpha = np.sqrt( np.pi ), m = 1, n = 1 )
+	jeffrey = R_jeffrey( *[p1, p2] )
 
-	smith = M_rpy_smith( [p3, p4], L = 1000.0, alpha = np.sqrt( np.pi ), m = 2, n = 2 )
-	coords2 = np.array( [ x for x in p3.r ] + [ x for x in p4.r ] )
-	coords2 += dt * smith @ force
-	p3.r = np.array( coords2[0:3] )
-	p4.r = np.array( coords2[3:6] )
-
-	smith = M_rpy_smith( [p5, p6], L = 1000.0, alpha = np.sqrt( np.pi ), m = 2, n = 2 )
-	lub = np.linalg.inv( np.identity(len(smith)) + smith @ R_lub_corr( [p5, p6] ) ) @ smith
-	coords3 = np.array( [ x for x in p5.r ] + [ x for x in p6.r ] )
-	coords3 += dt * lub @ force
-	p5.r = np.array( coords3[0:3] )
-	p6.r = np.array( coords3[3:6] )
-    
-	point1.set_data([p1.r[0]], [p1.r[1]])
-	point2.set_data([p2.r[0]], [p2.r[1]])
-	point3.set_data([p3.r[0]], [p3.r[1]])
-	point4.set_data([p4.r[0]], [p4.r[1]])
-	point5.set_data([p5.r[0]], [p5.r[1]])
-	point6.set_data([p6.r[0]], [p6.r[1]])
-
-	circle1 = Circle( (0.0,0.0), 1.0, color = 'green' )
-
-	return point1,point2,point3,point4,point5,point6,circle1
-
-# choose the interval based on dt and the time to animate one step
-from time import time
-t0 = time()
-animate(0)
-t1 = time()
-interval = 100 * dt - (t1 - t0)
-
-ani = animation.FuncAnimation(fig, animate, frames=steps,
-                              interval=interval, blit=True, init_func=init)
-
-plt.show()
-
-###
-
-# for step in range(steps):
-
-# 	smith = M_rpy( [p1, p2] )
-# 	coords = np.array( [ x for x in p1.r ] + [ x for x in p2.r ] )
-# 	print(coords)
-# 	coords += dt * smith @ force
-# 	print(coords)
-# 	p1.r = np.array( coords[0:3] )
-# 	p2.r = np.array( coords[3:6] )
-
-
-
-
-
-
-
-# print( KT * ( smith - b ) )
-# print( corr( rpy ) )
-# print( corr( smith ) )
+	# print( 'D RPY:\n{}\n'.format( KT * rpy ) )
+	# print( 'D Smith:\n{}\n'.format( KT * smith ) )
+	print( 'R RPY:\n{}\n'.format( np.linalg.inv(rpy) ) )
+	# # print( 'R2B RPY:\n{}\n'.format( block_inverse(rpy) ) )
+	# print( 'R Smith:\n{}\n'.format( np.linalg.inv(smith) ) )
+	# print( 'R Jeffrey:\n{}\n'.format( jeffrey ) )
+	# print( 'R Jeffrey / R RPYL\n{}\n'.format( jeffrey / np.linalg.inv(rpy) ) )
+	# # print( 'lub corr:\n{}\n'.format(R_lub_corr( [p1, p2] )) )
+	# Dlubcorr = KT * np.linalg.inv( np.identity(len(smith)) + smith @ R_lub_corr( [p1, p2] ) ) @ smith
+	# Dsmith = KT * smith
+	# print( 'D lub corr:\n{}\n'.format( Dlubcorr ) )
+	# print( 'D Smith:\n{}\n'.format( Dsmith ) )
+	# print( 'D lub corr / D Smith:\n{}\n'.format( Dlubcorr/Dsmith ) )
+	
+	# import matplotlib.pyplot as plt
+	# import matplotlib.animation as animation
+	# from matplotlib.patches import Circle
+	
+	# steps = 1
+	# dt = 0.0001
+	# force = np.array( [0.0, 0.0, 0.0, -0.0, 0.0, 0.0] )
+	# pointsize = 100
+	
+	# fig,axs = plt.subplots(1,3)
+	# ax1,ax2,ax3 = axs
+	# ax1.set_aspect('equal')
+	# ax1.set_xlim( (0.0, 3.0) )
+	# ax1.set_ylim( (-1.5, 1.5) )
+	# ax2.set_aspect('equal')
+	# ax2.set_xlim( (0.0, 3.0) )
+	# ax2.set_ylim( (-1.5, 1.5) )
+	# ax3.set_aspect('equal')
+	# ax3.set_xlim( (0.0, 3.0) )
+	# ax3.set_ylim( (-1.5, 1.5) )
+	# point1, = ax1.plot([], [], 'o', ms=pointsize, color = 'blue')
+	# point2, = ax1.plot([], [], 'o', ms=pointsize, color = 'red')
+	# point3, = ax2.plot([], [], 'o', ms=pointsize, color = 'blue')
+	# point4, = ax2.plot([], [], 'o', ms=pointsize, color = 'red')
+	# point5, = ax3.plot([], [], 'o', ms=pointsize, color = 'blue')
+	# point6, = ax3.plot([], [], 'o', ms=pointsize, color = 'red')
+	# circle1 = Circle((0,0), 1, color = 'green')
+	# ax3.add_patch(circle1)
+	
+	# def init():
+	# 	"""initialize animation"""
+	# 	point1.set_data([], [])
+	# 	point2.set_data([], [])
+	# 	point3.set_data([], [])
+	# 	point4.set_data([], [])
+	# 	point5.set_data([], [])
+	# 	point6.set_data([], [])
+	# 	circle1 = Circle( (0.0,0.0), 1.0, color = 'green' )
+	# 	return point1,point2,point3,point4,point5,point6,circle1
+	
+	# def animate(i):
+	# 	"""perform animation step"""
+	# 	global dt
+	
+	# 	rpy = M_rpy( [p1, p2] )
+	# 	coords1 = np.array( [ x for x in p1.r ] + [ x for x in p2.r ] )
+	# 	coords1 += dt * rpy @ force
+	# 	p1.r = np.array( coords1[0:3] )
+	# 	p2.r = np.array( coords1[3:6] )
+	
+	# 	smith = M_rpy_smith( [p3, p4], L = 1000.0, alpha = np.sqrt( np.pi ), m = 2, n = 2 )
+	# 	coords2 = np.array( [ x for x in p3.r ] + [ x for x in p4.r ] )
+	# 	coords2 += dt * smith @ force
+	# 	p3.r = np.array( coords2[0:3] )
+	# 	p4.r = np.array( coords2[3:6] )
+	
+	# 	smith = M_rpy_smith( [p5, p6], L = 1000.0, alpha = np.sqrt( np.pi ), m = 2, n = 2 )
+	# 	lub = np.linalg.inv( np.identity(len(smith)) + smith @ R_lub_corr( [p5, p6] ) ) @ smith
+	# 	coords3 = np.array( [ x for x in p5.r ] + [ x for x in p6.r ] )
+	# 	coords3 += dt * lub @ force
+	# 	p5.r = np.array( coords3[0:3] )
+	# 	p6.r = np.array( coords3[3:6] )
+	    
+	# 	point1.set_data([p1.r[0]], [p1.r[1]])
+	# 	point2.set_data([p2.r[0]], [p2.r[1]])
+	# 	point3.set_data([p3.r[0]], [p3.r[1]])
+	# 	point4.set_data([p4.r[0]], [p4.r[1]])
+	# 	point5.set_data([p5.r[0]], [p5.r[1]])
+	# 	point6.set_data([p6.r[0]], [p6.r[1]])
+	
+	# 	circle1 = Circle( (0.0,0.0), 1.0, color = 'green' )
+	
+	# 	return point1,point2,point3,point4,point5,point6,circle1
+	
+	# # choose the interval based on dt and the time to animate one step
+	# from time import time
+	# t0 = time()
+	# animate(0)
+	# t1 = time()
+	# interval = 100 * dt - (t1 - t0)
+	
+	# ani = animation.FuncAnimation(fig, animate, frames=steps,
+	#                               interval=interval, blit=True, init_func=init)
+	
+	# plt.show()
+	
+	###
+	
+	# for step in range(steps):
+	
+	# 	smith = M_rpy( [p1, p2] )
+	# 	coords = np.array( [ x for x in p1.r ] + [ x for x in p2.r ] )
+	# 	print(coords)
+	# 	coords += dt * smith @ force
+	# 	print(coords)
+	# 	p1.r = np.array( coords[0:3] )
+	# 	p2.r = np.array( coords[3:6] )
+	
+	
+	
+	
+	
+	
+	
+	# print( KT * ( smith - b ) )
+	# print( corr( rpy ) )
+	# print( corr( smith ) )
+	
+	#-------------------------------------------------------------------------------
+	
+	# from sympy import *
+	# from sympy import Matrix
+	
+	# b, a, a1, a2, r = symbols('b a a1 a2 r')
+	# A = Matrix( [[b/a1,0,0,3/4*b/r*(2-2*a/3),0,0],
+	# 			 [0,b/a1,0,0,3/4*b/r*(1+a/3),0],
+	# 			 [0,0,b/a1,0,0,3/4*b/r*(1+a/3)],
+	# 			 [3/4*b/r*(2-2*a/3),0,0,b/a2,0,0],
+	# 			 [0,3/4*b/r*(1+a/3),0,0,b/a2,0],
+	# 			 [0,0,3/4*b/r*(1+a/3),0,0,b/a2]] ) # Creates a matrix.
+	# # pprint(A)
+	# A_inverse = A.inv() #Doesn't work
+	# # pprint( A_inverse[0:3,0:3] )
+	# b_val = 1.0 / ( 6.0 * np.pi * VISCOSITY )
+	# a_val = ( p1.Rh**2 + p2.Rh**2 ) / 3.0**2
+	# a1_val = p1.Rh
+	# a2_val = p2.Rh
+	# result = A_inverse.subs([(b,b_val), (a,a_val), (a1,a1_val), (a2,a2_val), (r,3.0)])
+	# pprint(result)
 
 #-------------------------------------------------------------------------------
 
-# from sympy import *
-# from sympy import Matrix
+if __name__ == '__main__':
 
-# b, a, a1, a2, r = symbols('b a a1 a2 r')
-# A = Matrix( [[b/a1,0,0,3/4*b/r*(2-2*a/3),0,0],
-# 			 [0,b/a1,0,0,3/4*b/r*(1+a/3),0],
-# 			 [0,0,b/a1,0,0,3/4*b/r*(1+a/3)],
-# 			 [3/4*b/r*(2-2*a/3),0,0,b/a2,0,0],
-# 			 [0,3/4*b/r*(1+a/3),0,0,b/a2,0],
-# 			 [0,0,3/4*b/r*(1+a/3),0,0,b/a2]] ) # Creates a matrix.
-# # pprint(A)
-# A_inverse = A.inv() #Doesn't work
-# # pprint( A_inverse[0:3,0:3] )
-# b_val = 1.0 / ( 6.0 * np.pi * VISCOSITY )
-# a_val = ( p1.Rh**2 + p2.Rh**2 ) / 3.0**2
-# a1_val = p1.Rh
-# a2_val = p2.Rh
-# result = A_inverse.subs([(b,b_val), (a,a_val), (a1,a1_val), (a2,a2_val), (r,3.0)])
-# pprint(result)
+	main()

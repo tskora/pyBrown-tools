@@ -21,7 +21,7 @@ sys.path.insert(0, '../pyBrown')
 import numpy as np
 import copy as cp
 
-from pyBrown.hydrolib import Particle, XAii
+from pyBrown.hydrolib import Particle, XA11
 
 #-------------------------------------------------------------------------------
 
@@ -34,9 +34,9 @@ class TestHydrolib(unittest.TestCase):
 
 	#---------------------------------------------------------------------------
 
-	# def test_jeffrey(self):
+	def test_jeffrey(self):
 
-	# 	self.assertAlmostEqual( XAii(2.0, 1.0), 0.9954, 3 )
+		self.assertAlmostEqual( XA11(2.0, 1.0), 0.9954, 3 )
 
 #-------------------------------------------------------------------------------
 
