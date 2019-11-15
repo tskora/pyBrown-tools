@@ -16,7 +16,7 @@
 
 import click
 
-from pyBrown.input import InputData
+from pyBrown.input_MSD import InputDataMSD
 from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, read_energies, \
 								 separate_center_of_mass, \
@@ -33,8 +33,7 @@ def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
 	required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
-						 "input_xyz_template", "input_enr_template", "input_xyz_range",
-						 "input_enr_range"]
+						 "input_xyz_template", "input_xyz_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
@@ -42,17 +41,18 @@ def main(input_filename):
 				"probing_frequency": 1, "min_time": 0.0}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputData(input_filename, required_keywords, defaults).input_data
+	i = InputDataMSD(input_filename, required_keywords, defaults).input_data
 
-	timestamp( 'Reading energies')
-	energies, times = read_energies(i)
-	timestamp( 'Computing mean energies' )
-	menergies = compute_menergies(energies)
-	del energies
-	timestamp( 'Plotting mean energies' )
-	plot_menergies(i, times, menergies)
-	del times
-	del menergies
+	if "input_enr_template" in i.keys() and "input_enr_range" in i.keys():
+		timestamp( 'Reading energies')
+		energies, times = read_energies(i)
+		timestamp( 'Computing mean energies' )
+		menergies = compute_menergies(energies)
+		del energies
+		timestamp( 'Plotting mean energies' )
+		plot_menergies(i, times, menergies)
+		del times
+		del menergies
 
 	timestamp( 'Reading trajectories' )
 	temporary_filename, times, labels, min_time_index = read_trajectories(i)
