@@ -1,5 +1,5 @@
-# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics simulations
-# Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
+# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics
+# simulations. Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,13 +12,16 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see https://www.gnu.org/licenses.
+# along with this program. If not, see https://www.gnu.org/licenses.
 
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.constants import Boltzmann
+
+import freud.box
+import freud.msd
 
 from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
@@ -368,9 +371,6 @@ def compute_msds(input_data, temporary_filename_2, cm_labels, min_time_index):
 		trajs = np.array( trajs_list )
 
 		trajs_all.append(trajs)
-
-	import freud.box
-	import freud.msd
 
 	msds = []
 
