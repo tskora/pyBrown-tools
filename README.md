@@ -5,8 +5,11 @@ simulations and squbsequent analysis of the results.
 
 Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.pl)
 
-- [x] this is a complete item
-- [ ] this is an incomplete item
+- [x] computing Mean Squared Displacement
+- [x] structure (`.str`) files generation
+- [] diffusion/mobility/resistance matrix analysis
+- [] computing Radial Distribution Function
+- [] computing dynamic geometry features
 
 1. [Generating structure files](#strs)
 * [Keywords](#strs.keywords)
@@ -16,16 +19,11 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 
 <a name="strs"></a>
 ## Generating structure files
-
 <a name="strs.keywords"></a>
 ### Keywords
 
 <a name="traj"></a>
 ## Trajectory analysis
-
-- [x] this is a complete item
-- [ ] this is an incomplete item
-
 <a name="traj.keywords"></a>
 ### Keywords
 **Required keywords:**
@@ -36,7 +34,7 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 * `"temperature": float` -- temperature (*K*)
 * `"viscosity": float` -- dynamic viscosity (*P*)
 
-*pyBrown demnands from input `xyz` files a following naming scheme:
+*pyBrown demands from input `xyz` files a following naming scheme:
 ..., `TEMPLATE_NUMBER.xyz`, 'TEMPLATE_NUMBER.xyz', ...
 (where TEMPLATE is a string variable defined with the keyword `"input_xyz_template"` and NUMBER is an integer from range defined with the keyword `"input_xyz_range"`)*
 
@@ -54,7 +52,7 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 
 **Optional keywords:**
 
-*pyBrown demnands from input `enr` files a following naming scheme:
+*pyBrown demands from input `enr` files a following naming scheme:
 ..., `TEMPLATE_NUMBER.enr`, 'TEMPLATE_NUMBER.enr', ...
 (where TEMPLATE is a string variable defined with the keyword `"input_enr_template"` and NUMBER is an integer from range defined with the keyword `"input_enr_range"`)*
 
