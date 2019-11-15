@@ -5,11 +5,15 @@ simulations and squbsequent analysis of the results.
 
 Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.pl)
 
+## Features
+
 - [x] computing Mean Squared Displacement
 - [x] structure (`.str`) files generation
-- [] diffusion/mobility/resistance matrix analysis
-- [] computing Radial Distribution Function
-- [] computing dynamic geometry features
+- [ ] diffusion/mobility/resistance matrix analysis
+- [ ] computing Radial Distribution Function
+- [ ] computing dynamic geometry features
+
+## Table of Contents
 
 1. [Generating structure files](#strs)
 * [Keywords](#strs.keywords)
