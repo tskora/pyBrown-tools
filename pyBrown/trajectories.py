@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 
 from scipy.constants import Boltzmann
 
-# from pyBrown.input import print_input
 from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
 
@@ -48,7 +47,6 @@ def read_trajectories(input_data):
 	number_of_xyz_files = len( input_xyz_filenames )
 
 	if input_data["debug"]:
-		# print_input( input_data )
 		print( 'Input xyz filenames: {}'.format(input_xyz_filenames) )
 	if input_data["debug"] or input_data["verbose"]:
 		print( 'Number of timeframes: {}'.format(number_of_timeframes) )
@@ -85,12 +83,15 @@ def read_trajectories(input_data):
 
 			trajectories = temp[i * number_of_beads : (i + 1) * number_of_beads, :, :]
 
-			_read_trajectories_from_xyz_file(input_xyz_file, trajectories, times,
-											 labels, input_data["probing_frequency"])
+			min_time_index = _read_trajectories_from_xyz_file(input_xyz_file, trajectories, times,
+											 				  labels, input_data["probing_frequency"],
+											 				  input_data["min_time"])
 
 			del temp
 
-	return temporary_filename, times, labels
+	times = times[min_time_index:] - times[min_time_index]
+
+	return temporary_filename, times, labels, min_time_index
 
 #-------------------------------------------------------------------------------
 
@@ -268,6 +269,12 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 
 			temp2[which_cm_trajectory, :, :] = temp[which_trajectory, :, :]
 
+			for tframe in range(number_of_timeframes):
+
+				print( np.sqrt( np.sum(( temp[which_trajectory + multiplicity - 1,tframe,:] - temp[which_trajectory,tframe,:] )**2) ) )
+
+			print('')
+
 			for i in range( 1, multiplicity ):
 
 				temp2[which_cm_trajectory, :, :] += temp[which_trajectory + i, :, :]
@@ -308,7 +315,7 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 
 #-------------------------------------------------------------------------------
 
-def compute_msds(input_data, temporary_filename_2, cm_labels):
+def compute_msds(input_data, temporary_filename_2, cm_labels, min_time_index):
 
 	input_xyz_filenames = [ input_data["input_xyz_template"] + str(i) + '.xyz' 
 							for i in range( *input_data["input_xyz_range"] ) ]
@@ -327,107 +334,120 @@ def compute_msds(input_data, temporary_filename_2, cm_labels):
 
 	sds = np.memmap( temporary_filename_3, dtype = np.float32,
 					 mode = 'w+',
-					 shape = ( len(cm_labels), number_of_timeframes ) )
+					 shape = ( len(cm_labels), number_of_timeframes - min_time_index ) )
 
 	if input_data["verbose"]: print("filling sds")
 
 	for i in range( len(cm_labels) ):
-		sds[i, :] = np.zeros( number_of_timeframes, dtype = np.float32 ) 
+		sds[i, :] = np.zeros( number_of_timeframes - min_time_index, dtype = np.float32 ) 
 
 	del sds
 
 	if input_data["verbose"]: print("end filling sds")
 
-	msds = np.zeros( ( len( input_data["labels"] ), number_of_timeframes ), float )
+	msds = np.zeros( ( len( input_data["labels"] ), number_of_timeframes - min_time_index ), float )
 	amounts = np.zeros( len( input_data["labels"] ), float )
 
-	### testing with freud
+	for label, size  in zip( input_data["labels"], input_data["sizes"] ):
+
+		bead_dict[label] = size
+
+	### FREUD VERSION START
 
 	temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
 						   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
 
 	unify_coordinates(temp2, input_data["box_size"])
 
-	del temp2
+	trajs_all = []
 
-	# trajs = np.array( [ [ temp2[i][j] for i in range( len(cm_labels) ) ] for j in range( number_of_timeframes ) ] )
+	for k in range(len(input_data["labels"])):
 
-	# import freud.box
-	# import freud.msd
+		trajs_list = [ [ temp2[i][j + min_time_index] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes - min_time_index ) ]
 
-	# box = freud.box.Box.cube(750.0)
+		trajs = np.array( trajs_list )
 
-	# msd = freud.msd.MSD(box, 'direct')
-	# msd.compute( positions = trajs )
+		trajs_all.append(trajs)
 
-	# plt.plot(msd.msd, '--', label = 'freud')
+	import freud.box
+	import freud.msd
 
-	# plt.title('Mean Squared Displacement')
-	# plt.xlabel('$t$')
-	# plt.ylabel('MSD$(t)$')
-	# plt.legend()
-	# plt.show()
+	msds = []
+
+	for k in range(len(input_data["labels"])):
+
+		box = freud.box.Box.cube(750.0)
+
+		if (input_data["mode"] == "direct"):
+			msd = freud.msd.MSD(box, 'direct')
+		elif (input_data["mode"] == "window"):
+			msd = freud.msd.MSD(box, 'window')
+
+		msd.compute( positions = trajs_all[k] )
+		msds.append(msd.msd)
+
+	### FREUD VERSION END
+
+	### OLD VERSION START
 
 	# del trajs
 
 	# del temp2
 
-	# 1/0
-
 	###
 
-	for label, size  in zip( input_data["labels"], input_data["sizes"] ):
+	# for i in range( len(cm_labels) ):
 
-		bead_dict[label] = size
+	# 	if input_data["verbose"]: print('computing sd: {} / {}'.format(i, len(cm_labels)))
 
-	for i in range( len(cm_labels) ):
+	# 	temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
+	# 					   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
 
-		if input_data["verbose"]: print('computing sd: {} / {}'.format(i, len(cm_labels)))
+	# 	cm_trajectory = temp2[i]
 
-		temp2 = np.memmap( temporary_filename_2, dtype = np.float32,
-						   shape = ( len(cm_labels), number_of_timeframes, 3 ) )
+	# 	del temp2
 
-		cm_trajectory = temp2[i]
+	# 	sd = _compute_sd(cm_trajectory, input_data["box_size"])
 
-		del temp2
+	# 	print(sd)
 
-		sd = _compute_sd(cm_trajectory, input_data["box_size"])
+	# 	temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
+	# 				 	   shape = ( len(cm_labels), number_of_timeframes ) )
 
-		temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
-					 	   shape = ( len(cm_labels), number_of_timeframes ) )
+	# 	temp3[i] = sd
 
-		temp3[i] = sd
+	# 	del temp3
 
-		del temp3
+	# for i in range( len(cm_labels) ):
 
-	for i in range( len(cm_labels) ):
+	# 	if input_data["verbose"]: print('averaging: {} / {}'.format(i, len(cm_labels)))
 
-		if input_data["verbose"]: print('averaging: {} / {}'.format(i, len(cm_labels)))
+	# 	counter = 0
 
-		counter = 0
+	# 	for input_label in input_data["labels"] :
 
-		for input_label in input_data["labels"] :
+	# 		if cm_labels[i] == input_label:
 
-			if cm_labels[i] == input_label:
+	# 			break
 
-				break
+	# 		counter += 1
 
-			counter += 1
+	# 	temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
+	# 				 	   shape = ( len(cm_labels), number_of_timeframes ) )
 
-		temp3 = np.memmap( temporary_filename_3, dtype = np.float32,
-					 	   shape = ( len(cm_labels), number_of_timeframes ) )
+	# 	sds = temp3[i]
 
-		sds = temp3[i]
+	# 	msds[counter] += sds
 
-		msds[counter] += sds
+	# 	del temp3
 
-		del temp3
+	# 	amounts[counter] += 1
 
-		amounts[counter] += 1
+	# for msd, amount in zip( msds, amounts ):
 
-	for msd, amount in zip( msds, amounts ):
+	# 	msd /= amount
 
-		msd /= amount
+	### OLD VERSION END
 
 	os.remove(temporary_filename_2)
 	os.remove(temporary_filename_3)
@@ -528,11 +548,12 @@ def plot_menergies(input_data, times, menergies):
 
 #-------------------------------------------------------------------------------
 
-def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, probing_frequency):
+def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, probing_frequency, min_time):
 
 	number_of_beads = int( xyz_file.readline() )
 
 	counter = 0
+	min_time_index = 0
 
 	label_index = 0
 	for label in labels:
@@ -551,7 +572,15 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 
 			if ( ( counter // number_of_beads ) % probing_frequency ) == 0:
 
-				times[ counter // number_of_beads // probing_frequency ] = float( line.split()[3] )
+				time = float( line.split()[3] )
+
+				if time >= min_time:
+
+					times[ counter // number_of_beads // probing_frequency ] = time
+
+				else:
+
+					min_time_index += 1
 
 				# print(times)
 
@@ -563,9 +592,26 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 			if counter < number_of_beads:
 				labels[label_index + counter] = line.split()[0]
 			if ( ( counter // number_of_beads ) % probing_frequency ) == 0:
-				coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
-				trajectories[counter % number_of_beads, counter // number_of_beads // probing_frequency] = coords
+				if time >= min_time:
+					coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
+					trajectories[counter % number_of_beads, counter // number_of_beads // probing_frequency] = coords
 			counter += 1
+
+	return min_time_index
+
+	# print(min_time_index)
+
+	# print(times)
+
+	# times = times[min_time_index:] - times[min_time_index]
+
+	# print(times)
+
+	# print(trajectories)
+
+	# trajectories = trajectories[:,min_time_index:]
+
+	# print(trajectories)
 
 #-------------------------------------------------------------------------------
 
@@ -662,11 +708,12 @@ def _count_beads(filename):
 def _count_timeframes(filename, frequency):
 
 	number_of_beads = _count_beads(filename)
+	file_length = _file_length(filename)
 
 	if frequency == 1:
-		return _file_length(filename) // (number_of_beads + 2)
+		return file_length // (number_of_beads + 2)
 	else:
-		return _file_length(filename) // (number_of_beads + 2) // frequency# + 1
+		return file_length // (number_of_beads + 2) // frequency
 
 #-------------------------------------------------------------------------------
 
@@ -681,7 +728,7 @@ def unify_coordinates(trajectories, box_length):
 def _coord_unify(past, present, box_length):
 
 	for i in range(3):
-		while( present[i] - past[i] >= box_length * np.sqrt(3) / 2 ):
+		while( present[i] - past[i] >= box_length / 2 ):
 			present[i] -= box_length
-		while( past[i] - present[i] >= box_length * np.sqrt(3) / 2 ):
+		while( past[i] - present[i] >= box_length / 2 ):
 			present[i] += box_length
