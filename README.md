@@ -1,5 +1,7 @@
 # pyBrown
 
+[![Build Status](https://travis-ci.com/tskora/pyBrown.svg?branch=master)](https://travis-ci.com/tskora/pyBrown)
+
 `pyBrown` is a bundle of tools useful for **Brownian** and **Stokesian** dynamics
 simulations and squbsequent analysis of the results.
 
