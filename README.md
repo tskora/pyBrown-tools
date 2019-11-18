@@ -12,6 +12,14 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 - [x] structure (`.str`) files generation
 - [ ] diffusion/mobility/resistance matrix analysis
 
+## First steps
+
+Type those commands in a terminal:
+
+`make`
+
+`make test`
+
 ## Table of Contents
 
 1. [Generating structure files](#strs)
@@ -92,6 +100,7 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 <a name="traj.usage"></a>
 ### Usage
 If you have already prepared an input JSON file (using keywords introduced above), you can run the `MSD.py` program using following command:
+
 `python MSD.py input.json`
 
 <a name="traj.output"></a>
