@@ -3,7 +3,7 @@
 `pyBrown` is a bundle of tools useful for **Brownian** and **Stokesian** dynamics
 simulations and squbsequent analysis of the results.
 
-Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.pl)
+Copyright &copy;2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.pl)
 
 ## Features
 
@@ -42,27 +42,27 @@ Type those commands in a terminal:
 ### Keywords
 **Required keywords:**
 
-* `"labels": [string, ...]` &mdash bead labels in input XYZ file
-* `"sizes": [integer, ...]` &mdash numbers of bead representing individual entities
-* `"box_size": float` &mdash size of simulation (cubic) box (*Å*)
-* `"temperature": float` &mdash temperature (*K*)
-* `"viscosity": float` &mdash dynamic viscosity (*P*)
+* `"labels": [string, ...]` &mdash; bead labels in input XYZ file
+* `"sizes": [integer, ...]` &mdash; numbers of bead representing individual entities
+* `"box_size": float` &mdash; size of simulation (cubic) box (*Å*)
+* `"temperature": float` &mdash; temperature (*K*)
+* `"viscosity": float` &mdash; dynamic viscosity (*P*)
 
 *pyBrown demands from input `xyz` files a following naming scheme:
 ..., `(TEMPLATE)(NUMBER).xyz`, `(TEMPLATE)(NUMBER).xyz`, ...
 (where TEMPLATE is a string variable defined with the keyword `"input_xyz_template"` and NUMBER is an integer from range defined with the keyword `"input_xyz_range"`)*
 
-* `"input_xyz_template": string` &mdash template of input xyz filenames.
-* `"input_xyz_range": [integer, integer]` &mdash the number range defining input xyz filenames.
+* `"input_xyz_template": string` &mdash; template of input xyz filenames.
+* `"input_xyz_range": [integer, integer]` &mdash; the number range defining input xyz filenames.
 
 *(Have in mind, that ranges in python are defined in such a way that the upper limit is not contained in a range. For example, range(1,4) returns 1, 2 and 3 (without 4!).)*
 
-* `"debug": boolean` &mdash print extra information useful for debugging purposes (default: `false`)
-* `"verbose": boolean` &mdash print extra information (default: `false`)
-* `"fit_MSD": boolean` &mdash fit linear functions to the computed MSDs and plot them in the output figure (default: `false`)
-* `"probing_frequency: integer"` &mdash read every *N*-th geometry (default: `1`)
-* `"min_time: float"` &mdash not include snapshots with time smaller than `"min_time"` (default: `0.0`)
-* `"mode": option` &mdash (options: `direct`/`window`, default: `window`)
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
+* `"verbose": boolean` &mdash; print extra information (default: `false`)
+* `"fit_MSD": boolean` &mdash; fit linear functions to the computed MSDs and plot them in the output figure (default: `false`)
+* `"probing_frequency: integer"` &mdash; read every *N*-th geometry (default: `1`)
+* `"min_time: float"` &mdash; not include snapshots with time smaller than `"min_time"` (default: `0.0`)
+* `"mode": option` &mdash; (options: `direct`/`window`, default: `window`)
 
 **Optional keywords:**
 
@@ -70,8 +70,8 @@ Type those commands in a terminal:
 ..., `(TEMPLATE)(NUMBER).enr`, `(TEMPLATE)(NUMBER).enr`, ...
 (where TEMPLATE is a string variable defined with the keyword `"input_enr_template"` and NUMBER is an integer from range defined with the keyword `"input_enr_range"`)*
 
-* `"input_enr_template": string` &mdash template of input enr filenames.
-* `"input_enr_range": [integer, integer]` &mdash the number range defining input enr filenames.
+* `"input_enr_template": string` &mdash; template of input enr filenames.
+* `"input_enr_range": [integer, integer]` &mdash; the number range defining input enr filenames.
 
 *(Have in mind, that ranges in python are defined in such a way that the upper limit is not contained in a range. For example, range(1,4) returns 1, 2 and 3 (without 4!).)*
 
