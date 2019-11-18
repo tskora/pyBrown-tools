@@ -62,7 +62,7 @@ Type those commands in a terminal:
 * `"fit_MSD": boolean` &mdash; fit linear functions to the computed MSDs and plot them in the output figure (default: `false`)
 * `"probing_frequency: integer"` &mdash; read every *N*-th geometry (default: `1`)
 * `"min_time: float"` &mdash; not include snapshots with time smaller than `"min_time"` (default: `0.0`)
-* `"mode": option` &mdash; (options: `direct`/`window`, default: `window`)
+* `"mode": option` &mdash; learn more [here](https://freud.readthedocs.io/en/v2.0.1/modules/msd.html) (options: `direct`/`window`, default: `window`)
 
 **Optional keywords:**
 
