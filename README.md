@@ -70,7 +70,8 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 <a name="traj.example"></a>
 ### Example input file
 
-`{
+```json
+{
   "labels": ["FIC", "DNA"],
   "sizes": [1, 8],
   "box_size": 750.0,
@@ -85,7 +86,8 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
   "debug": true,
   "probing_frequency": 10,
   "mode": "window"
-}`
+}
+```
 
 <a name="traj.usage"></a>
 ### Usage
