@@ -8,10 +8,9 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 ## Features
 
 - [x] computing Mean Squared Displacement
+- [ ] computing Radial Distribution Function
 - [x] structure (`.str`) files generation
 - [ ] diffusion/mobility/resistance matrix analysis
-- [ ] computing Radial Distribution Function
-- [ ] computing dynamic geometry features
 
 ## Table of Contents
 
@@ -19,6 +18,9 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 * [Keywords](#strs.keywords)
 2. [Trajectory analysis](#traj)
 * [Keywords](#traj.keywords)
+* [Example input file](#traj.example)
+* [Usage](#traj.usage)
+* [Output files](#traj.output)
 3. [H Cell simulator](#hcells)
 
 <a name="strs"></a>
@@ -32,38 +34,71 @@ Copyright ©2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 ### Keywords
 **Required keywords:**
 
-* `"labels": [string, ...]` -- bead labels in input XYZ file
-* `"sizes": [integer, ...]` -- numbers of bead representing individual entities
-* `"box_size": float` -- size of simulation (cubic) box (*Å*)
-* `"temperature": float` -- temperature (*K*)
-* `"viscosity": float` -- dynamic viscosity (*P*)
+* `"labels": [string, ...]` &mdash bead labels in input XYZ file
+* `"sizes": [integer, ...]` &mdash numbers of bead representing individual entities
+* `"box_size": float` &mdash size of simulation (cubic) box (*Å*)
+* `"temperature": float` &mdash temperature (*K*)
+* `"viscosity": float` &mdash dynamic viscosity (*P*)
 
 *pyBrown demands from input `xyz` files a following naming scheme:
-..., `TEMPLATE_NUMBER.xyz`, 'TEMPLATE_NUMBER.xyz', ...
+..., `(TEMPLATE)(NUMBER).xyz`, `(TEMPLATE)(NUMBER).xyz`, ...
 (where TEMPLATE is a string variable defined with the keyword `"input_xyz_template"` and NUMBER is an integer from range defined with the keyword `"input_xyz_range"`)*
 
-* `"input_xyz_template": string` -- template of input xyz filenames.
-* `"input_xyz_range": [integer, integer]` -- the number range defining input xyz filenames.
+* `"input_xyz_template": string` &mdash template of input xyz filenames.
+* `"input_xyz_range": [integer, integer]` &mdash the number range defining input xyz filenames.
 
 *(Have in mind, that ranges in python are defined in such a way that the upper limit is not contained in a range. For example, range(1,4) returns 1, 2 and 3 (without 4!).)*
 
-* `"debug": boolean` -- (default: `false`)
-* `"verbose": boolean` -- (default: `false`)
-* `"fit_MSD": boolean` -- (default: `false`)
-* `"probing_frequency: integer"` -- (default: `1`)
-* `"min_time: float"` -- (default: `0.0`)
-* `"mode": option` -- (options: `direct`/`window`, default: `window`)
+* `"debug": boolean` &mdash print extra information useful for debugging purposes (default: `false`)
+* `"verbose": boolean` &mdash print extra information (default: `false`)
+* `"fit_MSD": boolean` &mdash fit linear functions to the computed MSDs and plot them in the output figure (default: `false`)
+* `"probing_frequency: integer"` &mdash read every *N*-th geometry (default: `1`)
+* `"min_time: float"` &mdash not include snapshots with time smaller than `"min_time"` (default: `0.0`)
+* `"mode": option` &mdash (options: `direct`/`window`, default: `window`)
 
 **Optional keywords:**
 
 *pyBrown demands from input `enr` files a following naming scheme:
-..., `TEMPLATE_NUMBER.enr`, 'TEMPLATE_NUMBER.enr', ...
+..., `(TEMPLATE)(NUMBER).enr`, `(TEMPLATE)(NUMBER).enr`, ...
 (where TEMPLATE is a string variable defined with the keyword `"input_enr_template"` and NUMBER is an integer from range defined with the keyword `"input_enr_range"`)*
 
-* `"input_enr_template": string` -- template of input enr filenames.
-* `"input_enr_range": [integer, integer]` -- the number range defining input enr filenames.
+* `"input_enr_template": string` &mdash template of input enr filenames.
+* `"input_enr_range": [integer, integer]` &mdash the number range defining input enr filenames.
 
 *(Have in mind, that ranges in python are defined in such a way that the upper limit is not contained in a range. For example, range(1,4) returns 1, 2 and 3 (without 4!).)*
+
+<a name="traj.example"></a>
+### Example input file
+
+`{
+  "labels": ["FIC", "DNA"],
+  "sizes": [1, 8],
+  "box_size": 750.0,
+  "temperature": 293.15,
+  "viscosity": 0.01005,
+  "input_xyz_template": "ficoll_41_DNA_14_",
+  "input_enr_template": "ficoll_41_DNA_14_",
+  "input_xyz_range": [1, 94],
+  "input_enr_range": [1, 94],
+  "fit_MSD": true,
+  "verbose": true,
+  "debug": true,
+  "probing_frequency": 10,
+  "mode": "window"
+}`
+
+<a name="traj.usage"></a>
+### Usage
+If you have already prepared an input JSON file (using keywords introduced above), you can run the `MSD.py` program using following command:
+`python MSD.py input.json`
+
+<a name="traj.output"></a>
+### Output files
+
+Successful computations should produce:
+* `(TEMPLATE)msd.txt` data file with MSD as a function of time,
+* `(TEMPLATE)msd.jpg` image file with MSD as a function of time (and optionally, linear fit),
+* `(TEMPLATE)enr.jpg` image file with total energy as a function of time, if `"input_enr_template"` and `"input_enr_range"` are present in the input JSON file.
 
 <a name="hcells"></a>
 ## H Cell simulator
