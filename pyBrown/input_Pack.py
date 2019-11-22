@@ -55,3 +55,5 @@ class InputDataPack(InputData):
             for k in range( len( bfc ) ):
                 bond_lengths[j].append( self.input_data["hydrodynamic_radii"][j][k] +
                                         self.input_data["hydrodynamic_radii"][j][k+1] )
+
+        self.input_data["bond_lengths"] = bond_lengths
