@@ -355,7 +355,7 @@ def Y_f_poly(l, rank):
 	if rank == 0: return 1
 	if rank == 1: return 3 / 2 * l
 	if rank == 2: return 9 / 4 * l
-	if rank == 3: return 2 * l + 27 / 8 ** l**2 + 2 * l**3
+	if rank == 3: return 2 * l + 27 / 8 * l**2 + 2 * l**3
 	if rank == 4: return 6 * l + 81 / 16 * l**2 + 18 * l**3
 	if rank == 5: return 63 / 2 * l**2 + 243 / 32 * l**3 + 63 / 2 * l**4
 	if rank == 6: return 4 * l + 54 * l**2 + 1241 / 64 * l**3 + 81 * l**4 + 72 * l**5
@@ -391,13 +391,13 @@ def XA11(s, l):
 
 	answer += X_g_poly(l, 1) * ( 1 - 4 * s**(-2) )**(-1)
 
-	answer += X_g_poly(l, 2) * np.log( 1 - 4 * s**(-2) )
+	answer -= X_g_poly(l, 2) * np.log( 1 - 4 * s**(-2) )
 
-	answer += X_g_poly(l, 3) * ( 1 - 4 * s**(-2) )**(-1) * np.log( 1 - 4 * s**(-2) )
+	answer -= X_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( 1 - 4 * s**(-2) )
 
 	answer += X_f_poly(l, 0) - X_g_poly(l, 1)
 
-	for m in [ mi for mi in range(1, 11) if ( mi%2 == 0 ) ]:
+	for m in [ mi for mi in range(1, 12) if ( mi%2 == 0 ) ]:
 
 		if m == 2: m1 = -2
 		else: m1 = m - 2
@@ -422,7 +422,7 @@ def YA11(s, l):
 
 	answer += Y_f_poly(l, 0)
 
-	for m in [ mi for mi in range(1, 11) if ( mi%2 == 0 ) ]:
+	for m in [ mi for mi in range(1, 12) if ( mi%2 == 0 ) ]:
 
 		if m == 2: m1 = -2
 		else: m1 = m - 2
@@ -447,7 +447,7 @@ def XA12(s, l):
 
 	answer += X_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( ( s + 2 ) / ( s - 2 ) ) + 4 * X_g_poly(l, 3) * s**(-1)
 
-	for m in [ mi for mi in range(1, 11) if ( mi%2 == 1 ) ]:
+	for m in [ mi for mi in range(1, 12) if ( mi%2 == 1 ) ]:
 
 		if m == 2: m1 = -2
 		else: m1 = m - 2
@@ -474,7 +474,7 @@ def YA12(s, l):
 
 	answer += 4 * Y_g_poly(l, 3) * s**(-1)
 
-	for m in [ mi for mi in range(1, 11) if ( mi%2 == 1 ) ]:
+	for m in [ mi for mi in range(1, 12) if ( mi%2 == 1 ) ]:
 
 		if m == 2: m1 = -2
 		else: m1 = m - 2
@@ -559,23 +559,24 @@ def main():
 
 	p1 = Particle([0.0,0.0,0.0], 1.0)
 	p2 = Particle([3.0,0.0,0.0], 1.0)
-	# p3 = Particle([0.0,0.0,0.0], 1.0)
+	p3 = Particle([6.0,0.0,0.0], 1.0)
 	# p4 = Particle([3.0,0.0,0.0], 1.0)
 	# p5 = Particle([0.0,0.0,0.0], 1.0)
 	# p6 = Particle([3.0,0.0,0.0], 1.0)
+	distance = 3.0
+	ps = [ Particle([i*3.0,0.0,0.0], 1.0) for i in range(100) ]
 	
-	rpy = M_rpy( [p1, p2] )
+	rpy = np.linalg.inv( M_rpy( ps ) )
 	# smith = M_rpy_smith( [p1, p2], L = 1000.0, alpha = np.sqrt( np.pi ), m = 1, n = 1 )
-	jeffrey = R_jeffrey( *[p1, p2] )
+	# jeffrey = R_jeffrey( *[p1, p2] )
+	lub_corr = R_lub_corr( ps ) + rpy
 
-	# print( 'D RPY:\n{}\n'.format( KT * rpy ) )
-	# print( 'D Smith:\n{}\n'.format( KT * smith ) )
-	print( 'R RPY:\n{}\n'.format( np.linalg.inv(rpy) ) )
-	# # print( 'R2B RPY:\n{}\n'.format( block_inverse(rpy) ) )
+	print( 'R RPY:\n{}\n'.format( rpy ) )
 	# print( 'R Smith:\n{}\n'.format( np.linalg.inv(smith) ) )
 	# print( 'R Jeffrey:\n{}\n'.format( jeffrey ) )
 	# print( 'R Jeffrey / R RPYL\n{}\n'.format( jeffrey / np.linalg.inv(rpy) ) )
-	# # print( 'lub corr:\n{}\n'.format(R_lub_corr( [p1, p2] )) )
+	print( 'R lubrication corrected:\n{}\n'.format( lub_corr ) )
+	# print( 'Relative change:\n{}\n'.format( lub_corr / rpy ) )
 	# Dlubcorr = KT * np.linalg.inv( np.identity(len(smith)) + smith @ R_lub_corr( [p1, p2] ) ) @ smith
 	# Dsmith = KT * smith
 	# print( 'D lub corr:\n{}\n'.format( Dlubcorr ) )
