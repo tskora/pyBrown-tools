@@ -272,12 +272,6 @@ def separate_center_of_mass(input_data, temporary_filename, labels):
 
 			temp2[which_cm_trajectory, :, :] = temp[which_trajectory, :, :]
 
-			for tframe in range(number_of_timeframes):
-
-				print( np.sqrt( np.sum(( temp[which_trajectory + multiplicity - 1,tframe,:] - temp[which_trajectory,tframe,:] )**2) ) )
-
-			print('')
-
 			for i in range( 1, multiplicity ):
 
 				temp2[which_cm_trajectory, :, :] += temp[which_trajectory + i, :, :]
