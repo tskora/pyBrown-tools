@@ -437,6 +437,8 @@ def compute_mean_director( input_data, orientation_labels, auxiliary_data ):
 
 		mean_director[i] /= molecule_numbers[ label ]
 
+		mean_director[i] /=np.linalg.norm( mean_director[i] )
+
 	return mean_director
 
 def compute_nematic_order( input_data, orientation_labels, auxiliary_data, director ):

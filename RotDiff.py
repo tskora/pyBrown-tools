@@ -56,21 +56,11 @@ def main(input_filename):
 	timestamp( 'Separating the rotational movement' )
 	orientation_labels = compute_orientations( i.input_data, labels, auxiliary_data )
 	del labels
-	timestamp( 'Computing director' )
-	mean_director =  compute_mean_director( i.input_data, orientation_labels, auxiliary_data )
-	timestamp( 'Computing nematic order parameters' )
-	a = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = np.array([1.0, 0.0, 0.0], dtype=np.float32) )
-	b = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = np.array([0.0, 1.0, 0.0], dtype=np.float32) )
-	c = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = np.array([0.0, 0.0, 1.0], dtype=np.float32) )
-	d = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = mean_director[1] )
-	print( mean_director )
-	print(a)
-	print(b)
-	print(c)
-	print(d)
-	1/0
-	print( compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = mean_director[1] ) )
-	1/0
+	# timestamp( 'Computing director' )
+	# mean_director =  compute_mean_director( i.input_data, orientation_labels, auxiliary_data )
+	# timestamp( 'Computing nematic order parameters' )
+	# no = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = mean_director[1] )
+	# print(no)
 
 	timestamp( 'Computing mean orientation autocorrelations' )
 	moas = compute_mean_orientation_autocorrelation( i.input_data, orientation_labels, auxiliary_data )
@@ -81,6 +71,8 @@ def main(input_filename):
 	timestamp( 'Saving mean squared angular displacements to a file' )
 	save_mean_squared_angular_displacements_to_file(i.input_data, times, msads)
 	del orientation_labels
+
+	1/0
 
 	import matplotlib.pyplot as plt
 
