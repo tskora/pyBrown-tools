@@ -16,10 +16,12 @@
 
 from pyBrown.input import InputData
 from pyBrown.parse import parse_input_filename
-from pyBrown.monte_carlo import MonteCarlo, place_crowders_linearly, place_tracers_linearly
+from pyBrown.monte_carlo import MonteCarlo, place_crowders_linearly, place_tracers_linearly, place_crowders_xyz
 from pyBrown.sphere import Sphere, overlap
 
 import numpy as np
+
+from tqdm import tqdm
 
 #-------------------------------------------------------------------------------
 
@@ -27,14 +29,27 @@ import numpy as np
 # TODO: Sphere volume/surface may be thrown into Sphere class
 if __name__ == '__main__':
 
-	input_filename = parse_input_filename()
-	i = InputData(input_filename, [])
+	# input_filename = parse_input_filename()
+	# i = InputData(input_filename, [])
 	# print(i.input_data)
 
-	box_size = i.input_data["box_size"]
-	r_crowders = i.input_data["crowders_radii"]
-	r_tracer = i.input_data["tracers_radii"]
-	number_of_trials = i.input_data["number_of_draws"]
+	# box_size = i.input_data["box_size"]
+	# r_crowders = i.input_data["crowders_radii"]
+	# r_tracer = i.input_data["tracers_radii"]
+	# number_of_trials = i.input_data["number_of_draws"]
+
+	box_size = 6.0
+	r_tracer = 1.0
+	r_crowders = [1.0]
+	pos_crowders = [ [1.0, 1.0, 1.0] ]
+	number_of_trials = 100000
+
+	times, labels, auxiliary_data = read_trajectories(i.input_data)
+	print(auxiliary_data["traj_temp_filename"])
+	1/0
+
+	crowders = place_crowders_xyz(r_crowders, pos_crowders)
+	print(crowders)
 
 	def sphere_volume(radius):
 	    return 4 / 3 * np.pi * radius**3
@@ -50,21 +65,22 @@ if __name__ == '__main__':
 	
 	count = 0
 
-	crowders = place_crowders_linearly(r_tracer, box_size)
-	for crowder in crowders:
-		crowder.r -= 1.5
-	# print(crowders)
-	for i in range(number_of_trials):
+	# for crowder in crowders:
+	# 	crowder.r -= 1.5
+
+	for i in tqdm( range(number_of_trials) ):
 	    tracers = place_tracers_linearly(r_crowders, box_size)
-	    for tracer in tracers:
-	    	tracer.r -= 1.5
+	    # for tracer in tracers:
+	    # 	tracer.r -= 1.5
 	    # print(tracers)
 	    if overlap(crowders, tracers, 0.0):
 	        count += 1
-	    print( '{}\t{}'.format(i + 1, count / (i + 1) * box_size**3) )
+	    # print( '{}\t{}'.format(i + 1, count / (i + 1) * box_size**3) )
 	
 	
 	ex_vol = count / number_of_trials * box_size**3
+	print(ex_vol)
+	print(excluded_volume_sphere_Nspheres(r_tracer, r_crowders[0], 1))
 
 	# print(ex_vol)
 	# print( excluded_volume_sphere_Nspheres(2.289, 1.14, 8) )

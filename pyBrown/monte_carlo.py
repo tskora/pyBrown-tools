@@ -62,6 +62,17 @@ def place_crowders_linearly(radii, box_size):
 
 #-------------------------------------------------------------------------------
 
+def place_crowders_xyz(radii, positions):
+
+    crowders = []
+
+    for radius, position in zip( radii, positions ):
+        crowders.append( Sphere(position, radius) )
+
+    return crowders
+
+#-------------------------------------------------------------------------------
+
 def place_tracers_linearly(radii, box_size, bond_lengths = None):
 
     if not isinstance(radii, list):

@@ -62,6 +62,16 @@ class Sphere:
         self.coords = rotation3 @ rotation2 @ rotation1 @ self.coords
         self.x, self.y, self.z = self.coords[0], self.coords[1], self.coords[2]
 
+    #---------------------------------------------------------------------------
+
+    def volume(self):
+        return 4.0 * np.pi * self.r**3 / 3.0
+
+    #---------------------------------------------------------------------------
+
+    def surface(self):
+        return 4.0 * np.pi * self.r**2
+
 #-------------------------------------------------------------------------------
 
 def _overlap(sphere1, sphere2, minimal_distance):
