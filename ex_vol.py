@@ -23,6 +23,46 @@ import numpy as np
 
 from tqdm import tqdm
 
+
+def _read_snapshot_from_xyz_file(xyz_file, time):
+
+	snapshot = [  ]
+	labels = [  ]
+
+	number_of_beads_per_file = int( xyz_file.readline() )
+
+	this_one = False
+
+	for i, line in enumerate(xyz_file):
+
+		is_line_unimportant = len( line.split() ) == 1
+
+		if 'xyz' in line.split()[0].split('.'):
+
+			time_of_snapshot = float( line.split()[3] )
+
+			if time == time_of_snapshot:
+
+				this_one = True
+
+			else:
+
+				this_one = False
+
+		elif is_line_unimportant: continue
+
+		else:
+
+			if this_one:
+
+				labels.append( line.split()[0] )
+
+				coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
+						
+				snapshot.append( coords )
+
+	return labels, snapshot
+
 #-------------------------------------------------------------------------------
 
 # TODO: Refactor that code and separate into functions
@@ -38,18 +78,33 @@ if __name__ == '__main__':
 	# r_tracer = i.input_data["tracers_radii"]
 	# number_of_trials = i.input_data["number_of_draws"]
 
-	box_size = 6.0
-	r_tracer = 1.0
-	r_crowders = [1.0]
-	pos_crowders = [ [1.0, 1.0, 1.0] ]
-	number_of_trials = 100000
+	box_size = 750.0
+	r_tracer = 51.0
 
-	times, labels, auxiliary_data = read_trajectories(i.input_data)
-	print(auxiliary_data["traj_temp_filename"])
-	1/0
+	number_of_trials = 10000
 
-	crowders = place_crowders_xyz(r_crowders, pos_crowders)
-	print(crowders)
+	input_labels = ["FIC", "DNA"]
+	input_radii = [51.0, 11.4]
+
+	xyz_filename = 'ficoll_35_DNA_104_1.xyz'
+
+	time = 4000000.0
+
+	with open(xyz_filename, 'r') as xyz_file:
+
+		labels, snapshot = _read_snapshot_from_xyz_file(xyz_file, time)
+
+	r_crowders = []
+
+	for label in labels:
+
+		for i, input_label in enumerate( input_labels ):
+
+			if label == input_label:
+
+				r_crowders.append( input_radii[i] )
+
+	crowders = place_crowders_xyz(r_crowders, snapshot)
 
 	def sphere_volume(radius):
 	    return 4 / 3 * np.pi * radius**3
@@ -65,22 +120,19 @@ if __name__ == '__main__':
 	
 	count = 0
 
-	# for crowder in crowders:
-	# 	crowder.r -= 1.5
+	for crowder in crowders:
+		crowder.r -= 1.5
 
 	for i in tqdm( range(number_of_trials) ):
 	    tracers = place_tracers_linearly(r_crowders, box_size)
-	    # for tracer in tracers:
-	    # 	tracer.r -= 1.5
-	    # print(tracers)
+	    for tracer in tracers:
+	    	tracer.r -= 1.5
 	    if overlap(crowders, tracers, 0.0):
 	        count += 1
 	    # print( '{}\t{}'.format(i + 1, count / (i + 1) * box_size**3) )
 	
-	
 	ex_vol = count / number_of_trials * box_size**3
-	print(ex_vol)
-	print(excluded_volume_sphere_Nspheres(r_tracer, r_crowders[0], 1))
+	print(ex_vol / box_size**3)
 
 	# print(ex_vol)
 	# print( excluded_volume_sphere_Nspheres(2.289, 1.14, 8) )
