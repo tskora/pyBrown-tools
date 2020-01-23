@@ -370,7 +370,7 @@ def compute_msds(input_data, temporary_filename_2, cm_labels, min_time_index):
 
 	for k in range(len(input_data["labels"])):
 
-		box = freud.box.Box.cube(750.0)
+		box = freud.box.Box.cube(input_data["box_size"])
 
 		if (input_data["mode"] == "direct"):
 			msd = freud.msd.MSD(box, 'direct')
