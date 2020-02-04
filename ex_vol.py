@@ -79,60 +79,79 @@ if __name__ == '__main__':
 	# number_of_trials = i.input_data["number_of_draws"]
 
 	box_size = 750.0
+	# r_tracer = [11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4]
+	# r_tracer = 39.2
 	r_tracer = 51.0
 
-	number_of_trials = 10000
+	# number_of_trials = 100000
+	number_of_trials = 100000
 
-	input_labels = ["FIC", "DNA"]
-	input_radii = [51.0, 11.4]
+	input_labels = ["FIC", "DNA", "DNS"]
+	input_radii = [51.0, 11.4, 39.2]
 
-	xyz_filename = 'ficoll_35_DNA_104_1.xyz'
+	which = 3
+	xyz_filenames = [ 'ficoll_42_'+str(which)+'.xyz', 'ficoll_41_DNA_14_'+str(which)+'.xyz', 'ficoll_39_DNA_39_'+str(which)+'.xyz', 'ficoll_35_DNA_104_'+str(which)+'.xyz' ]
+	# xyz_filenames = [ 'ficoll_41_DNA_14_'+str(which)+'.xyz', 'ficoll_39_DNA_39_'+str(which)+'.xyz', 'ficoll_35_DNA_104_'+str(which)+'.xyz' ]
+	# xyz_filenames = [ 'ficoll_18_DNS_54_'+str(which)+'.xyz' ]
+	# xyz_filenames = [ 'ficoll_18_DNS_54_'+str(which)+'.xyz' ]
+	print( xyz_filenames )
 
-	time = 4000000.0
+	times = [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0]
+	# times = [2000000.0, 3000000.0, 4000000.0]
 
-	with open(xyz_filename, 'r') as xyz_file:
+	for xyz_filename in xyz_filenames:
 
-		labels, snapshot = _read_snapshot_from_xyz_file(xyz_file, time)
+		print(xyz_filename)
 
-	r_crowders = []
+		for time in times:
 
-	for label in labels:
+			print(time)
 
-		for i, input_label in enumerate( input_labels ):
+			with open(xyz_filename, 'r') as xyz_file:
 
-			if label == input_label:
+				labels, snapshot = _read_snapshot_from_xyz_file(xyz_file, time)
 
-				r_crowders.append( input_radii[i] )
+			r_crowders = []
 
-	crowders = place_crowders_xyz(r_crowders, snapshot)
+			for label in labels:
 
-	def sphere_volume(radius):
-	    return 4 / 3 * np.pi * radius**3
+				for i, input_label in enumerate( input_labels ):
+
+					if label == input_label:
+
+						r_crowders.append( input_radii[i] )
+
+			crowders = place_crowders_xyz(r_crowders, snapshot)
+
+			crowders = crowders[:-1]
+
+	# def sphere_volume(radius):
+	#     return 4 / 3 * np.pi * radius**3
 	
-	def sphere_surface(radius):
-	    return 4 * np.pi * radius**2
+	# def sphere_surface(radius):
+	#     return 4 * np.pi * radius**2
 	
-	def cylinder_volume(radius, length):
-	    return np.pi * radius**2 * length
+	# def cylinder_volume(radius, length):
+	#     return np.pi * radius**2 * length
 	
-	def excluded_volume_sphere_Nspheres(radius_tracer, radius, N):
-	    return N * sphere_volume(radius) + sphere_volume(radius_tracer) + N * sphere_surface(radius) * radius_tracer + (N + 1) * cylinder_volume(radius_tracer, 2 * radius)
+	# def excluded_volume_sphere_Nspheres(radius_tracer, radius, N):
+	#     return N * sphere_volume(radius) + sphere_volume(radius_tracer) + N * sphere_surface(radius) * radius_tracer + (N + 1) * cylinder_volume(radius_tracer, 2 * radius)
 	
-	count = 0
+			count = 0
 
-	for crowder in crowders:
-		crowder.r -= 1.5
+			for crowder in crowders:
+				crowder.r -= 1.5
 
-	for i in tqdm( range(number_of_trials) ):
-	    tracers = place_tracers_linearly(r_crowders, box_size)
-	    for tracer in tracers:
-	    	tracer.r -= 1.5
-	    if overlap(crowders, tracers, 0.0):
-	        count += 1
-	    # print( '{}\t{}'.format(i + 1, count / (i + 1) * box_size**3) )
+			for i in tqdm( range(number_of_trials) ):
+				tracers = place_tracers_linearly(r_tracer, box_size)
+				for tracer in tracers:
+					tracer.r -= 1.5
+				if overlap(crowders, tracers, 0.0):
+					count += 1
+	    		# print( '{}\t{}'.format(i + 1, count / (i + 1) * box_size**3) )
 	
-	ex_vol = count / number_of_trials * box_size**3
-	print(ex_vol / box_size**3)
+			ex_vol = count / number_of_trials * box_size**3
+			print(ex_vol / box_size**3)
 
 	# print(ex_vol)
 	# print( excluded_volume_sphere_Nspheres(2.289, 1.14, 8) )
