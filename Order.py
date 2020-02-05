@@ -16,13 +16,11 @@
 
 import click
 
-from pyBrown.input_MSD import InputDataMSD
+from pyBrown.input_Order import InputDataOrder
 from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
-								 separate_center_of_mass, \
-								 compute_msds, \
-								 save_msds_to_file, \
-								 plot_msds
+								 compute_orientations, compute_nematic_order, \
+								 compute_mean_director
 
 #-------------------------------------------------------------------------------
 
@@ -32,37 +30,31 @@ from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibead
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
-						 "input_xyz_template", "input_xyz_range"]
+	required_keywords = ["labels", "sizes", "box_size", "input_xyz_template", "input_xyz_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
-				"probing_frequency": 1, "min_time": 0.0, "mode": "window"}
+	defaults = {"debug": False, "verbose": False, "probing_frequency": 1, "min_time": 0.0}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataMSD(input_filename, required_keywords, defaults)
+	i = InputDataOrder(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
 	timestamp( 'Reading trajectories' )
 	times, labels, auxiliary_data = read_trajectories(i.input_data)
 	add_auxiliary_data_multibeads( i.input_data, labels, auxiliary_data )
-	timestamp( 'Separating the center of mass movement' )
-	cm_labels = separate_center_of_mass( i.input_data, labels, auxiliary_data )
+	timestamp( 'Separating the rotational movement' )
+	orientation_labels = compute_orientations( i.input_data, labels, auxiliary_data )
 	del labels
 
-	timestamp( 'Computing mean squared displacements' )
-	msds = compute_msds( i.input_data, cm_labels, auxiliary_data )
-	del cm_labels
-
-	timestamp( 'Saving mean squared displacements to a file' )
-	save_msds_to_file(i.input_data, times, msds)
-
-	timestamp( 'Plotting mean squared displacements' )
-	plot_msds(i.input_data, times, msds)
+	timestamp( 'Computing director' )
+	mean_director =  compute_mean_director( i.input_data, orientation_labels, auxiliary_data )
+	timestamp( 'Computing nematic order parameter' )
+	no = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = mean_director )
+	timestamp( 'Nematic order parameters:\n{}\n{}', i.input_data["labels"], no )
 
 	del times
-	del msds
+	del orientation_labels
 
 #-------------------------------------------------------------------------------
 

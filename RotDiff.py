@@ -16,8 +16,6 @@
 
 import click
 
-import numpy as np
-
 from pyBrown.input_RotDiff import InputDataRotDiff
 from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
@@ -25,7 +23,7 @@ from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibead
 								 save_mean_orientation_autocorrelation_to_file, \
 								 compute_mean_squared_angular_displacements, \
 								 save_mean_squared_angular_displacements_to_file, \
-								 compute_nematic_order, compute_mean_director
+								 plot_msads, plot_moas
 
 #-------------------------------------------------------------------------------
 
@@ -35,16 +33,12 @@ from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibead
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
-						 "input_xyz_template", "input_xyz_range"]
+	required_keywords = ["labels", "sizes", "box_size", "input_xyz_template", "input_xyz_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
-				"probing_frequency": 1, "min_time": 0.0, "mode": "window"}
-
-	required_keywords = []
-	defaults = {}
+	defaults = {"debug": False, "verbose": False, "probing_frequency": 1, "fit_MOA": False,
+				"min_time": 0.0, "mode": "window"}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataRotDiff(input_filename, required_keywords, defaults)
@@ -56,48 +50,24 @@ def main(input_filename):
 	timestamp( 'Separating the rotational movement' )
 	orientation_labels = compute_orientations( i.input_data, labels, auxiliary_data )
 	del labels
-	# timestamp( 'Computing director' )
-	# mean_director =  compute_mean_director( i.input_data, orientation_labels, auxiliary_data )
-	# timestamp( 'Computing nematic order parameters' )
-	# no = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = mean_director[1] )
-	# print(no)
 
 	timestamp( 'Computing mean orientation autocorrelations' )
 	moas = compute_mean_orientation_autocorrelation( i.input_data, orientation_labels, auxiliary_data )
 	timestamp( 'Saving mean orientation autocorrelations to a file' )
 	save_mean_orientation_autocorrelation_to_file(i.input_data, times, moas)
+
 	timestamp( 'Computing mean squared angular displacements' )
 	msads = compute_mean_squared_angular_displacements( i.input_data, orientation_labels, auxiliary_data )
 	timestamp( 'Saving mean squared angular displacements to a file' )
 	save_mean_squared_angular_displacements_to_file(i.input_data, times, msads)
 	del orientation_labels
 
-	1/0
+	timestamp( 'Plotting mean squared angular displacements' )
+	plot_msads(i.input_data, times, msads)
 
-	import matplotlib.pyplot as plt
+	timestamp( 'Plotting mean orientation autocorrelations' )
+	plot_moas(i.input_data, times, moas)
 
-	divider = 10
-
-	ys = moas[1]
-	a, b = np.polyfit(times[:len(times)//divider], np.log( ys[:len(times)//divider] ), 1)
-	plt.plot( times, np.log( ys ), '-')
-	plt.plot(times, a * times + b * np.ones(len(times)), ':')
-	plt.show()
-	plt.close()
-	print(-0.5*a)
-
-	zs = msads[1]
-	aa, bb = np.polyfit( times[:len(times)//divider], zs[:len(times)//divider], 1 )
-	plt.plot( times, zs, '-' )
-	plt.plot( times, aa * times + bb * np.ones(len(times)), ':' )
-	plt.show()
-	plt.close()
-	print(0.25*aa)
-
-	1/0
-
-	# timestamp( 'Plotting mean square displacements' )
-	# plot_msds(i.input_data, times, msds)
 	del times
 	del moas
 	del msads
