@@ -10,7 +10,7 @@ Copyright &copy;2018-2019 Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.
 ## Features
 
 - [x] computing Mean Squared Displacement
-- [ ] computing Radial Distribution Function
+- [x] computing Radial Distribution Function
 - [x] structure (`.str`) files generation
 - [ ] diffusion/mobility/resistance matrix analysis
 
