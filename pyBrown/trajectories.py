@@ -28,7 +28,6 @@ from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
 
 FREUD = True
-DTYPE = np.float32
 
 #-------------------------------------------------------------------------------
 
@@ -63,13 +62,13 @@ def read_trajectories(input_data):
 					  "number_of_timeframes": number_of_timeframes,
 					  "traj_temp_filename": traj_temp_filename}
 
-	trajectories = np.memmap( traj_temp_filename, dtype = DTYPE,
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
 							  mode = 'w+',
 							  shape = ( number_of_beads,
 									    number_of_timeframes, 3 ) )
 
 	for i in range( number_of_beads ):
-		trajectories[i] = np.zeros( (number_of_timeframes, 3), dtype = DTYPE )
+		trajectories[i] = np.zeros( (number_of_timeframes, 3), dtype = input_data["float_type"] )
 
 	del trajectories
 
@@ -80,7 +79,7 @@ def read_trajectories(input_data):
 
 		with open(input_xyz_filename, 'r') as input_xyz_file:
 
-			temp = np.memmap( traj_temp_filename, dtype = DTYPE,
+			temp = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
 						   	  shape = ( number_of_beads,
 						      			number_of_timeframes, 3 ) )
 
@@ -128,22 +127,22 @@ def separate_center_of_mass(input_data, labels, auxiliary_data):
 	cm_temp_filename = input_data["input_xyz_template"] + 'cm_tmp.dat'
 	auxiliary_data["cm_temp_filename"] = cm_temp_filename
 
-	cm_trajectories = np.memmap( cm_temp_filename, dtype = DTYPE,
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 							mode = 'w+',
 							shape = ( number_of_cm_trajectories,
 									  number_of_timeframes, 3 ) )
 
 	for i in range(number_of_cm_trajectories):
-		cm_trajectories[i] = np.zeros((number_of_timeframes, 3), dtype = DTYPE)
+		cm_trajectories[i] = np.zeros((number_of_timeframes, 3), dtype = input_data["float_type"])
 
 	del cm_trajectories
 
 	cm_labels = [ '___' for i in range(number_of_cm_trajectories) ]
 
-	trajectories = np.memmap( traj_temp_filename, dtype = DTYPE,
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
 						shape = ( number_of_beads, number_of_timeframes, 3 ) )
 
-	cm_trajectories = np.memmap( cm_temp_filename, dtype = DTYPE,
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
 	while( which_trajectory < len( labels ) ):
@@ -173,7 +172,7 @@ def separate_center_of_mass(input_data, labels, auxiliary_data):
 
 					r_ref = r
 
-					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = DTYPE)
+					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
 
 			cm_trajectories[which_cm_trajectory] = trajectories[which_trajectory, :, :]
 
@@ -208,7 +207,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
 	cm_temp_filename = auxiliary_data["cm_temp_filename"]
 
-	cm_trajectories = np.memmap( cm_temp_filename, dtype = DTYPE,
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
 	unify_coordinates(cm_trajectories, input_data["box_size"])
@@ -221,7 +220,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 	if FREUD:
 
-		cm_trajectories = np.memmap( cm_temp_filename, dtype = DTYPE,
+		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
 		trajs_all = []
@@ -256,13 +255,13 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 		sd_temp_filename = input_data["input_xyz_template"] + 'sd_tmp.dat'
 		auxiliary_data["sd_temp_filename"] = sd_temp_filename
 
-		sds = np.memmap( sd_temp_filename, dtype = DTYPE,
+		sds = np.memmap( sd_temp_filename, dtype = input_data["float_type"],
 								mode = 'w+',
 								shape = ( number_of_cm_trajectories,
 										  number_of_timeframes ) )
 
 		for i in range(number_of_cm_trajectories):
-			sds[i] = np.zeros(number_of_timeframes, dtype = DTYPE)
+			sds[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
 
 		msds = [ np.zeros(number_of_timeframes) for i in range(len(input_data["sizes"])) ]
 
@@ -272,7 +271,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 			if input_data["verbose"]: timestamp('computing sd: {} / {}', i + 1, number_of_cm_trajectories)
 
-			cm_trajectories = np.memmap( cm_temp_filename, dtype = DTYPE,
+			cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 							 shape = ( number_of_cm_trajectories,
 							 			number_of_timeframes, 3 ) )
 
@@ -283,7 +282,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 			# sd = _compute_sd( cm_trajectory, input_data["box_size"], mode = input_data["mode"] )
 			sd = _compute_sd( cm_trajectory, input_data["box_size"] )
 
-			sds = np.memmap( sd_temp_filename, dtype = DTYPE,
+			sds = np.memmap( sd_temp_filename, dtype = input_data["float_type"],
 							shape = ( number_of_cm_trajectories, number_of_timeframes ) )
 
 			sds[i] = sd
@@ -304,7 +303,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 				counter += 1
 
-			sds = np.memmap( sd_temp_filename, dtype = DTYPE,
+			sds = np.memmap( sd_temp_filename, dtype = input_data["float_type"],
 							shape = ( number_of_cm_trajectories, number_of_timeframes ) )
 
 			sd = sds[i]
@@ -408,22 +407,22 @@ def compute_orientations(input_data, labels, auxiliary_data):
 	orient_temp_filename = input_data["input_xyz_template"] + 'ort_tmp.dat'
 	auxiliary_data["orient_temp_filename"] = orient_temp_filename
 
-	orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 							mode = 'w+',
 							shape = ( number_of_orientation_trajectories,
 									  number_of_timeframes, 3 ) )
 
 	for i in range(number_of_orientation_trajectories):
-		orientation_trajectories[i] = np.zeros((number_of_timeframes, 3), dtype = DTYPE)
+		orientation_trajectories[i] = np.zeros((number_of_timeframes, 3), dtype = input_data["float_type"])
 
 	del orientation_trajectories
 
 	orientation_labels = [ '___' for i in range(number_of_orientation_trajectories) ]
 
-	trajectories = np.memmap( traj_temp_filename, dtype = DTYPE,
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
 						shape = ( number_of_beads, number_of_timeframes, 3 ) )
 
-	orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						shape = ( number_of_orientation_trajectories, number_of_timeframes, 3 ) )
 
 	while( which_trajectory < number_of_beads ):
@@ -486,20 +485,20 @@ def compute_mean_squared_angular_displacements(input_data, orientation_labels, a
 	number_of_orientation_trajectories = auxiliary_data["number_of_molecules"]
 	orient_temp_filename = auxiliary_data["orient_temp_filename"]
 
-	orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_orientation_trajectories, number_of_timeframes, 3 ) )
 
 	# temporary binary file which will contain the squared angular displacements
 	sad_temp_filename = input_data["input_xyz_template"] + 'sad_tmp.dat'
 	auxiliary_data["sad_temp_filename"] = sad_temp_filename
 
-	sads = np.memmap( sad_temp_filename, dtype = DTYPE,
+	sads = np.memmap( sad_temp_filename, dtype = input_data["float_type"],
 							mode = 'w+',
 							shape = ( number_of_orientation_trajectories,
 									  number_of_timeframes ) )
 
 	for i in range(number_of_orientation_trajectories):
-		sads[i] = np.zeros(number_of_timeframes, dtype = DTYPE)
+		sads[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
 
 	msad = [ np.zeros(number_of_timeframes) for i in range(len(input_data["sizes"])) ]
 
@@ -511,7 +510,7 @@ def compute_mean_squared_angular_displacements(input_data, orientation_labels, a
 
 		if input_data["verbose"]: timestamp('computing sad: {} / {}', i + 1, number_of_orientation_trajectories)
 
-		orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+		orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_orientation_trajectories,
 						   			 number_of_timeframes, 3 ) )
 
@@ -522,7 +521,7 @@ def compute_mean_squared_angular_displacements(input_data, orientation_labels, a
 		sad = _compute_sad(orientation_trajectory, mode = input_data["mode"])
 
 
-		sads = np.memmap( sad_temp_filename, dtype = DTYPE,
+		sads = np.memmap( sad_temp_filename, dtype = input_data["float_type"],
 					 	   shape = ( number_of_orientation_trajectories, number_of_timeframes ) )
 
 		sads[i] = sad
@@ -543,7 +542,7 @@ def compute_mean_squared_angular_displacements(input_data, orientation_labels, a
 
 			counter += 1
 
-		sads = np.memmap( sad_temp_filename, dtype = DTYPE,
+		sads = np.memmap( sad_temp_filename, dtype = input_data["float_type"],
 					 	   shape = ( number_of_orientation_trajectories, number_of_timeframes ) )
 
 		sad = sads[i]
@@ -623,17 +622,17 @@ def compute_mean_orientation_autocorrelation(input_data, orientation_labels, aux
 	oa_temp_filename = input_data["input_xyz_template"] + 'oa_tmp.dat'
 	auxiliary_data["oa_temp_filename"] = oa_temp_filename
 
-	orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						   					shape = ( number_of_orientation_trajectories,
 						   							  number_of_timeframes, 3 ) )
 
-	oas = np.memmap( oa_temp_filename, dtype = DTYPE,
+	oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
 							mode = 'w+',
 							shape = ( number_of_orientation_trajectories,
 									  number_of_timeframes ) )
 
 	for i in range(number_of_orientation_trajectories):
-		oas[i] = np.zeros(number_of_timeframes, dtype = DTYPE)
+		oas[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
 
 	moa = [ np.zeros(number_of_timeframes) for i in range(len(input_data["sizes"])) ]
 	amounts = np.zeros(len(input_data["sizes"]))
@@ -646,7 +645,7 @@ def compute_mean_orientation_autocorrelation(input_data, orientation_labels, aux
 
 		if input_data["verbose"]: timestamp('computing autocorrelation: {} / {}', i + 1, number_of_orientation_trajectories)
 
-		orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+		orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_orientation_trajectories,
 						   	number_of_timeframes, 3 ) )
 
@@ -656,7 +655,7 @@ def compute_mean_orientation_autocorrelation(input_data, orientation_labels, aux
 
 		autocorrelation = _compute_autocorrelation(orientation_trajectory, mode = input_data["mode"])
 
-		oas = np.memmap( oa_temp_filename, dtype = DTYPE,
+		oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
 					 	   shape = ( len(orientation_labels), number_of_timeframes ) )
 
 		oas[i] = autocorrelation
@@ -677,7 +676,7 @@ def compute_mean_orientation_autocorrelation(input_data, orientation_labels, aux
 
 			counter += 1
 
-		oas = np.memmap( oa_temp_filename, dtype = DTYPE,
+		oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
 					 	   shape = ( number_of_orientation_trajectories, number_of_timeframes ) )
 
 		autocorrelation = oas[i]
@@ -763,15 +762,15 @@ def compute_mean_director( input_data, orientation_labels, auxiliary_data ):
 	number_of_orientation_trajectories = auxiliary_data["number_of_molecules"]
 	orient_temp_filename = auxiliary_data["orient_temp_filename"]
 
-	orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						   					shape = ( number_of_orientation_trajectories,
 						   							  number_of_timeframes, 3 ) )
 
-	preQ = np.zeros( (number_of_orientation_trajectories, 3, 3), dtype = DTYPE )
+	preQ = np.zeros( (number_of_orientation_trajectories, 3, 3), dtype = input_data["float_type"] )
 
-	directors = np.zeros( (number_of_orientation_trajectories, 3), dtype = DTYPE )
+	directors = np.zeros( (number_of_orientation_trajectories, 3), dtype = input_data["float_type"] )
 
-	mean_director = [ np.zeros(3, dtype = DTYPE) for i in range(len(input_data["sizes"])) ]
+	mean_director = [ np.zeros(3, dtype = input_data["float_type"]) for i in range(len(input_data["sizes"])) ]
 
 	for i in range( number_of_orientation_trajectories ):
 
@@ -830,7 +829,7 @@ def compute_nematic_order( input_data, orientation_labels, auxiliary_data, direc
 	mean_second_Legendre_polynomial = np.zeros( number_of_orientation_trajectories, dtype = DTYPE )
 	nematic_order_parameter = np.zeros( len(input_data["sizes"]) )
 
-	orientation_trajectories = np.memmap( orient_temp_filename, dtype = DTYPE,
+	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
 						   					shape = ( number_of_orientation_trajectories,
 						   							  number_of_timeframes, 3 ) )
 
@@ -879,6 +878,185 @@ def compute_nematic_order( input_data, orientation_labels, auxiliary_data, direc
 		nematic_order_parameter[i] /= molecule_numbers[ label ]
 
 	return nematic_order_parameter
+
+#-------------------------------------------------------------------------------
+
+def compute_rdfs( input_data, labels, auxiliary_data ):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	number_of_trajectories = len(labels)
+	number_of_beads_per_file = number_of_trajectories // number_of_xyz_files
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	traj_temp_filename = auxiliary_data["traj_temp_filename"]
+
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
+						   shape = ( number_of_trajectories, number_of_timeframes, 3 ) )
+
+	### FREUD VERSION START ###
+
+	if FREUD:
+
+		bin_counts = [ np.zeros( input_data["number_of_bins"], dtype = input_data["float_type"] ) for k in range( len(input_data["labels"]) ) ]
+
+		all_bin_counts = np.zeros( input_data["number_of_bins"], dtype = input_data["float_type"] )
+
+		rdfs = [ np.zeros( input_data["number_of_bins"], dtype = input_data["float_type"] ) for k in range( len(input_data["labels"]) ) ]
+
+		coords_all_boxes = [  ]
+
+		all_coords_all_boxes = [  ]
+
+		dr = input_data["box_size"] / 2 / input_data["number_of_bins"]
+
+		for l in range( number_of_xyz_files ):
+
+			coords_this_box = [  ]
+
+			all_coords_this_box = [ [ trajectories[i][j] for i in range( l * number_of_beads_per_file, (l + 1) * number_of_beads_per_file ) ] for j in range( number_of_timeframes ) ]
+
+			for k in range( len(input_data["labels"]) ):
+
+				coords_list = [ [ trajectories[i][j] for i in range( l * number_of_beads_per_file, (l + 1) * number_of_beads_per_file ) if input_data["labels"][k] == labels[i]  ] for j in range( number_of_timeframes ) ]
+
+				coords_this_box.append( np.array( coords_list, dtype = input_data["float_type"] ) )
+
+			coords_all_boxes.append( coords_this_box )
+
+			all_coords_all_boxes.append( all_coords_this_box )
+
+		box = freud.box.Box.cube( input_data["box_size"] )
+
+		for l in range( number_of_xyz_files ):
+
+			for j in range( number_of_timeframes ):
+
+				coords = np.array( [ all_coords_all_boxes[l][j][i] for i in range( number_of_beads_per_file ) ], dtype = input_data["float_type"] )
+
+				link_cell = freud.locality.LinkCell( box=box, points=coords, cell_width = input_data["box_size"]/2 )
+
+				rdf = freud.density.RDF(bins=input_data["number_of_bins"], r_max=input_data["box_size"] / 2)
+
+				a = rdf.compute(system=link_cell, reset=False)
+
+				all_bin_counts += a.bin_counts
+
+			for k in range( len(input_data["labels"]) ):
+
+				for j in range( number_of_timeframes ):
+
+					number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+
+					coords = np.array( [ coords_all_boxes[l][k][j][i] for i in range( number_of_k_particles_per_box ) ], dtype = input_data["float_type"] )
+
+					link_cell = freud.locality.LinkCell( box=box, points=coords, cell_width = input_data["box_size"]/2 )
+
+					rdf = freud.density.RDF(bins=input_data["number_of_bins"], r_max=input_data["box_size"] / 2)
+
+					a = rdf.compute(system=link_cell, reset=False)
+
+					bin_counts[k] += a.bin_counts
+
+					rdfs[k] +=a.bin_counts
+
+		bins = a.bin_centers
+
+		for k in range( len(bin_counts) ):
+
+			number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+
+			bin_counts[k] /= ( number_of_timeframes * number_of_xyz_files )
+
+			rdfs[k] /= ( number_of_timeframes * number_of_xyz_files )
+
+			rdfs[k] /= ( 4.0 * np.pi * bins**2 * dr )
+
+			rdfs[k] /= ( number_of_k_particles_per_box / input_data["box_size"]**3 )
+
+			rdfs[k] /= ( number_of_k_particles_per_box - 1 )
+
+			# plt.plot( bins, rdfs[k] )
+
+			# plt.show()
+
+			# plt.close()
+
+		all_bin_counts /= ( number_of_timeframes * number_of_xyz_files )
+
+		for k in range( len(bin_counts) ):
+
+			distinct_bin_counts = all_bin_counts - bin_counts[k]
+
+		denominator = 0.0
+
+		for k in range( len(bin_counts) ):
+
+			number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+
+			for l in range( len(bin_counts) ):
+
+				number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] * molecule_sizes[ input_data["labels"][l] ] // number_of_xyz_files
+
+				if k != l:
+
+					denominator += ( number_of_k_particles_per_box * number_of_l_particles_per_box )
+
+		distinct_rdf = distinct_bin_counts / denominator
+
+		distinct_rdf /= ( 4.0 * np.pi * bins**2 * dr )
+
+		distinct_rdf /= ( 1.0 / input_data["box_size"]**3 )
+
+		# plt.plot( bins, distinct_rdf )
+
+		# plt.show()
+
+		# plt.close()
+
+	### FREUD VERSION END ###
+
+	else:
+
+		timestamp('RDF without Freud is not implemented')
+
+	return bins, rdfs, distinct_rdf
+
+#-------------------------------------------------------------------------------
+
+def save_rdfs_to_file( input_data, bins, rdfs, distinct_rdf ):
+
+	output_filename = input_data["input_xyz_template"] + 'rdf.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = 'r/AA '
+		line = '{} '
+
+		for label in input_data["labels"]:
+
+			first_line += ( label + ' ' )
+
+			line += '{} '
+
+		first_line += 'XXX'
+
+		line += '{}'
+
+		output_file.write(first_line + '\n')
+
+		for i in range( len(bins) ):
+
+			line_values = [ bins[i] ]
+
+			for j in range( len(input_data["labels"]) ):
+
+				line_values.append( rdfs[j][i] )
+
+			line_values.append( distinct_rdf[i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
 
 #===============================================================================
 
@@ -930,7 +1108,7 @@ def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, prob
 				labels[label_index + counter] = line.split()[0]
 			if is_included_as_timeframe_given_frequency:
 				if time >= min_time:
-					coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
+					coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ] )
 					trajectories[bead_index, timeframe_index - min_time_index] = coords
 			counter += 1
 
@@ -952,7 +1130,7 @@ def _compute_sd(trajectory, box_size):
 
             versors = box_size * np.array( [ [i, j, k]
                 for i in [-1,0,1] for j in [-1,0,1] for k in [-1,0,1]
-                if not ( i == 0 and j == 0 and k == 0 ) ], dtype = DTYPE )
+                if not ( i == 0 and j == 0 and k == 0 ) ] )
 
             for versor in versors:
                 # print('versor: {}'.format(versor))
@@ -983,11 +1161,11 @@ def _compute_autocorrelation(orientation, mode = 'direct'):
 
 	if mode == 'direct':
 
-		return np.array( [ np.dot( orientation[0], orientation[j] ) for j in range(len(orientation)) ], np.float32 )
+		return np.array( [ np.dot( orientation[0], orientation[j] ) for j in range(len(orientation)) ] )
 
 	elif mode == 'window':
 
-		return np.array( [1.0] + [ np.mean( [ np.dot(orientation[k], orientation[k+j]) for k in range(len(orientation)-j) ] ) for j in range(1, len(orientation)) ], np.float32 )
+		return np.array( [1.0] + [ np.mean( [ np.dot(orientation[k], orientation[k+j]) for k in range(len(orientation)-j) ] ) for j in range(1, len(orientation)) ] )
 
 #-------------------------------------------------------------------------------
 
@@ -997,11 +1175,11 @@ def _compute_sad(orientation, mode = 'direct'):
 
 	if mode == 'direct':
 
-		return np.array( [ np.arccos( np.dot( orientation[0], orientation[j] ) )**2 for j in range(len(orientation)) ], np.float32 )
+		return np.array( [ np.arccos( np.dot( orientation[0], orientation[j] ) )**2 for j in range(len(orientation)) ] )
 
 	elif mode == 'window':
 
-		return np.array( [0.0] + [ np.mean( [ np.arccos( np.dot(orientation[k], orientation[k+j]) )**2 for k in range(len(orientation)-j) ] ) for j in range(1, len(orientation)) ], np.float32 )
+		return np.array( [0.0] + [ np.mean( [ np.arccos( np.dot(orientation[k], orientation[k+j]) )**2 for k in range(len(orientation)-j) ] ) for j in range(1, len(orientation)) ] )
 
 #===============================================================================
 
@@ -1055,8 +1233,6 @@ def _find_min_time_index(input_xyz_filenames, min_time, probing_frequency):
 	for i in range( 1, number_of_xyz_files ):
 
 		assert _min_time_index( input_xyz_filenames[i], min_time, probing_frequency ) == min_time_index
-
-	print(min_time_index)
 
 	return min_time_index
 
@@ -1162,18 +1338,18 @@ def _count_timeframes(filename, frequency):
 
 #-------------------------------------------------------------------------------
 
-def unify_coordinates(trajectories, box_length):
+def unify_coordinates(trajectories, box_size):
 
 	for particle in trajectories:
 		for i in range(1, len(particle)):
-			_coord_unify(particle[i-1], particle[i], box_length)
+			_coord_unify(particle[i-1], particle[i], box_size)
 
 #-------------------------------------------------------------------------------
 
-def _coord_unify(past, present, box_length):
+def _coord_unify(past, present, box_size):
 
 	for i in range(3):
-		while( present[i] - past[i] >= box_length / 2 ):
-			present[i] -= box_length
-		while( past[i] - present[i] >= box_length / 2 ):
-			present[i] += box_length
+		while( present[i] - past[i] >= box_size / 2 ):
+			present[i] -= box_size
+		while( past[i] - present[i] >= box_size / 2 ):
+			present[i] += box_size
