@@ -21,6 +21,8 @@ from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 separate_center_of_mass, compute_rdfs, save_rdfs_to_file
 
+CM = True
+
 #-------------------------------------------------------------------------------
 
 @click.command()
@@ -45,6 +47,10 @@ def main(input_filename):
 	timestamp( 'Reading trajectories' )
 	times, labels, auxiliary_data = read_trajectories(i.input_data)
 	add_auxiliary_data_multibeads( i.input_data, labels, auxiliary_data )
+
+	if CM:
+		timestamp( 'Separating the center of mass movement' )
+		labels = separate_center_of_mass( i.input_data, labels, auxiliary_data )
 
 	timestamp( 'Computing radial distribution function' )
 	bins, rdfs, distinct_rdf = compute_rdfs( i.input_data, labels, auxiliary_data )
