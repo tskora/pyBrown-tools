@@ -28,6 +28,7 @@ from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
 
 FREUD = True
+CM = True
 
 #-------------------------------------------------------------------------------
 
@@ -42,7 +43,7 @@ def read_trajectories(input_data):
 	number_of_beads_per_file = number_of_beads // number_of_xyz_files
 	labels = [ '___' for _ in range( number_of_beads ) ]
 	number_of_timeframes -= min_time_index
-	times = np.zeros( number_of_timeframes, dtype = DTYPE )
+	times = np.zeros( number_of_timeframes, dtype = input_data["float_type"] )
 
 	# temporary binary file which will contain the trajectories
 	traj_temp_filename = input_data["input_xyz_template"] + 'trj_tmp.dat'
@@ -156,7 +157,7 @@ def separate_center_of_mass(input_data, labels, auxiliary_data):
 			cm_trajectories[which_cm_trajectory] = trajectories[which_trajectory]
 
 			which_trajectory += 1
-			which_orientation_trajectory += 1
+			which_cm_trajectory += 1
 
 		else:
 
@@ -450,7 +451,7 @@ def compute_orientations(input_data, labels, auxiliary_data):
 
 					r_ref = r
 
-					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = DTYPE)
+					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
 
 			orientations = trajectories[which_trajectory + multiplicity - 1, :, :] - trajectories[which_trajectory, :, :]
 
@@ -826,7 +827,7 @@ def compute_nematic_order( input_data, orientation_labels, auxiliary_data, direc
 	number_of_orientation_trajectories = auxiliary_data["number_of_molecules"]
 	orient_temp_filename = auxiliary_data["orient_temp_filename"]
 
-	mean_second_Legendre_polynomial = np.zeros( number_of_orientation_trajectories, dtype = DTYPE )
+	mean_second_Legendre_polynomial = np.zeros( number_of_orientation_trajectories, dtype = input_data["float_type"] )
 	nematic_order_parameter = np.zeros( len(input_data["sizes"]) )
 
 	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
@@ -890,7 +891,8 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 	number_of_beads_per_file = number_of_trajectories // number_of_xyz_files
 	molecule_sizes = auxiliary_data["molecule_sizes"]
 	molecule_numbers = auxiliary_data["molecule_numbers"]
-	traj_temp_filename = auxiliary_data["traj_temp_filename"]
+	if not CM: traj_temp_filename = auxiliary_data["traj_temp_filename"]
+	else: traj_temp_filename = auxiliary_data["cm_temp_filename"]
 
 	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_trajectories, number_of_timeframes, 3 ) )
@@ -947,7 +949,9 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 				for j in range( number_of_timeframes ):
 
-					number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+					if not CM: number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+
+					else: number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] // number_of_xyz_files
 
 					coords = np.array( [ coords_all_boxes[l][k][j][i] for i in range( number_of_k_particles_per_box ) ], dtype = input_data["float_type"] )
 
@@ -965,7 +969,9 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 		for k in range( len(bin_counts) ):
 
-			number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+			if not CM: number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+
+			else: number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] // number_of_xyz_files
 
 			bin_counts[k] /= ( number_of_timeframes * number_of_xyz_files )
 
@@ -977,12 +983,6 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 			rdfs[k] /= ( number_of_k_particles_per_box - 1 )
 
-			# plt.plot( bins, rdfs[k] )
-
-			# plt.show()
-
-			# plt.close()
-
 		all_bin_counts /= ( number_of_timeframes * number_of_xyz_files )
 
 		for k in range( len(bin_counts) ):
@@ -993,11 +993,15 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 		for k in range( len(bin_counts) ):
 
-			number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+			if not CM: number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] * molecule_sizes[ input_data["labels"][k] ] // number_of_xyz_files
+
+			else: number_of_k_particles_per_box = molecule_numbers[ input_data["labels"][k] ] // number_of_xyz_files
 
 			for l in range( len(bin_counts) ):
 
-				number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] * molecule_sizes[ input_data["labels"][l] ] // number_of_xyz_files
+				if CM: number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] * molecule_sizes[ input_data["labels"][l] ] // number_of_xyz_files
+
+				else: number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] // number_of_xyz_files
 
 				if k != l:
 
@@ -1008,12 +1012,6 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 		distinct_rdf /= ( 4.0 * np.pi * bins**2 * dr )
 
 		distinct_rdf /= ( 1.0 / input_data["box_size"]**3 )
-
-		# plt.plot( bins, distinct_rdf )
-
-		# plt.show()
-
-		# plt.close()
 
 	### FREUD VERSION END ###
 
