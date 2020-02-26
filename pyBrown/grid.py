@@ -182,7 +182,7 @@ def _populate_monte_carlo_fluct(input_data, n_buff = 100000):
     # ad hoc solution
     random_bond_lengths = [ draw_bond_lengths(open_radii[n], close_radii[n], bond_force_constants[n], bond_potential, temperature, n_samples = n_buff) for n in range( len( numbers_of_molecules) ) ]
 
-    print( random_bond_lengths )
+    # print( random_bond_lengths )
 
     populated_box = []
 
@@ -197,13 +197,13 @@ def _populate_monte_carlo_fluct(input_data, n_buff = 100000):
 
             rbl = [ random_bond_lengths[i][counter][thrown] for counter in range( len(bond_force_constants[i]) )]
 
-            print( 'random bond lengths: {}'.format(random_bond_lengths) )
+            # print( 'random bond lengths: {}'.format(random_bond_lengths) )
 
             tracers = place_tracers_linearly(radii[i], box_size[0], rbl)
 
-            print('coordinates: {}'.format(tracers) )
+            # print('coordinates: {}'.format(tracers) )
 
-            print('distance matrix: {}'.format( distance_matrix(tracers) ) )
+            # print('distance matrix: {}'.format( distance_matrix(tracers) ) )
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 print('overlap')
@@ -235,6 +235,7 @@ def _populate_monte_carlo_fluct(input_data, n_buff = 100000):
                         tracer.translate( -versor )
 
                 if not if_overlap:
+                    print('distance matrix: {}'.format( distance_matrix(tracers) ) )
                     populated_box += tracers
                     thrown += 1
 
