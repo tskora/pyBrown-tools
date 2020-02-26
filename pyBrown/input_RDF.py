@@ -27,9 +27,5 @@ class InputDataRDF(InputData):
     def __init__(self, input_filename, obligatory_keywords = [], defaults = {}):
 
         super().__init__(input_filename, obligatory_keywords, defaults)
-
-        if self.input_data["float_type"] == 32: self.input_data["float_type"] = np.float32
-
-        elif self.input_data["float_type"] == 64: self.input_data["float_type"] = np.float64
     
     #---------------------------------------------------------------------------
