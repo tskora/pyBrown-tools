@@ -16,8 +16,6 @@
 
 import json
 
-import numpy as np
-
 from pyBrown.input import InputData
 
 #-------------------------------------------------------------------------------
