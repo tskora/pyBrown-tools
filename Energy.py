@@ -28,12 +28,11 @@ from pyBrown.energies import read_energies, compute_menergies, plot_menergies
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["labels", "sizes", "box_size", "input_enr_template", "input_enr_range"]
+	required_keywords = ["input_enr_template", "input_enr_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
-				"probing_frequency": 1, "mode": "window", "float_type": 32}
+	defaults = {"debug": False, "verbose": False, "float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataEnergy(input_filename, required_keywords, defaults)
