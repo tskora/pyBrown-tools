@@ -1,3 +1,21 @@
+# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics
+# simulations. Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see https://www.gnu.org/licenses.
+
+#-------------------------------------------------------------------------------
+
 def read_energies(input_data):
 
 	input_enr_filenames = [ input_data["input_enr_template"] + str(i) + '.enr'
@@ -29,14 +47,13 @@ def read_energies(input_data):
 
 	times = times[:number_of_timeframes]
 
-	return np.array(energies), np.array(times, float)
+	return np.array(energies, input_data["float_type"]), np.array(times, input_data["float_type"])
 
+#-------------------------------------------------------------------------------
 
+def compute_menergies(input_data, energies):
 
-
-def compute_menergies(energies):
-
-	menergies = np.zeros( len( energies[0] ), float )
+	menergies = np.zeros( len( energies[0] ), input_data["float_type"] )
 
 	for energies_one_file in energies:
 
@@ -44,8 +61,7 @@ def compute_menergies(energies):
 
 	return menergies / len( energies )
 
-
-
+#-------------------------------------------------------------------------------
 
 def plot_menergies(input_data, times, menergies):
 
@@ -60,8 +76,7 @@ def plot_menergies(input_data, times, menergies):
 
 	plt.close()
 
-
-
+#-------------------------------------------------------------------------------
 
 def _read_energies_from_enr_file(enr_file, energies, times):
 
@@ -89,4 +104,3 @@ def _read_energies_from_enr_file(enr_file, energies, times):
 		energies_from_current_file.append( float( line.split()[1] ) )
 
 	energies.append( np.array( energies_from_current_file, float ) )
-
