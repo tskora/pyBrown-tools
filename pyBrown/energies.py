@@ -104,3 +104,16 @@ def _read_energies_from_enr_file(enr_file, energies, times):
 		energies_from_current_file.append( float( line.split()[1] ) )
 
 	energies.append( np.array( energies_from_current_file, float ) )
+
+#-------------------------------------------------------------------------------
+
+def _file_length(filename):
+
+	with open(filename, 'r') as file:
+
+		counter = 0
+
+		for line in file:
+			counter += 1
+
+		return counter
