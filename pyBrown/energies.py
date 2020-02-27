@@ -15,6 +15,7 @@
 # along with this program. If not, see https://www.gnu.org/licenses.
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
@@ -52,7 +53,7 @@ def read_energies(input_data):
 
 	times = times[:number_of_timeframes]
 
-	return np.array(energies, input_data["float_type"]), np.array(times, input_data["float_type"])
+	return np.array(times, input_data["float_type"]), np.array(energies, input_data["float_type"])
 
 #-------------------------------------------------------------------------------
 
