@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see https://www.gnu.org/licenses.
 
+import numpy as np
+
 from pyBrown.messaging import timestamp
 from pyBrown.plot_config import plot_config
 
@@ -54,9 +56,9 @@ def read_energies(input_data):
 
 #-------------------------------------------------------------------------------
 
-def compute_menergies(input_data, energies):
+def compute_mean_energies(input_data, energies):
 
-	menergies = np.zeros( len( energies[0] ), input_data["float_type"] )
+	menergies = np.zeros( len( energies[0] ), dtype = input_data["float_type"] )
 
 	for energies_one_file in energies:
 
