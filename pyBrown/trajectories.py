@@ -963,7 +963,7 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 					bin_counts[k] += a.bin_counts
 
-					rdfs[k] +=a.bin_counts
+					rdfs[k] += a.bin_counts
 
 		bins = a.bin_centers
 
@@ -985,9 +985,13 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 		all_bin_counts /= ( number_of_timeframes * number_of_xyz_files )
 
+		distinct_bin_counts = np.copy( all_bin_counts )
+
 		for k in range( len(bin_counts) ):
 
-			distinct_bin_counts = all_bin_counts - bin_counts[k]
+			print( np.sum(bin_counts[k]) )
+
+			distinct_bin_counts -= bin_counts[k]
 
 		denominator = 0.0
 
