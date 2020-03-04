@@ -989,8 +989,6 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 		for k in range( len(bin_counts) ):
 
-			print( np.sum(bin_counts[k]) )
-
 			distinct_bin_counts -= bin_counts[k]
 
 		denominator = 0.0
@@ -1003,7 +1001,7 @@ def compute_rdfs( input_data, labels, auxiliary_data ):
 
 			for l in range( len(bin_counts) ):
 
-				if CM: number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] * molecule_sizes[ input_data["labels"][l] ] // number_of_xyz_files
+				if not CM: number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] * molecule_sizes[ input_data["labels"][l] ] // number_of_xyz_files
 
 				else: number_of_l_particles_per_box = molecule_numbers[ input_data["labels"][l] ] // number_of_xyz_files
 
