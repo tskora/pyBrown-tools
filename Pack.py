@@ -39,7 +39,8 @@ def main(input_filename):
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"minimal_distance_between_surfaces":0.0, "max_bond_lengths":2.5e+07,
-				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1}
+				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1,
+				"float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataPack(input_filename, required_keywords, defaults)
