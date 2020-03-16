@@ -51,7 +51,7 @@ def digitize_grid(grid, populated_box, dx, box_size):
 
 			if overlap( probe, populated_box, 0.0 ):
 				overlapping_points += 1
-				continue
+				print('{} {} {} 1'.format(*point))
 			else:
 				versors = [ np.array([nx * box_size,
 									  ny * box_size,
@@ -69,6 +69,9 @@ def digitize_grid(grid, populated_box, dx, box_size):
 					probe.translate( -versor )
 				if if_overlap:
 					overlapping_points += 1
+					print('{} {} {} 1'.format(*point))
+				else:
+					print('{} {} {} 0'.format(*point))
 
 	return overlapping_points, all_points, overlapping_points/all_points
 
@@ -132,8 +135,6 @@ def main(input_filename):
 	pool = Pool(processes=nproc)
 
 	digitize_grid_partial = partial( digitize_grid, populated_box = populated_box, dx = dx, box_size = i.input_data["box_size"] )
-
-	print(digitize_grid_partial(grid))
 
 	count = pool.map( digitize_grid_partial, grid_for_proc )
 	
