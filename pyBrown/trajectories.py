@@ -1058,6 +1058,58 @@ def save_rdfs_to_file( input_data, bins, rdfs, distinct_rdf ):
 
 			output_file.write( line.format(*line_values) + '\n' )
 
+#-------------------------------------------------------------------------------
+
+def compute_distance_matrices(input_data, times, labels, auxiliary_data):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
+	number_of_cm_trajectories_per_box = number_of_cm_trajectories // number_of_xyz_files
+	cm_temp_filename = auxiliary_data["cm_temp_filename"]
+
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+
+	def _distance( r1, r2, box_size ):
+
+		dist0 = np.linalg.norm( r1 - r2 )
+		if dist0 <= box_size / 2:
+			return dist0
+		else:
+			versors = [ np.array([nx * box_size,
+								  ny * box_size,
+								  nz * box_size])
+						for nx in np.arange(-1, 2, 1)
+						for ny in np.arange(-1, 2, 1)
+						for nz in np.arange(-1, 2, 1) ]
+
+			for versor in versors:
+				dist1 = np.linalg.norm( versor + r1 - r2 )
+
+				if dist1 <= dist0:
+					dist0 = dist1
+		return dist0
+
+	dist = np.zeros( (number_of_xyz_files, number_of_timeframes, number_of_cm_trajectories_per_box, number_of_cm_trajectories_per_box) )
+	states = np.zeros( (number_of_xyz_files, number_of_timeframes, number_of_cm_trajectories_per_box, number_of_cm_trajectories_per_box) )
+
+	for i in range(number_of_xyz_files):
+		cm_trajectories_box = cm_trajectories[i*number_of_cm_trajectories_per_box:(i+1)*number_of_cm_trajectories_per_box]
+		for j in range(number_of_timeframes):
+			for k in range(number_of_cm_trajectories_per_box):
+				for l in range(number_of_cm_trajectories_per_box):
+					dist[i][j][k][l] = _distance(cm_trajectories_box[l][j], cm_trajectories_box[k][j], input_data["box_size"])
+					if dist[i][j][k][l] <= 2 * 51.0: states[i][j][k][l] = 1
+
+	for k in range(1, number_of_cm_trajectories_per_box):
+		plt.plot( times, [ np.sum( [ states[0][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] ) for j in range(number_of_timeframes) ], lw = 0.5 )
+		plt.savefig('test2_{}.jpg'.format(k), dpi=300)
+		plt.close()
+
 #===============================================================================
 
 def _read_trajectories_from_xyz_file(xyz_file, trajectories, times, labels, probing_frequency, min_time):
