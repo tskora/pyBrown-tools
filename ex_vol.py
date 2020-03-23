@@ -89,8 +89,8 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 		crowders = place_crowders_xyz(r_crowders, snapshot)
 
-		crowders = crowders[:-1]
-		# crowders = crowders[1:]
+		# crowders = crowders[:-1]
+		crowders = crowders[1:]
 	
 		count = 0
 
@@ -158,11 +158,11 @@ if __name__ == '__main__':
 	from functools import partial
 
 	box_size = 750.0
-	# r_tracer = [11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4]
+	r_tracer = [11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4]
 	# r_tracer = 39.2
-	r_tracer = 51.0
+	# r_tracer = 51.0
 
-	number_of_trials = 100000
+	number_of_trials = 10000
 
 	input_labels = ["FIC", "DNA", "DNS"]
 	input_radii = [51.0, 11.4, 39.2]

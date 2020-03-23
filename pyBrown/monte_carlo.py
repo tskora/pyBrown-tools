@@ -37,7 +37,9 @@ class MonteCarlo:
         draw[0:3] = draw[0:3] * self.box_size - self.box_size / 2
 
         if not self.spherical:
-            draw[3:6] = 2 * np.pi * draw[3:6]
+            draw[3] = 2 * np.pi * draw[3] - np.pi
+            draw[4] = np.arcsin( 2 * draw[4] - 1 )
+            draw[5] = 2 * np.pi * draw[5] # ad hoc
 
         return draw
 
