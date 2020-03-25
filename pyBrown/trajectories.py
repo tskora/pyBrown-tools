@@ -1097,18 +1097,48 @@ def compute_distance_matrices(input_data, times, labels, auxiliary_data):
 	dist = np.zeros( (number_of_xyz_files, number_of_timeframes, number_of_cm_trajectories_per_box, number_of_cm_trajectories_per_box) )
 	states = np.zeros( (number_of_xyz_files, number_of_timeframes, number_of_cm_trajectories_per_box, number_of_cm_trajectories_per_box) )
 
+	CUTOFF = 2 * 51.0
+	# CUTOFF = 51.0 + 4 * 2 * 11.4
+	# CUTOFF = 51.0 + 11.4
+
+	mean_time_fraction = 0
+
 	for i in range(number_of_xyz_files):
 		cm_trajectories_box = cm_trajectories[i*number_of_cm_trajectories_per_box:(i+1)*number_of_cm_trajectories_per_box]
 		for j in range(number_of_timeframes):
 			for k in range(number_of_cm_trajectories_per_box):
 				for l in range(number_of_cm_trajectories_per_box):
 					dist[i][j][k][l] = _distance(cm_trajectories_box[l][j], cm_trajectories_box[k][j], input_data["box_size"])
-					if dist[i][j][k][l] <= 2 * 51.0: states[i][j][k][l] = 1
+					if dist[i][j][k][l] <= CUTOFF: states[i][j][k][l] = 1
+
+	# def coordination_in_time( states, idx_xyz_file, idx_ficoll, labels ):
+	# 	# [ np.sum( [ states[i][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] ) for j in range(number_of_timeframes) ]
+	# 	are_in_vicinity = [ ]
+	# 	for l in range( 0, idx_ficoll ):
+	# 		if 
+
+	for i in range(number_of_xyz_files):
+		for k in range(number_of_cm_trajectories_per_box):
+			kth_coordination_in_time = np.zeros(len(times))
+			for j in range(number_of_timeframes):
+				kth_coordination = np.sum( [ states[i][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] )
+				if kth_coordination > 1: kth_coordination = 1
+				kth_coordination_in_time[j] = kth_coordination
+			# kth_coordination_in_time = [ np.sum( [ states[i][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] ) for j in range(number_of_timeframes) ]
+			time_fraction = np.sum( kth_coordination_in_time ) / len(kth_coordination_in_time)
+			mean_time_fraction += time_fraction
+
+	print( molecule_numbers["FIC"] )
+	print( mean_time_fraction / molecule_numbers["FIC"] )
+
 
 	for k in range(1, number_of_cm_trajectories_per_box):
-		plt.plot( times, [ np.sum( [ states[0][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] ) for j in range(number_of_timeframes) ], lw = 0.5 )
-		plt.savefig('test2_{}.jpg'.format(k), dpi=300)
-		plt.close()
+		if labels[k] == "FIC":
+			plt.plot( times, [ np.sum( [ states[0][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] ) for j in range(number_of_timeframes) ], lw = 0.5 )
+			plt.savefig('test_{}.jpg'.format(k), dpi=300)
+			plt.close()
+
+	# for k in range(1, number_of_cm_trajectories_per_box)
 
 #===============================================================================
 
