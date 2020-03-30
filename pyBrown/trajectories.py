@@ -1097,9 +1097,10 @@ def compute_distance_matrices(input_data, times, labels, auxiliary_data):
 	dist = np.zeros( (number_of_xyz_files, number_of_timeframes, number_of_cm_trajectories_per_box, number_of_cm_trajectories_per_box) )
 	states = np.zeros( (number_of_xyz_files, number_of_timeframes, number_of_cm_trajectories_per_box, number_of_cm_trajectories_per_box) )
 
-	CUTOFF = 2 * 51.0
+	# CUTOFF = 2 * 51.0
 	# CUTOFF = 51.0 + 4 * 2 * 11.4
 	# CUTOFF = 51.0 + 11.4
+	CUTOFF = 65.5
 
 	mean_time_fraction = 0
 
@@ -1131,14 +1132,11 @@ def compute_distance_matrices(input_data, times, labels, auxiliary_data):
 	print( molecule_numbers["FIC"] )
 	print( mean_time_fraction / molecule_numbers["FIC"] )
 
-
 	for k in range(1, number_of_cm_trajectories_per_box):
 		if labels[k] == "FIC":
 			plt.plot( times, [ np.sum( [ states[0][j][k][l] for l in range(0, k) if labels[k] != labels[l] ] ) for j in range(number_of_timeframes) ], lw = 0.5 )
 			plt.savefig('test_{}.jpg'.format(k), dpi=300)
 			plt.close()
-
-	# for k in range(1, number_of_cm_trajectories_per_box)
 
 #===============================================================================
 
