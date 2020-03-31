@@ -37,21 +37,109 @@ def what_radius_based_on_label(label, labels, radii):
 
 #-------------------------------------------------------------------------------
 
-def digitize_grid(grid, populated_box, dx, box_size):
+def populate_box(input_xyz_filename, labels, radii, snapshot_time):
+
+	populated_box = []
+	start_snapshot = False
+	with open(input_xyz_filename, 'r') as xyz_file:
+		for line in xyz_file:
+			if start_snapshot:
+				if 'time' in line.split():
+					start_snapshot = False
+				else:
+					if len( line.split() ) == 4:
+						label = line.split()[0]
+						radius = what_radius_based_on_label(label, labels, radii)
+						s = Sphere( [ line.split()[i] for i in range(1,4) ], radius )
+						populated_box.append( s )
+			if 'time' in line.split():
+				if float(line.split()[-1]) == snapshot_time:
+					start_snapshot = True
+	return populated_box
+
+#-------------------------------------------------------------------------------
+
+def create_grid(grid_density, box_size):
+
+	dx = box_size / grid_density
+
+	grid = [ [x, y, z] for x in np.linspace( -box_size/2, box_size/2, grid_density )
+					   for y in np.linspace( -box_size/2, box_size/2, grid_density )
+					   for z in np.linspace( -box_size/2, box_size/2, grid_density ) ]
+
+	return grid
+
+#-------------------------------------------------------------------------------
+
+def digitize_grid(input_data):
+
+	import multiprocessing
+	from multiprocessing import Pool
+	from functools import partial
+
+	input_xyz_filename = input_data["input_xyz_filename"]
+	input_labels = input_data["labels"]
+	radii = input_data["hydrodynamic_radii"]
+	snapshot_time = input_data["snapshot_time"]
+	grid_density = input_data["grid_density"]
+	box_size = input_data["box_size"]
+	output_mode = input_data["output_mode"]
+
+	populated_box = populate_box(input_xyz_filename, input_labels, radii, snapshot_time)
+	grid = create_grid(grid_density, box_size)
+
+	digitized_grid_ones = []
+	digitized_grid_zeros = []
+
+	nproc = multiprocessing.cpu_count()
+	print('You have {0:1d} CPUs'.format(nproc))
+
+	points_per_proc = len(grid) // nproc
+	grid_for_proc = [ grid[m*points_per_proc:(m+1)*points_per_proc] for m in range(nproc - 1) ] \
+					+ [ grid[(nproc-1)*points_per_proc:] ]
+
+	pool = Pool(processes=nproc)
+
+	_digitize_grid_partial = partial( _digitize_grid, populated_box = populated_box, dx = box_size / grid_density, box_size = box_size, output_mode = output_mode )
+	digitized_grid_results = pool.map( _digitize_grid_partial, grid_for_proc )	
+
+	for element in digitized_grid_results:
+		digitized_grid_ones += element[0]
+		digitized_grid_zeros += element[1]
+
+	return digitized_grid_ones, digitized_grid_zeros
+
+#-------------------------------------------------------------------------------
+
+def _digitize_grid(grid, populated_box, dx, box_size, output_mode):
+
+	if output_mode == 'both':
+		ones = True
+		zeros = True
+	elif output_mode == 'ones':
+		ones = True
+		zeros = False
+	elif output_mode == 'zeros':
+		ones = False
+		zeros = True
+	else:
+		print('Error')
+		return None
+
+	ones_grid = []
+	zeros_grid = []
 
 	all_points = 0
 	overlapping_points = 0
 
 	for point in grid:
-
 		all_points += 1
 		radius = 0.5 * dx
-
 		with Sphere(point, radius) as probe:
-
 			if overlap( probe, populated_box, 0.0 ):
 				overlapping_points += 1
 				print('{} {} {} 1'.format(*point))
+				ones_grid.append(point)
 			else:
 				versors = [ np.array([nx * box_size,
 									  ny * box_size,
@@ -59,9 +147,7 @@ def digitize_grid(grid, populated_box, dx, box_size):
 							for nx in np.arange(-1, 2, 1)
 							for ny in np.arange(-1, 2, 1)
 							for nz in np.arange(-1, 2, 1) ]
-
 				if_overlap = False
-
 				for versor in versors:
 					probe.translate( versor )
 					if overlap(probe, populated_box, 0.0):
@@ -70,10 +156,26 @@ def digitize_grid(grid, populated_box, dx, box_size):
 				if if_overlap:
 					overlapping_points += 1
 					print('{} {} {} 1'.format(*point))
+					ones_grid.append(point)
 				else:
 					print('{} {} {} 0'.format(*point))
+					zeros_grid.append(point)
 
-	return overlapping_points, all_points, overlapping_points/all_points
+	return ones_grid, zeros_grid
+
+#-------------------------------------------------------------------------------
+
+def write_digitized_grid_to_file(input_data, digitized_grid_ones, digitized_grid_zeros):
+
+	input_xyz_filename = input_data["input_xyz_filename"]
+
+	with open(input_xyz_filename[:-4]+'_pores.txt', 'w') as pores_file:
+		for point in digitized_grid_ones:
+			pores_file.write( '{} {} {} 1\n'.format(*point) )
+		for point in digitized_grid_zeros:
+			pores_file.write( '{} {} {} 0\n'.format(*point) )
+
+	if input_data["verbose"]: print( len(digitized_grid_ones) / ( len(digitized_grid_ones) + len(digitized_grid_zeros) ) )
 
 #-------------------------------------------------------------------------------
 
@@ -88,58 +190,19 @@ def main(input_filename):
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "float_type": 32}
+	defaults = {"debug": False, "verbose": False, "float_type": 32,
+				"output_mode": "both" }
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataPores(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
-	xyz_file = open(i.input_data["input_xyz_filename"], 'r')
+	timestamp( 'Digitizing grid' )
+	digitized_grid_ones, digitized_grid_zeros = digitize_grid(i.input_data)
 
-	populated_box = []
-
-	start_snapshot = False
-
-	for line in xyz_file:
-		if start_snapshot:
-			if 'time' in line.split():
-				start_snapshot = False
-			else:
-				if len( line.split() ) == 4:
-					label = line.split()[0]
-					radius = what_radius_based_on_label(label, i.input_data["labels"], i.input_data["hydrodynamic_radii"])
-					s = Sphere( [ line.split()[i] for i in range(1,4) ], radius )
-					populated_box.append( s )
-		if 'time' in line.split():
-			if float(line.split()[-1]) == i.input_data["snapshot_time"]:
-				start_snapshot = True
-
-	N = i.input_data["grid_density"]
-	dx = i.input_data["box_size"] / N
-
-	grid = [ [x, y, z] for x in np.linspace( -i.input_data["box_size"]/2, i.input_data["box_size"]/2, N )
-					   for y in np.linspace( -i.input_data["box_size"]/2, i.input_data["box_size"]/2, N )
-					   for z in np.linspace( -i.input_data["box_size"]/2, i.input_data["box_size"]/2, N ) ]
-
-	import multiprocessing
-	from multiprocessing import Pool
-	from functools import partial
-
-	nproc = multiprocessing.cpu_count()
-	print('You have {0:1d} CPUs'.format(nproc))
-
-	points_per_proc = len(grid) // nproc
-	grid_for_proc = [ grid[m*points_per_proc:(m+1)*points_per_proc] for m in range(nproc - 1) ] \
-					+ [ grid[(nproc-1)*points_per_proc:] ]
-
-	pool = Pool(processes=nproc)
-
-	digitize_grid_partial = partial( digitize_grid, populated_box = populated_box, dx = dx, box_size = i.input_data["box_size"] )
-
-	count = pool.map( digitize_grid_partial, grid_for_proc )
+	timestamp( 'Writing digitized grid to file' )
+	write_digitized_grid_to_file( i.input_data, digitized_grid_ones, digitized_grid_zeros )
 	
-	print(count)
-
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
