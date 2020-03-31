@@ -63,9 +63,9 @@ def create_grid(grid_density, box_size):
 
 	dx = box_size / grid_density
 
-	grid = [ [x, y, z] for x in np.linspace( -box_size/2, box_size/2, grid_density )
-					   for y in np.linspace( -box_size/2, box_size/2, grid_density )
-					   for z in np.linspace( -box_size/2, box_size/2, grid_density ) ]
+	grid = [ [x, y, z] for x in np.linspace( -(box_size - dx)/2, (box_size - dx)/2, grid_density )
+					   for y in np.linspace( -(box_size - dx)/2, (box_size - dx)/2, grid_density )
+					   for z in np.linspace( -(box_size - dx)/2, (box_size - dx)/2, grid_density ) ]
 
 	return grid
 
@@ -88,8 +88,7 @@ def digitize_grid(input_data):
 	populated_box = populate_box(input_xyz_filename, input_labels, radii, snapshot_time)
 	grid = create_grid(grid_density, box_size)
 
-	digitized_grid_ones = []
-	digitized_grid_zeros = []
+	digitized_grid = np.zeros( (grid_density, grid_density, grid_density) )
 
 	nproc = multiprocessing.cpu_count()
 	print('You have {0:1d} CPUs'.format(nproc))
@@ -100,34 +99,20 @@ def digitize_grid(input_data):
 
 	pool = Pool(processes=nproc)
 
-	_digitize_grid_partial = partial( _digitize_grid, populated_box = populated_box, dx = box_size / grid_density, box_size = box_size, output_mode = output_mode )
-	digitized_grid_results = pool.map( _digitize_grid_partial, grid_for_proc )	
+	_digitize_grid_partial = partial( _digitize_grid, populated_box = populated_box, dx = box_size / grid_density, box_size = box_size )
+	overlap_indices_partial = pool.map( _digitize_grid_partial, grid_for_proc )	
 
-	for element in digitized_grid_results:
-		digitized_grid_ones += element[0]
-		digitized_grid_zeros += element[1]
+	for element in overlap_indices_partial:
+		for indices in element:
+			digitized_grid[indices[0]][indices[1]][indices[2]] = 1.0
 
-	return digitized_grid_ones, digitized_grid_zeros
+	return digitized_grid
 
 #-------------------------------------------------------------------------------
 
-def _digitize_grid(grid, populated_box, dx, box_size, output_mode):
+def _digitize_grid(grid, populated_box, dx, box_size):
 
-	if output_mode == 'both':
-		ones = True
-		zeros = True
-	elif output_mode == 'ones':
-		ones = True
-		zeros = False
-	elif output_mode == 'zeros':
-		ones = False
-		zeros = True
-	else:
-		print('Error')
-		return None
-
-	ones_grid = []
-	zeros_grid = []
+	overlap_indices = []
 
 	all_points = 0
 	overlapping_points = 0
@@ -138,8 +123,11 @@ def _digitize_grid(grid, populated_box, dx, box_size, output_mode):
 		with Sphere(point, radius) as probe:
 			if overlap( probe, populated_box, 0.0 ):
 				overlapping_points += 1
-				print('{} {} {} 1'.format(*point))
-				ones_grid.append(point)
+				i = int( ( point[0] + ( box_size - dx ) / 2 ) / dx )
+				j = int( ( point[1] + ( box_size - dx ) / 2 ) / dx )
+				k = int( ( point[2] + ( box_size - dx ) / 2 ) / dx )
+				print( '{} {} {}'.format( i, j, k ) )
+				overlap_indices.append( (i, j, k) )
 			else:
 				versors = [ np.array([nx * box_size,
 									  ny * box_size,
@@ -155,27 +143,63 @@ def _digitize_grid(grid, populated_box, dx, box_size, output_mode):
 					probe.translate( -versor )
 				if if_overlap:
 					overlapping_points += 1
-					print('{} {} {} 1'.format(*point))
-					ones_grid.append(point)
-				else:
-					print('{} {} {} 0'.format(*point))
-					zeros_grid.append(point)
+					# print('{} {} {} 1'.format(*point))
+					i = int( ( point[0] + ( box_size - dx ) / 2 ) / dx )
+					j = int( ( point[1] + ( box_size - dx ) / 2 ) / dx )
+					k = int( ( point[2] + ( box_size - dx ) / 2 ) / dx )
+					print( '{} {} {}'.format( i, j, k ) )
+					overlap_indices.append( (i, j, k) )
 
-	return ones_grid, zeros_grid
+	return overlap_indices
 
 #-------------------------------------------------------------------------------
 
-def write_digitized_grid_to_file(input_data, digitized_grid_ones, digitized_grid_zeros):
+def write_digitized_grid_to_file(input_data, digitized_grid):
 
 	input_xyz_filename = input_data["input_xyz_filename"]
 
 	with open(input_xyz_filename[:-4]+'_pores.txt', 'w') as pores_file:
-		for point in digitized_grid_ones:
-			pores_file.write( '{} {} {} 1\n'.format(*point) )
-		for point in digitized_grid_zeros:
-			pores_file.write( '{} {} {} 0\n'.format(*point) )
+		pores_file.write('{} {}\n'.format(input_data["grid_density"], input_data["box_size"]))
+		for i in range( input_data["grid_density"] ):
+			for j in range( input_data["grid_density"] ):
+				for k in range( input_data["grid_density"] ):
+					pores_file.write('{} {} {} {}\n'.format(i, j, k, int(digitized_grid[i][j][k])))
 
-	if input_data["verbose"]: print( len(digitized_grid_ones) / ( len(digitized_grid_ones) + len(digitized_grid_zeros) ) )
+#-------------------------------------------------------------------------------
+
+def read_digitized_grid_from_file(input_pores_filename):
+
+	with open(input_pores_filename) as pores_file:
+		first_line = pores_file.readline().split()
+		grid_density = int( first_line[0] )
+		box_size = float( first_line[1] )
+		digitized_grid = np.zeros((grid_density, grid_density, grid_density))
+		for line in pores_file:
+			i, j, k, val = line.split()
+			digitized_grid[int(i)][int(j)][int(k)] = int(val)
+
+	return digitized_grid
+
+#-------------------------------------------------------------------------------
+
+def plot_digitized_grid(digitized_grid):
+
+	import matplotlib.pyplot as plt
+	from mpl_toolkits.mplot3d import Axes3D
+
+	dx = box_size / len( digitized_grid )
+	voxels = np.array( digitized_grid )
+
+	fig = plt.figure()
+	ax = fig.gca(projection='3d')
+	ax.set_xlim((-(box_size - dx)/2, (box_size - dx)/2))
+	ax.set_ylim((-(box_size - dx)/2, (box_size - dx)/2))
+	ax.set_zlim((-(box_size - dx)/2, (box_size - dx)/2))
+
+	ax.voxels(voxels, facecolors='blue', edgecolor='k')
+
+	plt.show()
+	plt.close()
 
 #-------------------------------------------------------------------------------
 
@@ -190,18 +214,21 @@ def main(input_filename):
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "float_type": 32,
-				"output_mode": "both" }
+	defaults = {"debug": False, "verbose": False, "float_type": 32 }
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataPores(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
 	timestamp( 'Digitizing grid' )
-	digitized_grid_ones, digitized_grid_zeros = digitize_grid(i.input_data)
+	digitized_grid = digitize_grid(i.input_data)
 
 	timestamp( 'Writing digitized grid to file' )
-	write_digitized_grid_to_file( i.input_data, digitized_grid_ones, digitized_grid_zeros )
+	write_digitized_grid_to_file( i.input_data, digitized_grid )
+
+	# digitized_grid = read_digitized_grid_from_file( i.input_data["input_xyz_filename"][:-4]+'_pores.txt' )
+
+	# plot_digitized_grid(digitized_grid)
 	
 #-------------------------------------------------------------------------------
 
