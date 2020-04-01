@@ -37,7 +37,7 @@ def main(input_filename):
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "probing_frequency": 1, "fit_MOA": False,
+	defaults = {"debug": False, "verbose": False, "probing_frequency": 1,
 				"min_time": 0.0, "mode": "window", "float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )

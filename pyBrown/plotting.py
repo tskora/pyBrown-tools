@@ -54,7 +54,7 @@ def plot_msds(input_data, times, msds):
 
 	plt.legend()
 
-	plt.savefig(input_data["input_xyz_template"] + 'msd.jpg', dpi = 100)
+	plt.savefig(input_data["input_xyz_template"] + 'msd.jpg', dpi = 300)
 
 	plt.close()
 
@@ -69,11 +69,11 @@ def plot_msads(input_data, times, msads):
 
 	for i, msad in enumerate(msads):
 
-		plt.plot( times / 1000000, msad, '-', label = input_data["labels"][i], color = colors[i] )
+		plt.plot( times / 1000000, msad, '-', label = input_data["labels"][i], color = colors[i%5] )
 
 	plt.legend()
 
-	plt.savefig(input_data["input_xyz_template"] + 'msad.jpg', dpi = 100)
+	plt.savefig(input_data["input_xyz_template"] + 'msad.jpg', dpi = 300)
 
 	plt.close()
 
@@ -88,24 +88,11 @@ def plot_moas(input_data, times, moas):
 
 	for i, moa in enumerate(moas):
 
-		plt.plot( times / 1000000, np.log( moa ), '-', label = input_data["labels"][i], color = colors[i] )
-
-		if input_data["fit_MOA"]:
-
-			a, b = np.polyfit(times, np.log( moa ), 1)
-
-			plt.plot( times / 1000000, a * times + b * np.ones(len(times)), '--', label = 'linear fit for ' + input_data["labels"][i], color = colors[i] )
-
-			DR = -0.5 * a # in rad**2 / ps
-
-			DR_string = '{:7.5f}'.format(DR * 1000000) # in rad**2 / \mus
-
-			plt.text( 0.0 * times[-1], (0.70 - i * 0.15) * np.ndarray.max( np.array( np.log( moas ) ) ), input_data["labels"][i] )
-			plt.text( 0.0 * times[-1], (0.65 - i * 0.15) * np.ndarray.max( np.array( np.log( moas ) ) ), r'$DR =$' + DR_string + r' $\frac{rad ^2}{\mu s}$')
+		plt.plot( times / 1000000, moa, '-', label = input_data["labels"][i], color = colors[i%5] )
 
 	plt.legend()
 
-	plt.savefig(input_data["input_xyz_template"] + 'moa.jpg', dpi = 100)
+	plt.savefig(input_data["input_xyz_template"] + 'moa.jpg', dpi = 300)
 
 	plt.close()
 
@@ -120,6 +107,6 @@ def plot_menergies(input_data, times, menergies):
 
 	plt.plot(times / 1000000, menergies, '-')
 
-	plt.savefig(input_data["input_enr_template"] + 'enr.jpg', dpi = 100)
+	plt.savefig(input_data["input_enr_template"] + 'enr.jpg', dpi = 300)
 
 	plt.close()
