@@ -79,7 +79,7 @@ def digitize_grid(input_data):
 
 	input_xyz_filename = input_data["input_xyz_filename"]
 	input_labels = input_data["labels"]
-	radii = input_data["hydrodynamic_radii"]
+	radii = input_data["lennard-jones_radii"]
 	snapshot_time = input_data["snapshot_time"]
 	grid_density = input_data["grid_density"]
 	box_size = input_data["box_size"]
@@ -205,7 +205,7 @@ def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
 	required_keywords = ["labels", "box_size", "input_xyz_filename", "snapshot_time",
-						 "grid_density", "hydrodynamic_radii"]
+						 "grid_density", "lennard-jones_radii"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
