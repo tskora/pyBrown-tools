@@ -22,8 +22,8 @@ from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibead
 								 compute_orientations, compute_mean_orientation_autocorrelation, \
 								 save_mean_orientation_autocorrelation_to_file, \
 								 compute_mean_squared_angular_displacements, \
-								 save_mean_squared_angular_displacements_to_file, \
-								 plot_msads, plot_moas
+								 save_mean_squared_angular_displacements_to_file
+from pyBrown.plotting import plot_msads, plot_moas
 
 #-------------------------------------------------------------------------------
 

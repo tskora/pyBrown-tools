@@ -23,7 +23,7 @@ sys.path.insert(0, '../pyBrown')
 import numpy as np
 import copy as cp
 
-from RotDiff import _compute_angular_displacement, _compute_msa
+from pyBrown.trajectories import _compute_sad
 
 #-------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ class TestTrajectory(unittest.TestCase):
 
 	#---------------------------------------------------------------------------
 
-	def test_compute_angular_displacement(self):
+	def test_compute_sad(self):
 
 		vec0 = np.array( [0.0, 0.0, 0.0], float )
 
@@ -43,45 +43,25 @@ class TestTrajectory(unittest.TestCase):
 		vec2 = np.array( [0.0, 1.0, 0.0], float )
 		vec3 = np.array( [0.0, 0.0, 1.0], float )
 
-		self.assertEqual( _compute_angular_displacement( vec1, vec1 ), 0.0 )
-		self.assertEqual( _compute_angular_displacement( vec1, -vec1 ), np.pi )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, vec1], 'direct' ) ), [0.0, 0.0] )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, -vec1], 'direct' ) ), [0.0, np.pi**2] )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, vec2], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, vec3], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [vec2, vec3], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [-vec1, vec2 ], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [-vec1, vec3 ], 'direct' ) ), [0.0, (np.pi/2)**2] )
 
-		self.assertEqual( _compute_angular_displacement( vec1, vec2 ), np.pi / 2.0 )
-		self.assertEqual( _compute_angular_displacement( vec1, vec3 ), np.pi / 2.0 )
-		self.assertEqual( _compute_angular_displacement( -vec1, vec2 ), np.pi / 2.0 )
-		self.assertEqual( _compute_angular_displacement( -vec1, vec3 ), np.pi / 2.0 )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, 3*vec1], 'direct' ) ), [0.0, 0.0] )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, -2*vec2], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [vec1, 14*vec3], 'direct' ) ), [0.0, (np.pi/2)**2] )
 
-		self.assertEqual( _compute_angular_displacement( vec1, 3.0 * vec1 ), 0.0 )
-		self.assertEqual( _compute_angular_displacement( vec1, -2.0 * vec2 ), np.pi / 2.0 )
-		self.assertEqual( _compute_angular_displacement( vec1, 14.0 * vec3 ), np.pi / 2.0 )
-
-		self.assertEqual( _compute_angular_displacement( vec0, vec1 ), 0.0 )
-		self.assertEqual( _compute_angular_displacement( vec0, vec2 ), 0.0 )
-		self.assertEqual( _compute_angular_displacement( vec0, vec3 ), 0.0 )
+		# TODO: what to do if n = (0,0,0)
+		self.assertSequenceEqual( list( _compute_sad( [vec0, vec1], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [vec0, vec2], 'direct' ) ), [0.0, (np.pi/2)**2] )
+		self.assertSequenceEqual( list( _compute_sad( [vec0, vec3], 'direct' ) ), [0.0, (np.pi/2)**2] )
 
 	#---------------------------------------------------------------------------
-
-	def test_compute_msa(self):
-
-		angles = [ [0.0, 0.0, 0.0], [1.0, 1.0, 1.0] ]
-
-		self.assertSequenceEqual( list( _compute_msa(angles, mode = 'window') ), [ 0.0, 0.0, 0.0 ] )
-		self.assertSequenceEqual( list( _compute_msa(angles, mode = 'direct') ), [ 0.0, 0.0, 0.0 ] )
-
-		angles2 = [ [ 0.0, np.pi / 2.0, 0.0 ] ]
-
-		self.assertTrue( approx( list( _compute_msa(angles2, 'window') ), [ 0.0, np.pi**2 / 4, 0.0 ] ) )
-		self.assertTrue( approx( list( _compute_msa(angles2, 'direct') ), [ 0.0, np.pi**2 / 4, 0.0 ] ) )
-
-		angles3 = [ [ 0.0, np.pi / 2.0, 0.0 ], [ 0.0, np.pi / 2.0, 0.0 ] ]
-
-		self.assertTrue( approx( list( _compute_msa(angles3, 'window') ), [ 0.0, np.pi**2 / 4, 0.0 ] ) )
-		self.assertTrue( approx( list( _compute_msa(angles3, 'direct') ), [ 0.0, np.pi**2 / 4, 0.0 ] ) )
-
-		angles4 = [ [ 0.0, np.pi / 2.0, 0.0 ], [ np.pi / 2.0, 0.0, np.pi / 2.0 ] ]
-
-		self.assertTrue( approx( list( _compute_msa(angles4, 'window') ), [ 0.0, np.pi**2 / 4, 0.0 ] ) )
-		self.assertTrue( approx( list( _compute_msa(angles4, 'direct') ), [ 0.0, np.pi**2 / 4, 0.0 ] ) )
+		
 
 #-------------------------------------------------------------------------------
 

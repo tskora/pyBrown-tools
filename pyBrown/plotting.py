@@ -77,6 +77,8 @@ def plot_msads(input_data, times, msads):
 
 	plt.close()
 
+#-------------------------------------------------------------------------------
+
 def plot_moas(input_data, times, moas):
 
 	colors, _ = plot_config()
@@ -104,5 +106,20 @@ def plot_moas(input_data, times, moas):
 	plt.legend()
 
 	plt.savefig(input_data["input_xyz_template"] + 'moa.jpg', dpi = 100)
+
+	plt.close()
+
+#-------------------------------------------------------------------------------
+
+def plot_menergies(input_data, times, menergies):
+
+	plot_config()
+
+	plt.xlabel(r't [$\mu s$]')
+	plt.ylabel(r'E [$\frac{kcal}{mol}$]')
+
+	plt.plot(times / 1000000, menergies, '-')
+
+	plt.savefig(input_data["input_enr_template"] + 'enr.jpg', dpi = 100)
 
 	plt.close()

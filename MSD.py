@@ -21,8 +21,8 @@ from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 separate_center_of_mass, \
 								 compute_msds, \
-								 save_msds_to_file, \
-								 plot_msds
+								 save_msds_to_file
+from pyBrown.plotting import plot_msds
 
 #-------------------------------------------------------------------------------
 

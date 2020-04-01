@@ -18,7 +18,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pyBrown.messaging import timestamp
-from pyBrown.plot_config import plot_config
 
 #-------------------------------------------------------------------------------
 
@@ -66,21 +65,6 @@ def compute_mean_energies(input_data, energies):
 		menergies += energies_one_file
 
 	return menergies / len( energies )
-
-#-------------------------------------------------------------------------------
-
-def plot_menergies(input_data, times, menergies):
-
-	plot_config()
-
-	plt.xlabel(r't [$\mu s$]')
-	plt.ylabel(r'E [$\frac{kcal}{mol}$]')
-
-	plt.plot(times / 1000000, menergies, '-')
-
-	plt.savefig(input_data["input_enr_template"] + 'enr.jpg', dpi = 100)
-
-	plt.close()
 
 #-------------------------------------------------------------------------------
 

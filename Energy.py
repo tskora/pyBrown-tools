@@ -18,7 +18,8 @@ import click
 
 from pyBrown.input_Energy import InputDataEnergy
 from pyBrown.messaging import timestamp
-from pyBrown.energies import read_energies, compute_mean_energies, plot_menergies
+from pyBrown.energies import read_energies, compute_mean_energies
+from pyBrown.plotting import plot_menergies
 
 #-------------------------------------------------------------------------------
 
