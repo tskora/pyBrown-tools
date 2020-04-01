@@ -20,7 +20,7 @@ from pyBrown.input import InputData
 
 #-------------------------------------------------------------------------------
 
-class InputDataPores(InputData):
+class InputDataVoxels(InputData):
 
     def __init__(self, input_filename, obligatory_keywords = [], defaults = {}):
 

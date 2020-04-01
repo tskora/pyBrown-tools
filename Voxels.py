@@ -18,7 +18,7 @@ import click
 
 import numpy as np
 
-from pyBrown.input_Pores import InputDataPores
+from pyBrown.input_Voxels import InputDataVoxels
 from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads
 from pyBrown.sphere import Sphere, overlap
@@ -83,7 +83,6 @@ def digitize_grid(input_data):
 	snapshot_time = input_data["snapshot_time"]
 	grid_density = input_data["grid_density"]
 	box_size = input_data["box_size"]
-	output_mode = input_data["output_mode"]
 
 	populated_box = populate_box(input_xyz_filename, input_labels, radii, snapshot_time)
 	grid = create_grid(grid_density, box_size)
@@ -187,14 +186,10 @@ def plot_digitized_grid(digitized_grid):
 	import matplotlib.pyplot as plt
 	from mpl_toolkits.mplot3d import Axes3D
 
-	dx = box_size / len( digitized_grid )
 	voxels = np.array( digitized_grid )
 
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
-	ax.set_xlim((-(box_size - dx)/2, (box_size - dx)/2))
-	ax.set_ylim((-(box_size - dx)/2, (box_size - dx)/2))
-	ax.set_zlim((-(box_size - dx)/2, (box_size - dx)/2))
 
 	ax.voxels(voxels, facecolors='blue', edgecolor='k')
 
@@ -217,18 +212,18 @@ def main(input_filename):
 	defaults = {"debug": False, "verbose": False, "float_type": 32 }
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataPores(input_filename, required_keywords, defaults)
+	i = InputDataVoxels(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
-	timestamp( 'Digitizing grid' )
-	digitized_grid = digitize_grid(i.input_data)
+	# timestamp( 'Digitizing grid' )
+	# digitized_grid = digitize_grid(i.input_data)
 
-	timestamp( 'Writing digitized grid to file' )
-	write_digitized_grid_to_file( i.input_data, digitized_grid )
+	# timestamp( 'Writing digitized grid to file' )
+	# write_digitized_grid_to_file( i.input_data, digitized_grid )
 
-	# digitized_grid = read_digitized_grid_from_file( i.input_data["input_xyz_filename"][:-4]+'_pores.txt' )
+	digitized_grid = read_digitized_grid_from_file( i.input_data["input_xyz_filename"][:-4]+'_pores.txt' )
 
-	# plot_digitized_grid(digitized_grid)
+	plot_digitized_grid(digitized_grid)
 	
 #-------------------------------------------------------------------------------
 
