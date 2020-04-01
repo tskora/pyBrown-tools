@@ -18,6 +18,9 @@ import click
 
 import numpy as np
 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 from pyBrown.messaging import timestamp
 
 #-------------------------------------------------------------------------------
@@ -38,9 +41,6 @@ def read_digitized_grid_from_file(input_pores_filename):
 #-------------------------------------------------------------------------------
 
 def plot_digitized_grid(digitized_grid):
-
-	import matplotlib.pyplot as plt
-	from mpl_toolkits.mplot3d import Axes3D
 
 	voxels = np.array( digitized_grid )
 
