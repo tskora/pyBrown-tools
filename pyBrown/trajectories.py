@@ -1065,11 +1065,16 @@ def _compute_sd(trajectory, box_size):
 
 #-------------------------------------------------------------------------------
 
+# TODO: what to do if n = (0,0,0)
 def _compute_autocorrelation(orientation, mode = 'direct'):
+
+	for n in orientation:
+
+		if np.any(n != 0.0): n /= np.linalg.norm(n)
 
 	if mode == 'direct':
 
-		return np.array( [ np.dot( orientation[0], orientation[j] ) for j in range(len(orientation)) ] )
+		return np.array( [1.0] + [ np.dot( orientation[0], orientation[j] ) for j in range(1, len(orientation)) ] )
 
 	elif mode == 'window':
 
