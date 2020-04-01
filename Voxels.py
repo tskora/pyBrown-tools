@@ -215,15 +215,11 @@ def main(input_filename):
 	i = InputDataVoxels(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
-	# timestamp( 'Digitizing grid' )
-	# digitized_grid = digitize_grid(i.input_data)
+	timestamp( 'Digitizing grid' )
+	digitized_grid = digitize_grid(i.input_data)
 
-	# timestamp( 'Writing digitized grid to file' )
-	# write_digitized_grid_to_file( i.input_data, digitized_grid )
-
-	digitized_grid = read_digitized_grid_from_file( i.input_data["input_xyz_filename"][:-4]+'_pores.txt' )
-
-	plot_digitized_grid(digitized_grid)
+	timestamp( 'Writing digitized grid to file' )
+	write_digitized_grid_to_file( i.input_data, digitized_grid )
 	
 #-------------------------------------------------------------------------------
 
