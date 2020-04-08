@@ -348,6 +348,175 @@ def save_msds_to_file(input_data, times, msds):
 
 #-------------------------------------------------------------------------------
 
+def compute_lengths(input_data, labels, auxiliary_data):
+
+	which_trajectory = 0
+	which_length_trajectory = 0
+	number_of_length_trajctories = 0
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_beads = auxiliary_data["number_of_beads"]
+	number_of_beads_per_file = auxiliary_data["number_of_beads_per_file"]
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	number_of_length_trajectories = auxiliary_data["number_of_molecules"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	traj_temp_filename = auxiliary_data["traj_temp_filename"]
+
+	print( 'number of length trajectories: {}'.format(number_of_length_trajectories) )
+
+	# temporary binary file which will contain the length trajectories
+	length_temp_filename = input_data["input_xyz_template"] + 'len_tmp.dat'
+	auxiliary_data["length_temp_filename"] = length_temp_filename
+
+	length_trajectories = np.memmap( length_temp_filename, dtype = input_data["float_type"],
+									 mode = 'w+',
+									 shape = ( number_of_length_trajectories,
+									  		   number_of_timeframes ) )
+
+	for i in range(number_of_length_trajectories):
+		length_trajectories[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
+
+	del length_trajectories
+
+	length_labels = [ '___' for i in range(number_of_length_trajectories) ]
+
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
+						shape = ( number_of_beads, number_of_timeframes, 3 ) )
+
+	length_trajectories = np.memmap( length_temp_filename, dtype = input_data["float_type"],
+									 shape = ( number_of_length_trajectories, number_of_timeframes ) )
+
+	while( which_trajectory < number_of_beads ):
+
+		multiplicity = molecule_sizes[ labels[ which_trajectory ] ]
+
+		if multiplicity == 1:
+
+			length_labels[ which_length_trajectory ] = labels[ which_trajectory ]
+
+			which_trajectory += 1
+			which_length_trajectory += 1
+
+		else:
+
+			for i in range( number_of_timeframes ):
+
+				r_ref = trajectories[which_trajectory, i, :]
+
+				for j in range( 1, multiplicity ):
+
+					r = trajectories[which_trajectory + j, i, :]
+
+					_keep_bound_beads_in_the_same_box( r, r_ref, input_data["box_size"] )
+
+					r_ref = r
+
+					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
+
+			lengths = np.linalg.norm( trajectories[which_trajectory + multiplicity - 1, :, :] - trajectories[which_trajectory, :, :], axis = 1 )
+			
+			length_trajectories[which_length_trajectory] = lengths
+
+			length_labels[ which_length_trajectory ] = labels[ which_trajectory ]
+
+			which_trajectory += multiplicity
+			which_length_trajectory += 1
+
+	del trajectories
+	del length_trajectories
+
+	if input_data["verbose"]: print('length computation performed')
+
+	return length_labels
+
+#-------------------------------------------------------------------------------
+
+def compute_length_distribution(input_data, length_labels, auxiliary_data):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	number_of_length_trajectories = auxiliary_data["number_of_molecules"]
+	length_temp_filename = auxiliary_data["length_temp_filename"]
+	number_of_bins = input_data["number_of_bins"]
+
+	length_trajectories = np.memmap( length_temp_filename, dtype = input_data["float_type"],
+						   			 shape = ( number_of_length_trajectories, number_of_timeframes ) )
+
+	lengths_separated = [ [ ] for i in range(len(input_data["sizes"])) ]
+
+	bins = []
+	length_distribution = []
+
+	for i in range( number_of_length_trajectories ):
+
+		# if input_data["verbose"]: timestamp('computing sad: {} / {}', i + 1, number_of_orientation_trajectories)
+
+		length_trajectories = np.memmap( length_temp_filename, dtype = input_data["float_type"],
+						   				 shape = ( number_of_length_trajectories, number_of_timeframes) )
+
+		length_trajectory = length_trajectories[i]
+
+		del length_trajectories
+
+		counter = 0
+
+		for input_label in input_data["labels"] :
+
+			if length_labels[i] == input_label:
+
+				break
+
+			counter += 1
+
+		lengths_separated[counter].append( length_trajectory )
+
+	for i in range(len(input_data["sizes"])):
+
+		l, b = np.histogram( lengths_separated[i], bins = input_data["number_of_bins"] )
+
+		bins.append( b )
+
+		length_distribution.append( l )
+
+	return bins, length_distribution
+
+#-------------------------------------------------------------------------------
+
+def save_lengths_to_file(input_data, bins, lengths):
+
+	output_filename = input_data["input_xyz_template"] + 'len.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = ''
+		line = ''
+
+		for i, label in enumerate( input_data["labels"] ):
+
+			first_line += ( 'length/A ' + label + ' ' )
+
+			line += '{} {} '
+
+		output_file.write(first_line + '\n')
+
+		for i in range( input_data["number_of_bins"] ):
+
+			line_values = [ ]
+
+			for j in range( len(input_data["labels"]) ):
+
+				line_values.append( bins[j][i] )
+				line_values.append( lengths[j][i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
+
+#-------------------------------------------------------------------------------
+
 def compute_orientations(input_data, labels, auxiliary_data):
 
 	which_trajectory = 0
