@@ -276,6 +276,10 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 			cm_trajectory = cm_trajectories[i]
 
+			for num in range(len(cm_trajectory) - 1):
+				jump = np.sqrt( np.sum( ( cm_trajectory[num+1] - cm_trajectory[num] )**2 ) )
+				if jump >= 100.0: print( jump )
+
 			del cm_trajectories
 
 			# sd = _compute_sd( cm_trajectory, input_data["box_size"], mode = input_data["mode"] )
