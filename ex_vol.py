@@ -89,8 +89,8 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 		crowders = place_crowders_xyz(r_crowders, snapshot)
 
-		# crowders = crowders[:-1]
-		crowders = crowders[1:]
+		crowders = crowders[:-1]
+		# crowders = crowders[1:]
 	
 		count = 0
 
@@ -157,19 +157,25 @@ if __name__ == '__main__':
 	from multiprocessing import Pool
 	from functools import partial
 
-	box_size = 750.0
-	r_tracer = [11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4]
+	# box_size = 750.0
+	# r_tracer = [11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4, 11.4]
 	# r_tracer = 39.2
 	# r_tracer = 51.0
 
+	box_size = 250.0
+	r_tracer = 8.5
+
 	number_of_trials = 10000
 
-	input_labels = ["FIC", "DNA", "DNS"]
-	input_radii = [51.0, 11.4, 39.2]
+	# input_labels = ["FIC", "DNA", "DNS"]
+	# input_radii = [51.0, 11.4, 39.2]
 
-	xyz_templates = ['ficoll_35_DNA_104_']
+	input_labels = ["TRC", "ALD"]
+	input_radii = [8.5, 8.5]
+
+	xyz_templates = ['tracers_100_']
 	xyz_number_min = 1
-	xyz_number_max = 3
+	xyz_number_max = 5
 	xyz_filenames = []
 	for template in xyz_templates:
 		for which in range(xyz_number_min, xyz_number_max+1):
@@ -180,7 +186,7 @@ if __name__ == '__main__':
 	nproc = multiprocessing.cpu_count()
 	print('You have {0:1d} CPUs'.format(nproc))
 
-	times = [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0]
+	times = [2000000.0, 3000000.0, 4000000.0, 5000000.0, 6000000.0, 7000000.0, 8000000.0, 9000000.0]
 
 	times_filenames = [ [time, filename] for time in times for filename in xyz_filenames ]
 
@@ -212,6 +218,7 @@ if __name__ == '__main__':
 					counter += 1
 
 	for template, exvol in zip(xyz_templates, excluded_volume_sorted):
+		print(exvol)
 		print('{}: fex = {} +/- {}'.format(template[:-1], np.mean(exvol), np.std(exvol, ddof=1)))
 
 
