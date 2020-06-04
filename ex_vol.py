@@ -89,20 +89,20 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 		crowders = place_crowders_xyz(r_crowders, snapshot)
 
-		crowders = crowders[:-1]
+		# crowders = crowders[:-1]
 		# crowders = crowders[1:]
 	
 		count = 0
 
-		for crowder in crowders:
-			crowder.r -= 1.5
+		# for crowder in crowders:
+		# 	crowder.r -= 1.5
 
 		for i in tqdm( range(number_of_trials) ):
 
 			tracers = place_tracers_linearly(r_tracer, box_size)
 
-			for tracer in tracers:
-				tracer.r -= 1.5
+			# for tracer in tracers:
+			# 	tracer.r -= 1.5
 
 			if overlap(crowders, tracers, 0.0):
 				count += 1
