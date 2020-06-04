@@ -55,7 +55,7 @@ class Box():
 		return 'a'
 
 a = 10.0
-box_length = 2500000.0
+box_length = 250.0
 label = "TST"
 filename = 'test_1.xyz'
 initial_coord = [ 0.0, 0.0, 0.0 ]
@@ -68,7 +68,7 @@ dt = 0.5
 T = 293.15
 viscosity = 0.01005
 
-bs = [ Bead(initial_coord, a, label) for i in range(10) ]
+bs = [ Bead(initial_coord, a, label) for i in range(10000) ]
 box = Box(bs, box_length, T, viscosity)
 print( box.beads )
 print('D = {} A**2/ps'.format(box.beads[0].D))
@@ -78,8 +78,8 @@ print('a = {} nm'.format(box.beads[0].a/10))
 
 with open(filename, 'w') as output_file:
 
-	for i in range(40000000):
-		if i % 10000 == 0:
+	for i in range(40000):
+		if i % 100 == 0:
 			output_file.write('{}\n'.format(len(box.beads)))
 			output_file.write('{} time [ps] {}\n'.format(filename, i*dt))
 			for bead in box.beads:

@@ -22,6 +22,7 @@ import numpy as np
 import copy as cp
 
 from pyBrown.trajectories import _compute_sd
+from pyBrown.trajectories import _coord_unify
 
 #-------------------------------------------------------------------------------
 
@@ -66,6 +67,42 @@ class TestTrajectory(unittest.TestCase):
 		self.assertSequenceEqual( list( s4 ), ans )
 
 	#---------------------------------------------------------------------------
+
+	def test_unify_coordinates(self):
+
+		past = [0,0,0]
+		present = [1,1,1]
+		bs = 100
+		_coord_unify( past, present, bs )
+
+		self.assertSequenceEqual( past, [0,0,0] )
+		self.assertSequenceEqual( present, [1,1,1] )
+
+		past = [0,0,0]
+		present = [1,1,1]
+		bs = 0.15
+		_coord_unify( past, present, bs )
+
+		self.assertSequenceEqual( past, [0,0,0] )
+		answer = [-0.05,-0.05,-0.05]
+		for coord1, coord2 in zip(present, answer):
+			self.assertAlmostEqual( coord1, coord2, places = 7 )
+
+		past = [0.49, 0.49, 0.49]
+		present = [-0.49, -0.49, -0.49]
+		bs = 1.0
+		_coord_unify( past, present, bs )
+
+		self.assertSequenceEqual( past, [0.49,0.49,0.49] )
+		self.assertSequenceEqual( present, [0.51,0.51,0.51] )
+
+		present = [0.49, 0.49, 0.49]
+		past = [-0.49, -0.49, -0.49]
+		bs = 1.0
+		_coord_unify( past, present, bs )
+
+		self.assertSequenceEqual( past, [-0.49,-0.49,-0.49] )
+		self.assertSequenceEqual( present, [-0.51,-0.51,-0.51] )
 
 
 #-------------------------------------------------------------------------------
