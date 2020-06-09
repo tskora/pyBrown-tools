@@ -68,7 +68,7 @@ def plot_msds(input_data, times, msds):
 
 	plt.legend()
 
-	plt.savefig(input_data["input_xyz_template"] + 'msd.jpg', dpi = 300)
+	plt.savefig(input_data["input_xyz_template"] + 'msd.pdf')
 
 	plt.close()
 
@@ -87,7 +87,7 @@ def plot_msads(input_data, times, msads):
 
 	plt.legend()
 
-	plt.savefig(input_data["input_xyz_template"] + 'msad.jpg', dpi = 300)
+	plt.savefig(input_data["input_xyz_template"] + 'msad.pdf')
 
 	plt.close()
 
@@ -106,7 +106,7 @@ def plot_moas(input_data, times, moas):
 
 	plt.legend()
 
-	plt.savefig(input_data["input_xyz_template"] + 'moa.jpg', dpi = 300)
+	plt.savefig(input_data["input_xyz_template"] + 'moa.pdf')
 
 	plt.close()
 
@@ -121,6 +121,6 @@ def plot_menergies(input_data, times, menergies):
 
 	plt.plot(times / 1000000, menergies, '-')
 
-	plt.savefig(input_data["input_enr_template"] + 'enr.jpg', dpi = 300)
+	plt.savefig(input_data["input_enr_template"] + 'enr.pdf')
 
 	plt.close()
