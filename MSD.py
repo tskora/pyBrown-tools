@@ -20,8 +20,8 @@ from pyBrown.input_MSD import InputDataMSD
 from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 separate_center_of_mass, \
-								 compute_msds, \
-								 save_msds_to_file
+								 compute_msds, compute_mssds, \
+								 save_msds_to_file, save_mssds_to_file
 from pyBrown.plotting import plot_msds
 
 #-------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ def main(input_filename):
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
 				"probing_frequency": 1, "min_time": 0.0, "mode": "window",
-				"float_type": 32}
+				"float_type": 32, "spread": False}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataMSD(input_filename, required_keywords, defaults)
@@ -54,10 +54,15 @@ def main(input_filename):
 
 	timestamp( 'Computing mean squared displacements' )
 	msds = compute_msds( i.input_data, cm_labels, auxiliary_data )
+	if i.input_data["spread"]:
+		import numpy as np
+		mssds = compute_mssds( i.input_data, cm_labels, auxiliary_data )
+		print(np.array(mssds)-np.array(msds)**2)
 	del cm_labels
 
 	timestamp( 'Saving mean squared displacements to a file' )
 	save_msds_to_file(i.input_data, times, msds)
+	if i.input_data["spread"]: save_mssds_to_file(i.input_data, times, mssds)
 
 	timestamp( 'Plotting mean squared displacements' )
 	plot_msds(i.input_data, times, msds)

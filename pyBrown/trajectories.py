@@ -25,7 +25,7 @@ import freud.msd
 
 from pyBrown.messaging import timestamp
 
-FREUD = True
+FREUD = False
 CM = True
 
 #-------------------------------------------------------------------------------
@@ -319,6 +319,93 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 #-------------------------------------------------------------------------------
 
+def compute_mssds(input_data, cm_labels, auxiliary_data):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
+	cm_temp_filename = auxiliary_data["cm_temp_filename"]
+
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+
+	unify_coordinates(cm_trajectories, input_data["box_size"])
+
+	del cm_trajectories
+
+	if input_data["verbose"]: timestamp("filling ssds")
+
+	# temporary binary file which will contain the 4-th powers of angular displacements
+	ssd_temp_filename = input_data["input_xyz_template"] + 'ssd_tmp.dat'
+	auxiliary_data["ssd_temp_filename"] = ssd_temp_filename
+
+	ssds = np.memmap( ssd_temp_filename, dtype = input_data["float_type"],
+							mode = 'w+',
+							shape = ( number_of_cm_trajectories,
+									  number_of_timeframes ) )
+
+	for i in range(number_of_cm_trajectories):
+		ssds[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
+
+	mssds = [ np.zeros(number_of_timeframes) for i in range(len(input_data["sizes"])) ]
+
+	del ssds
+
+	for i in range( number_of_cm_trajectories ):
+
+		if input_data["verbose"]: timestamp('computing ssd: {} / {}', i + 1, number_of_cm_trajectories)
+
+		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+						 shape = ( number_of_cm_trajectories,
+						 			number_of_timeframes, 3 ) )
+
+		cm_trajectory = cm_trajectories[i]
+
+		del cm_trajectories
+
+		ssd = _compute_ssd( cm_trajectory, input_data["box_size"] )
+
+		ssds = np.memmap( ssd_temp_filename, dtype = input_data["float_type"],
+							shape = ( number_of_cm_trajectories, number_of_timeframes ) )
+
+		ssds[i] = ssd
+
+		del ssds
+
+	for i in range( number_of_cm_trajectories ):
+
+		if input_data["verbose"]: timestamp('averaging: {} / {}', i + 1, number_of_cm_trajectories)
+
+		counter = 0
+
+		for input_label in input_data["labels"] :
+
+			if cm_labels[i] == input_label:
+
+				break
+
+			counter += 1
+
+		ssds = np.memmap( ssd_temp_filename, dtype = input_data["float_type"],
+							shape = ( number_of_cm_trajectories, number_of_timeframes ) )
+
+		ssd = ssds[i]
+
+		mssds[counter] += ssd
+
+		del ssds
+
+	for _mssd, label in zip( mssds, input_data["labels"] ):
+
+		_mssd /= molecule_numbers[ label ]
+
+	return mssds
+
+#-------------------------------------------------------------------------------
+
 def save_msds_to_file(input_data, times, msds):
 
 	output_filename = input_data["input_xyz_template"] + 'msd.txt'
@@ -343,6 +430,35 @@ def save_msds_to_file(input_data, times, msds):
 			for j in range( len(input_data["labels"]) ):
 
 				line_values.append( msds[j][i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
+
+#-------------------------------------------------------------------------------
+
+def save_mssds_to_file(input_data, times, mssds):
+
+	output_filename = input_data["input_xyz_template"] + 'mssd.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = 'time/ps '
+		line = '{} '
+
+		for label in input_data["labels"]:
+
+			first_line += ( label + ' ' )
+
+			line += '{} '
+
+		output_file.write(first_line + '\n')
+
+		for i in range( len(times) ):
+
+			line_values = [ times[i] ]
+
+			for j in range( len(input_data["labels"]) ):
+
+				line_values.append( mssds[j][i] )
 
 			output_file.write( line.format(*line_values) + '\n' )
 
@@ -1062,6 +1178,47 @@ def _compute_sd(trajectory, box_size):
         sd[i] = np.sum( ( trajectory[i] - trajectory[0] )**2 )
                           
     return sd
+
+#-------------------------------------------------------------------------------
+
+def _compute_ssd(trajectory, box_size):
+
+    ssd = np.zeros( len(trajectory) )
+    
+    for i in range( 1, len(trajectory) ):
+
+        jump = np.sqrt( np.sum( ( trajectory[i] - trajectory[i - 1] )**2 ) )
+        
+        if ( jump >= box_size * np.sqrt(3) / 2 ):
+            # print('i: {}'.format(i))
+            # print('present trajectory: {}'.format(trajectory[i]))
+            # print('previous trajectory: {}'.format(trajectory[i-1]))
+            # print('jump: {}'.format(jump))
+
+            versors = box_size * np.array( [ [i, j, k]
+                for i in [-1,0,1] for j in [-1,0,1] for k in [-1,0,1]
+                if not ( i == 0 and j == 0 and k == 0 ) ] )
+
+            for versor in versors:
+                # print('versor: {}'.format(versor))
+                replica = versor + trajectory[i]
+                # print('replica: {}'.format(replica))
+                replica_jump = np.sqrt( np.sum( ( replica - trajectory[i - 1] )**2 ) )
+                # print('replica jump: {}'.format(replica_jump))
+                if replica_jump <= jump:
+                    versor_chosen = versor
+                    jump = replica_jump
+            # print('revised jump: {}'.format(jump))
+            # print('')
+
+            assert jump <= box_size * np.sqrt(3) / 2, 'jump {} is impossibly large'.format(i)  
+
+            for j in range(i, len(trajectory)):
+                trajectory[j] += versor_chosen
+        
+        ssd[i] = np.sum( ( trajectory[i] - trajectory[0] )**4 )
+
+    return ssd
 
 #-------------------------------------------------------------------------------
 
