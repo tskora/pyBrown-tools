@@ -8,9 +8,9 @@ from pyBrown.box import Box
 from pyBrown.bead import Bead
 
 a = 51.0
-box_length = 750.0
+box_length = 7500.0
 label = "TST"
-filename = 'test_15.xyz'
+filename = 'test_20.xyz'
 dt = 0.5
 # D = 10**19 * Boltzmann / (6 * np.pi) * 293.15 / ( a * viscosity ) # angstrom per picosecond squared
 # print('D = {} A**2/ps'.format(D))
@@ -19,10 +19,10 @@ dt = 0.5
 # print('a = {} nm'.format(a/10))
 T = 293.15
 viscosity = 0.01005
-n_particles = 152
-n_steps = 1
+n_particles = 42
+n_steps = 1000000
 # n_dim = 100
-n_chol = 100
+n_chol = 1000
 
 initial_coords = [ box_length * np.random.rand(3) - np.array([box_length/2, box_length/2, box_length/2]) for i in range(n_particles) ]
 # print(initial_coords)
@@ -40,8 +40,8 @@ print('D = {} A**2/ns'.format( 10**19 * Boltzmann / (6 * np.pi) * 293.15 / ( box
 
 with open(filename, 'w') as output_file:
 	start = time.time()
-	# for i in tqdm( range(n_steps) ):
-	for i in range(n_steps):
+	for i in tqdm( range(n_steps) ):
+	# for i in range(n_steps):
 		# np.linalg.cholesky(A)
 		# np.linalg.inv(A)
 		# np.linalg.inv(A)

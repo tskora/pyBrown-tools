@@ -41,9 +41,9 @@ class Box():
 
 	def compute_Dmatrix(self):
 
-		self.pointers()
+		self.compute_pointers()
 
-		# self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * M_rpy(self.beads, self.pointers) / self.viscosity )
+		self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * M_rpy(self.beads, self.pointers) / self.viscosity )
 
 		# print(self.D)
 
@@ -51,13 +51,13 @@ class Box():
 
 		# print(self.D)
 
-		self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * np.linalg.inv( ( np.linalg.inv( M_rpy(self.beads, self.pointers) ) + R_lub_corr(self.beads) ) ) / self.viscosity  )
+		# self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * np.linalg.inv( ( np.linalg.inv( M_rpy(self.beads, self.pointers) ) + R_lub_corr(self.beads) ) ) / self.viscosity  )
 
 	def decompose_Dmatrix(self):
 
 		self.B = np.linalg.cholesky(self.D)
 
-	def pointers(self, nearest = True):
+	def compute_pointers(self, nearest = True):
 
 		self.pointers = [ [ self._pointer(self.beads[i], self.beads[j], nearest) for i in range(len(self.beads)) ] for j in range(len(self.beads)) ]
 
