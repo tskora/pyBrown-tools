@@ -366,7 +366,8 @@ def compute_mssds(input_data, cm_labels, auxiliary_data):
 
 		del cm_trajectories
 
-		ssd = _compute_ssd( cm_trajectory, input_data["box_size"] )
+		# ssd = _compute_ssd( cm_trajectory, input_data["box_size"] )
+		ssd = _compute_sd( cm_trajectory, input_data["box_size"] )**2
 
 		ssds = np.memmap( ssd_temp_filename, dtype = input_data["float_type"],
 							shape = ( number_of_cm_trajectories, number_of_timeframes ) )
@@ -401,6 +402,8 @@ def compute_mssds(input_data, cm_labels, auxiliary_data):
 	for _mssd, label in zip( mssds, input_data["labels"] ):
 
 		_mssd /= molecule_numbers[ label ]
+
+	# return ( np.array(mssds) - np.array(msds) )**2
 
 	return mssds
 

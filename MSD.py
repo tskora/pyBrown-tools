@@ -54,10 +54,22 @@ def main(input_filename):
 
 	timestamp( 'Computing mean squared displacements' )
 	msds = compute_msds( i.input_data, cm_labels, auxiliary_data )
-	if i.input_data["spread"]:
-		import numpy as np
-		mssds = compute_mssds( i.input_data, cm_labels, auxiliary_data )
-		print(np.array(mssds)-np.array(msds)**2)
+	if i.input_data["spread"]: mssds = compute_mssds( i.input_data, cm_labels, auxiliary_data )
+		# import numpy as np
+		# mssds = compute_mssds( i.input_data, cm_labels, auxiliary_data )
+		# print(np.array(mssds))
+		# # print(np.array(mssds)-np.array(msds)**2)
+		# import matplotlib.pyplot as plt
+		# plt.plot(np.array(mssds[0]), ls = ':', color = 'black', label = r'$\langle \mathrm{SD}^2 \rangle$')
+		# plt.plot(np.array(msds[0])**2, ls = '-', color = 'red', label = r'$\mathrm{MSD}^2$')
+		# plt.legend()
+		# plt.show()
+		# plt.close()
+		# from scipy.optimize import curve_fit
+		# # plt.plot(np.sqrt( np.array(mssds[0]) - np.array(msds[0])**2 ), ls = ':', label = r'$\mathrm{MSD}$')
+		# # plt.plot(np.array(msds[0]), ls = '-', label = r'$\sigma \left( \mathrm{SD} \right)$')
+		# plt.plot(np.sqrt( np.array(mssds[0]) - np.array(msds[0])**2 )/np.array(msds[0]), ls = '-' )
+		# plt.show()
 	del cm_labels
 
 	timestamp( 'Saving mean squared displacements to a file' )
