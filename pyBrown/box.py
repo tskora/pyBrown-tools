@@ -32,18 +32,24 @@ class Box():
 	def propagate(self, dt, build_D = True, cholesky = True):
 
 		if build_D: self.compute_Dmatrix()
-		if cholesky: self.decompose_Dmatrix()
-		BX = self.B @ np.random.normal(0.0, 1.0, 3 * len(self.beads)) * math.sqrt(2 * dt)
+		# if cholesky: self.decompose_Dmatrix()
+		# BX = self.B @ np.random.normal(0.0, 1.0, 3 * len(self.beads)) * math.sqrt(2 * dt)
+		X = np.random.normal(0.0, 1.0, 3 * len(self.beads))
+		for i in range(len(self.beads)): X[3*i: 3*(i+1)] /= np.linalg.norm(X[3*i: 3*(i+1)])
+		X *= math.sqrt(6 * dt)
 
 		for i, bead in enumerate( self.beads ):
-			bead.translate( BX[3 * i: 3 * (i + 1)] )
+			# bead.translate( BX[3 * i: 3 * (i + 1)] )
+			bead.translate( math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)])
 			bead.keep_in_box(self.box_length)
 
 	def compute_Dmatrix(self):
 
 		self.compute_pointers()
 
-		self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * M_rpy(self.beads, self.pointers) / self.viscosity )
+		self.D = np.identity(3*len(self.beads)) * 10**19 * Boltzmann / (6 * np.pi) * self.T / ( self.beads[0].a * self.viscosity )
+
+		# self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * M_rpy(self.beads, self.pointers) / self.viscosity )
 
 		# print(self.D)
 
