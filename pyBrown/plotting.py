@@ -18,8 +18,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.constants import Boltzmann
+from scipy.optimize import curve_fit
 
 from pyBrown.plot_config import plot_config
+
+#-------------------------------------------------------------------------------
+
+def MSD_fit_func(msd, D):
+
+	return msd/6/D
 
 #-------------------------------------------------------------------------------
 
@@ -30,18 +37,14 @@ def plot_msds(input_data, times, msds):
 	plt.xlabel(r't [$\mu s$]')
 	plt.ylabel(r'MSD [$\AA ^2$]')
 
-	# plt.yticks([])
-
 	for i, msd in enumerate(msds):
 
 		plt.plot( times / 1000000, msd, '-', label = input_data["labels"][i], color = colors[i] )
 
 		if input_data["fit_MSD"]:
-			#TODO: swap for scipy routine to preserve b=0
-			a, b = np.polyfit(times, msd, 1)
-			# print('a = {}; b = {}'.format(a, b))
-			D = a / 6 # in A**2 / ps
-			# print('D = {}'.format(D))
+			# a, b = np.polyfit(times, msd, 1)
+			D = curve_fit(MSD_fit_func, msd, times)[0][0]
+			# D = a / 6 # in A**2 / ps
 			D_string = '{:7.5f}'.format(D * 1000) # in AA**2 / ns
 			Rh = 10**17 * Boltzmann / (6 * np.pi) * input_data["temperature"] / ( D * 0.1 * input_data["viscosity"] ) # in nm
 			Rh_string = '{:4.2f}'.format(Rh) # in nm
@@ -50,7 +53,8 @@ def plot_msds(input_data, times, msds):
 			plt.text( 0.0 * times[-1], (0.65 - i * 0.15) * np.ndarray.max( np.array( msds ) ), r'$D =$' + D_string + r' $\frac{\AA ^2}{ns}$')
 			plt.text( 0.0 * times[-1], (0.60 - i * 0.15) * np.ndarray.max( np.array( msds ) ), r'$R_H =$' + Rh_string + ' nm')
 
-			plt.plot(times / 1000000, a * np.array(times, float) + b * np.ones(len(times)), '--', label = 'linear fit for ' + input_data["labels"][i], color = colors[i]  )
+			plt.plot(times / 1000000, 6 * D * times, '--', label = 'linear fit for ' + input_data["labels"][i], color = colors[i]  )
+			# plt.plot(times / 1000000, a * np.array(times, float) + b * np.ones(len(times)), '--', label = 'linear fit for ' + input_data["labels"][i], color = colors[i]  )
 
 	plt.legend()
 
