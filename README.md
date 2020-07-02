@@ -44,7 +44,7 @@ Type following commands in a terminal:
 |---|---|
 | Temperature | kelvin *K* |
 | Viscosity | poise *P* |
-| Time | picosecond *fs* |
+| Time | picosecond *ps* |
 | Distance | Angstrom *Å* |
 
 <a name="strs"></a>
