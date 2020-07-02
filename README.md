@@ -26,6 +26,8 @@ Type following commands in a terminal:
 
 ## Table of Contents
 
+0. [General remarks](#gen)
+* [Units](#gen.units)
 1. [Generating structure files](#strs)
 * [Keywords](#strs.keywords)
 2. [Trajectory analysis](#traj)
@@ -33,6 +35,17 @@ Type following commands in a terminal:
 * [Example input file](#traj.example)
 * [Usage](#traj.usage)
 * [Output files](#traj.output)
+
+<a name="gen"></a>
+## General remarks
+<a name="gen.units"></a>
+### Units
+| Physical property | Units |
+|---|---|
+| Temperature | kelvin *K* |
+| Viscosity | poise *P* |
+| Time | picosecond *fs* |
+| Distance | Angstrom *Å* |
 
 <a name="strs"></a>
 ## Generating structure files
