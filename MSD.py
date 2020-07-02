@@ -15,6 +15,7 @@
 # along with this program. If not, see https://www.gnu.org/licenses.
 
 import click
+import os
 
 from pyBrown.input_MSD import InputDataMSD
 from pyBrown.messaging import timestamp
@@ -64,6 +65,15 @@ def main(input_filename):
 
 	del times
 	del msds
+
+	timestamp( 'Deleting binary files' )
+	delete_binary_files(auxiliary_data)
+
+#-------------------------------------------------------------------------------
+
+def delete_binary_files(aux):
+		for key in aux.keys():
+			if "temp_filename" in key: os.remove(aux[key])
 
 #-------------------------------------------------------------------------------
 
