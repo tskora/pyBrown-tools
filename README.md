@@ -167,5 +167,5 @@ If you have already prepared an input JSON file (using keywords introduced above
 #### Output files
 
 Successful computations should produce:
-* `(TEMPLATE)enr.txt` data file with MSD as a function of time,
-* `(TEMPLATE)enr.pdf` image file with MSD as a function of time (and optionally, linear fit),
+* `(TEMPLATE)enr.txt` data file with mean energy as a function of time,
+* `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit),
