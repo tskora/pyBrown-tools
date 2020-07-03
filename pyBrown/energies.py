@@ -97,6 +97,22 @@ def _read_energies_from_enr_file(enr_file, energies, times):
 
 #-------------------------------------------------------------------------------
 
+def save_menergies_to_file(input_data, times, energies):
+
+	output_filename = input_data["input_enr_template"] + 'enr.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = 'time/ps energy/kcalmol-1\n'
+
+		output_file.write(first_line)
+
+		for i in range( len(times) ):
+
+			output_file.write( '{} {}\n'.format(times[i], energies[i]) )
+
+#-------------------------------------------------------------------------------
+
 def _file_length(filename):
 
 	with open(filename, 'r') as file:

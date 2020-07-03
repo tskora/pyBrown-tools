@@ -18,7 +18,7 @@ import click
 
 from pyBrown.input_Energy import InputDataEnergy
 from pyBrown.messaging import timestamp
-from pyBrown.energies import read_energies, compute_mean_energies
+from pyBrown.energies import read_energies, compute_mean_energies, save_menergies_to_file
 from pyBrown.plotting import plot_menergies
 
 #-------------------------------------------------------------------------------
@@ -46,8 +46,8 @@ def main(input_filename):
 	menergies = compute_mean_energies(i.input_data, energies)
 	del energies
 
-	# timestamp( 'Saving energies to a file' )
-	# save_energies_to_file(i.input_data, times, energies)
+	timestamp( 'Saving energies to a file' )
+	save_menergies_to_file(i.input_data, times, menergies)
 
 	timestamp( 'Plotting energies' )
 	plot_menergies(i.input_data, times, menergies)
