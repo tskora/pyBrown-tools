@@ -10,7 +10,7 @@ Copyright &copy;2018- Tomasz Skóra [tskora@ichf.edu.pl](mailto:tskora@ichf.edu.
 ## Features
 
 - [x] computing Mean Square Displacement
-- [x] computing Mean Square Angular Displacement and Orientation Autocorrelation
+- [x] computing Mean Square Angular Displacement and Mean Orientation Autocorrelation
 - [x] computing Radial Distribution Function
 - [x] structure (`.str`) files generation
 - [x] Monte Carlo Excluded Volume computation
@@ -48,10 +48,10 @@ Type following commands in a terminal:
 ### Units
 | Physical property | Units |
 |---|---|
-| Temperature | kelvin *K* |
-| Viscosity | poise *P* |
-| Time | picosecond *ps* |
-| Distance | Angstrom *Å* |
+| Temperature | kelvin (*K*) |
+| Viscosity | poise (*P*) |
+| Time | picosecond (*ps*) |
+| Distance | Angstrom (*Å*) |
 
 <a name="strs"></a>
 ## Generating structure files
