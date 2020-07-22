@@ -15,15 +15,15 @@
 # along with this program. If not, see https://www.gnu.org/licenses.
 
 import click
-import os
 
-from pyBrown.input_MSD import InputDataMSD
+from pyBrown.input_RotDiff import InputDataRotDiff
 from pyBrown.messaging import timestamp
 from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
-								 separate_center_of_mass, \
-								 compute_msds, \
-								 save_msds_to_file
-from pyBrown.plotting import plot_msds
+								 compute_orientations, compute_mean_orientation_autocorrelation, \
+								 save_mean_orientation_autocorrelation_to_file, \
+								 compute_mean_squared_angular_displacements, \
+								 save_mean_squared_angular_displacements_to_file
+from pyBrown.plotting import plot_msads, plot_moas
 
 #-------------------------------------------------------------------------------
 
@@ -33,47 +33,44 @@ from pyBrown.plotting import plot_msds
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
-						 "input_xyz_template", "input_xyz_range"]
+	required_keywords = ["labels", "sizes", "box_size", "input_xyz_template", "input_xyz_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
-				"probing_frequency": 1, "min_time": 0.0, "mode": "window",
-				"float_type": 32}
+	defaults = {"debug": False, "verbose": False, "probing_frequency": 1,
+				"min_time": 0.0, "mode": "window", "float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataMSD(input_filename, required_keywords, defaults)
+	i = InputDataRotDiff(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
 	timestamp( 'Reading trajectories' )
 	times, labels, auxiliary_data = read_trajectories(i.input_data)
 	add_auxiliary_data_multibeads( i.input_data, labels, auxiliary_data )
-	timestamp( 'Separating the center of mass movement' )
-	cm_labels = separate_center_of_mass( i.input_data, labels, auxiliary_data )
+	timestamp( 'Separating the rotational movement' )
+	orientation_labels = compute_orientations( i.input_data, labels, auxiliary_data )
 	del labels
 
-	timestamp( 'Computing mean squared displacements' )
-	msds = compute_msds( i.input_data, cm_labels, auxiliary_data )
-	del cm_labels
+	timestamp( 'Computing mean orientation autocorrelations' )
+	moas = compute_mean_orientation_autocorrelation( i.input_data, orientation_labels, auxiliary_data )
+	timestamp( 'Saving mean orientation autocorrelations to a file' )
+	save_mean_orientation_autocorrelation_to_file(i.input_data, times, moas)
 
-	timestamp( 'Saving mean squared displacements to a file' )
-	save_msds_to_file(i.input_data, times, msds)
+	timestamp( 'Computing mean squared angular displacements' )
+	msads = compute_mean_squared_angular_displacements( i.input_data, orientation_labels, auxiliary_data )
+	timestamp( 'Saving mean squared angular displacements to a file' )
+	save_mean_squared_angular_displacements_to_file(i.input_data, times, msads)
+	del orientation_labels
 
-	timestamp( 'Plotting mean squared displacements' )
-	plot_msds(i.input_data, times, msds)
+	timestamp( 'Plotting mean squared angular displacements' )
+	plot_msads(i.input_data, times, msads)
+
+	timestamp( 'Plotting mean orientation autocorrelations' )
+	plot_moas(i.input_data, times, moas)
 
 	del times
-	del msds
-
-	timestamp( 'Deleting binary files' )
-	delete_binary_files(auxiliary_data)
-
-#-------------------------------------------------------------------------------
-
-def delete_binary_files(aux):
-		for key in aux.keys():
-			if "temp_filename" in key: os.remove(aux[key])
+	del moas
+	del msads
 
 #-------------------------------------------------------------------------------
 

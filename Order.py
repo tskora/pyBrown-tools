@@ -16,11 +16,11 @@
 
 import click
 
-from pyBrown.input_Pack import InputDataPack
-from pyBrown.grid import pack_molecules
-from pyBrown.write import write_structure
-from pyBrown.parse import parse_input_filename
+from pyBrown.input_Order import InputDataOrder
 from pyBrown.messaging import timestamp
+from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
+								 compute_orientations, compute_nematic_order, \
+								 compute_mean_director
 
 #-------------------------------------------------------------------------------
 
@@ -30,34 +30,35 @@ from pyBrown.messaging import timestamp
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["packing_mode", "box_size", "hydrodynamic_radii",
-						 "lennard-jones_radii", "lennard-jones_energies",
-						 "charges", "masses", "bond_force_constants",
-						 "angle_force_constants", "numbers_of_molecules",
-						 "labels_of_molecules", "output_structure_filename"]
+	required_keywords = ["labels", "sizes", "box_size", "input_xyz_template", "input_xyz_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"minimal_distance_between_surfaces":0.0, "max_bond_lengths":2.5e+07,
-				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1,
+	defaults = {"debug": False, "verbose": False, "probing_frequency": 1, "min_time": 0.0,
 				"float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataPack(input_filename, required_keywords, defaults)
+	i = InputDataOrder(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
-	for file_count in range(1, i.input_data["number_of_structures"] + 1):
+	timestamp( 'Reading trajectories' )
+	times, labels, auxiliary_data = read_trajectories(i.input_data)
+	add_auxiliary_data_multibeads( i.input_data, labels, auxiliary_data )
+	timestamp( 'Separating the rotational movement' )
+	orientation_labels = compute_orientations( i.input_data, labels, auxiliary_data )
+	del labels
 
-		coords = pack_molecules(i.input_data)
+	timestamp( 'Computing director' )
+	mean_director =  compute_mean_director( i.input_data, orientation_labels, auxiliary_data )
+	timestamp( 'Computing nematic order parameter' )
+	no = compute_nematic_order( i.input_data, orientation_labels, auxiliary_data, director = mean_director )
+	timestamp( 'Nematic order parameters:\n{}\n{}', i.input_data["labels"], no )
 
-		output_structure_filename = i.input_data["output_structure_filename"].split('.')[0] +\
-									'_{}.'.format(file_count) +\
-									i.input_data["output_structure_filename"].split('.')[1]
-
-		write_structure(i.input_data, coords, output_structure_filename)
+	del times
+	del orientation_labels
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
+	
 	main()

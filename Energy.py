@@ -16,11 +16,10 @@
 
 import click
 
-from pyBrown.input_Pack import InputDataPack
-from pyBrown.grid import pack_molecules
-from pyBrown.write import write_structure
-from pyBrown.parse import parse_input_filename
+from pyBrown.input_Energy import InputDataEnergy
 from pyBrown.messaging import timestamp
+from pyBrown.energies import read_energies, compute_mean_energies, save_menergies_to_file
+from pyBrown.plotting import plot_menergies
 
 #-------------------------------------------------------------------------------
 
@@ -30,34 +29,34 @@ from pyBrown.messaging import timestamp
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["packing_mode", "box_size", "hydrodynamic_radii",
-						 "lennard-jones_radii", "lennard-jones_energies",
-						 "charges", "masses", "bond_force_constants",
-						 "angle_force_constants", "numbers_of_molecules",
-						 "labels_of_molecules", "output_structure_filename"]
+	required_keywords = ["input_enr_template", "input_enr_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"minimal_distance_between_surfaces":0.0, "max_bond_lengths":2.5e+07,
-				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1,
-				"float_type": 32}
+	defaults = {"debug": False, "verbose": False, "float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataPack(input_filename, required_keywords, defaults)
+	i = InputDataEnergy(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
-	for file_count in range(1, i.input_data["number_of_structures"] + 1):
+	timestamp( 'Reading energies' )
+	times, energies = read_energies(i.input_data)
 
-		coords = pack_molecules(i.input_data)
+	timestamp( 'Averaging energies' )
+	menergies = compute_mean_energies(i.input_data, energies)
+	del energies
 
-		output_structure_filename = i.input_data["output_structure_filename"].split('.')[0] +\
-									'_{}.'.format(file_count) +\
-									i.input_data["output_structure_filename"].split('.')[1]
+	timestamp( 'Saving energies to a file' )
+	save_menergies_to_file(i.input_data, times, menergies)
 
-		write_structure(i.input_data, coords, output_structure_filename)
+	timestamp( 'Plotting energies' )
+	plot_menergies(i.input_data, times, menergies)
+
+	del times
+	del menergies
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
+	
 	main()

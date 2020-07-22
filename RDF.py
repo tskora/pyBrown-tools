@@ -16,11 +16,12 @@
 
 import click
 
-from pyBrown.input_Pack import InputDataPack
-from pyBrown.grid import pack_molecules
-from pyBrown.write import write_structure
-from pyBrown.parse import parse_input_filename
+from pyBrown.input_RDF import InputDataRDF
 from pyBrown.messaging import timestamp
+from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
+								 separate_center_of_mass, compute_rdfs, save_rdfs_to_file
+
+CM = True
 
 #-------------------------------------------------------------------------------
 
@@ -30,34 +31,38 @@ from pyBrown.messaging import timestamp
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["packing_mode", "box_size", "hydrodynamic_radii",
-						 "lennard-jones_radii", "lennard-jones_energies",
-						 "charges", "masses", "bond_force_constants",
-						 "angle_force_constants", "numbers_of_molecules",
-						 "labels_of_molecules", "output_structure_filename"]
+	required_keywords = ["labels", "sizes", "box_size",
+						 "input_xyz_template", "input_xyz_range", "number_of_bins"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"minimal_distance_between_surfaces":0.0, "max_bond_lengths":2.5e+07,
-				"bond_lengths":'hydrodynamic_radii', "number_of_structures":1,
+	defaults = {"debug": False, "verbose": False, "fit_MSD": False,
+				"probing_frequency": 1, "min_time": 0.0, "mode": "window",
 				"float_type": 32}
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputDataPack(input_filename, required_keywords, defaults)
+	i = InputDataRDF(input_filename, required_keywords, defaults)
 	timestamp( 'Input data:\n{}', i )
 
-	for file_count in range(1, i.input_data["number_of_structures"] + 1):
+	timestamp( 'Reading trajectories' )
+	times, labels, auxiliary_data = read_trajectories(i.input_data)
+	add_auxiliary_data_multibeads( i.input_data, labels, auxiliary_data )
 
-		coords = pack_molecules(i.input_data)
+	if CM:
+		timestamp( 'Separating the center of mass movement' )
+		labels = separate_center_of_mass( i.input_data, labels, auxiliary_data )
 
-		output_structure_filename = i.input_data["output_structure_filename"].split('.')[0] +\
-									'_{}.'.format(file_count) +\
-									i.input_data["output_structure_filename"].split('.')[1]
+	timestamp( 'Computing radial distribution function' )
+	bins, rdfs, distinct_rdf = compute_rdfs( i.input_data, labels, auxiliary_data )
 
-		write_structure(i.input_data, coords, output_structure_filename)
+	timestamp( 'Saving radial distribution function to a file' )
+	save_rdfs_to_file(i.input_data, bins, rdfs, distinct_rdf)
+
+	del times
+	# del msds
 
 #-------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
+	
 	main()

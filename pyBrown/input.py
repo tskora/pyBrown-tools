@@ -16,6 +16,8 @@
 
 import json
 
+import numpy as np
+
 #-------------------------------------------------------------------------------
 
 class InputData:
@@ -27,6 +29,10 @@ class InputData:
         self._complete_with_defaults(defaults)
 
         self._check_for_missing_keywords(obligatory_keywords)
+
+        if self.input_data["float_type"] == 32: self.input_data["float_type"] = np.float32
+
+        elif self.input_data["float_type"] == 64: self.input_data["float_type"] = np.float64
 
     #---------------------------------------------------------------------------
 
