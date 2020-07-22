@@ -52,7 +52,7 @@ def what_radius_based_on_label(label, labels, radii):
 
 	for l, r in zip( labels, radii ):
 
-		if label == l: return radii[i][0]
+		if label == l: return radii[i]
 
 		i += 1
 
