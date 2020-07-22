@@ -163,6 +163,7 @@ def _digitize_grid(grid, populated_box, dx, box_size):
 					if overlap(probe, populated_box, 0.0):
 						if_overlap = True
 					probe.translate( -versor )
+					if if_overlap: break
 				if if_overlap:
 					overlapping_points += 1
 					# print('{} {} {} 1'.format(*point))
