@@ -177,16 +177,6 @@ Successful computations should produce:
 * `(TEMPLATE)enr.txt` data file with mean energy as a function of time,
 * `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit)
 
-
-
-
-
-
-
-
-
-
-
 <a name="vox"></a>
 ## Snapshot voxelization
 <a name="vox.vox"></a>
@@ -234,7 +224,7 @@ If you have already prepared an input JSON file (using keywords introduced above
 #### Output files
 
 Successful computations should produce:
-* `(TEMPLATE)voxels.txt` data file with digitized snapshot,
+* `*voxels.txt` data file with digitized snapshot,
 
 <a name="vox.plt"></a>
 ### `PlotVoxels.py`
