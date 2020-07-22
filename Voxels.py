@@ -105,6 +105,8 @@ def digitize_grid(input_data):
 		for indices in element:
 			digitized_grid[indices[0]][indices[1]][indices[2]] = 1.0
 
+	print( np.sum(digitized_grid)/grid_density**3 )
+
 	return digitized_grid
 
 #-------------------------------------------------------------------------------
@@ -125,7 +127,7 @@ def _digitize_grid(grid, populated_box, dx, box_size):
 				i = int( ( point[0] + ( box_size - dx ) / 2 ) / dx )
 				j = int( ( point[1] + ( box_size - dx ) / 2 ) / dx )
 				k = int( ( point[2] + ( box_size - dx ) / 2 ) / dx )
-				print( '{} {} {}'.format( i, j, k ) )
+				# print( '{} {} {}'.format( i, j, k ) )
 				overlap_indices.append( (i, j, k) )
 			else:
 				versors = [ np.array([nx * box_size,
@@ -146,7 +148,7 @@ def _digitize_grid(grid, populated_box, dx, box_size):
 					i = int( ( point[0] + ( box_size - dx ) / 2 ) / dx )
 					j = int( ( point[1] + ( box_size - dx ) / 2 ) / dx )
 					k = int( ( point[2] + ( box_size - dx ) / 2 ) / dx )
-					print( '{} {} {}'.format( i, j, k ) )
+					# print( '{} {} {}'.format( i, j, k ) )
 					overlap_indices.append( (i, j, k) )
 
 	return overlap_indices
