@@ -25,6 +25,27 @@ from pyBrown.sphere import Sphere, overlap
 
 #-------------------------------------------------------------------------------
 
+def read_radii_from_str_file(input_str_filename, mode):
+
+	with open(input_str_filename) as str_file:
+		labels = []
+		radii = []
+		for line in str_file:
+			if line.split()[0] == 'sub':
+				label = line.split()[1]
+				hydrodynamic_radius = float(line.split()[6])
+				lennard_jones_radius = float(line.split()[8]) / 2
+
+				if label not in labels:
+					labels.append(label)
+					if mode == 'hydrodynamic': radii.append( hydrodynamic_radius )
+					elif mode == 'lennard-jones': radii.append( lennard_jones_radius )
+					else: print('radii mode unknown')
+
+	return labels, radii
+
+#-------------------------------------------------------------------------------
+
 def what_radius_based_on_label(label, labels, radii):
 
 	i = 0
@@ -79,7 +100,7 @@ def digitize_grid(input_data):
 
 	input_xyz_filename = input_data["input_xyz_filename"]
 	input_labels = input_data["labels"]
-	radii = input_data["lennard-jones_radii"]
+	radii = input_data["radii"]
 	snapshot_time = input_data["snapshot_time"]
 	grid_density = input_data["grid_density"]
 	box_size = input_data["box_size"]
@@ -206,8 +227,8 @@ def plot_digitized_grid(digitized_grid):
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["labels", "box_size", "input_xyz_filename", "snapshot_time",
-						 "grid_density", "lennard-jones_radii"]
+	required_keywords = ["box_size", "input_xyz_filename", "input_str_filename",
+						 "snapshot_time", "grid_density", "radii_mode"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
@@ -215,6 +236,9 @@ def main(input_filename):
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataVoxels(input_filename, required_keywords, defaults)
+	i.input_data["labels"], i.input_data["radii"] = read_radii_from_str_file(
+														i.input_data["input_str_filename"],
+											 			i.input_data["radii_mode"])
 	timestamp( 'Input data:\n{}', i )
 
 	timestamp( 'Digitizing grid' )
