@@ -41,6 +41,13 @@ Type following commands in a terminal:
         * [Example input file](#traj.enr.example)
         * [Usage](#traj.enr.usage)
         * [Output files](#traj.enr.output)
+3. [Snapshot voxelization](#vox)
+    * [`Voxels.py`](#vox.vox)
+        * [Keywords](#vox.vox.keywords)
+        * [Example input file](#vox.vox.example)
+        * [Usage](#vox.vox.usage)
+        * [Output files](#vox.vox.output)
+    * [`PlotVoxels.py`](#vox.plt)
 
 <a name="gen"></a>
 ## General remarks
@@ -168,4 +175,70 @@ If you have already prepared an input JSON file (using keywords introduced above
 
 Successful computations should produce:
 * `(TEMPLATE)enr.txt` data file with mean energy as a function of time,
-* `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit),
+* `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit)
+
+
+
+
+
+
+
+
+
+
+
+<a name="vox"></a>
+## Snapshot voxelization
+<a name="vox.vox"></a>
+### `Voxels.py`
+<a name="vox.vox.keywords"></a>
+#### Keywords
+**Required keywords:**
+
+* `"box_size": float` &mdash; size of simulation (cubic) box (*Å*),
+* `"input_xyz_filename": string` &mdash; input xyz filename,
+* `"input_str_filename": string` &mdash; input str filename,
+* `"snapshot_time": float` &mdash; time defining single snapshot from `.xyz` file (*ps*),
+* `"grid_density": integer` &mdash; number of voxels per box side,
+* `"radii_mode": option` &mdash; bead radius definition (options: `"hydrodynamic"`/`"lennard-jones"`)
+
+**Optional keywords:**
+
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
+* `"verbose": boolean` &mdash; print extra information (default: `false`)
+* `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
+
+<a name="vox.vox.example"></a>
+#### Example input file
+
+```json
+{
+  "box_size": 750.0,
+  "input_xyz_filename": "cytoplasm_250_1.xyz",
+  "input_str_filename": "cytoplasm_250_1.str",
+  "verbose": true,
+  "debug": true,
+  "grid_density": 10,
+  "snapshot_time": 1629699.184723,
+  "radii_mode": "lennard-jones"
+}
+```
+
+<a name="vox.vox.usage"></a>
+#### Usage
+If you have already prepared an input JSON file (using keywords introduced above), you can run the `Voxels.py` program using following command:
+
+`python Voxels.py input.json`
+
+<a name="vox.vox.output"></a>
+#### Output files
+
+Successful computations should produce:
+* `(TEMPLATE)voxels.txt` data file with digitized snapshot,
+
+<a name="vox.plt"></a>
+### `PlotVoxels.py`
+
+If you have already voxelized snapshot you should have `*voxels.txt` file. You can run the `PlotVoxels.py` program using following command:
+
+`python PlotVoxels.py *voxels.txt`
