@@ -25,14 +25,14 @@ from pyBrown.messaging import timestamp
 
 #-------------------------------------------------------------------------------
 
-def read_digitized_grid_from_file(input_pores_filename):
+def read_digitized_grid_from_file(input_voxels_filename):
 
-	with open(input_pores_filename) as pores_file:
-		first_line = pores_file.readline().split()
+	with open(input_voxels_filename) as voxels_file:
+		first_line = voxels_file.readline().split()
 		grid_density = int( first_line[0] )
 		box_size = float( first_line[1] )
 		digitized_grid = np.zeros((grid_density, grid_density, grid_density))
-		for line in pores_file:
+		for line in voxels_file:
 			i, j, k, val = line.split()
 			digitized_grid[int(i)][int(j)][int(k)] = int(val)
 
