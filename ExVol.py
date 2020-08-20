@@ -78,7 +78,7 @@ def main(input_filename):
 
 	if i.input_data["debug"]: timestamp('single results: {}', exvol)
 
-	print('fex = {} +/- {}'.format(np.mean(exvol), np.std(exvol, ddof=1)))
+	print('r = {}; fex = {} +/- {}'.format(i.input_data["tracer_radii"], np.mean(exvol), np.std(exvol, ddof=1)))
 
 #-------------------------------------------------------------------------------
 
