@@ -59,8 +59,18 @@ class Sphere:
         rotation1 = np.array([[1.0, 0.0, 0.0], [0.0, np.cos(angles[0]), -np.sin(angles[0])], [0.0, np.sin(angles[0]), np.cos(angles[0])]])
         rotation2 = np.array([[np.cos(angles[1]), 0.0, np.sin(angles[1])], [0.0, 1.0, 0.0], [-np.sin(angles[1]), 0.0, np.cos(angles[1])]])
         rotation3 = np.array([[np.cos(angles[2]), -np.sin(angles[2]), 0.0], [np.sin(angles[2]), np.cos(angles[2]), 0.0], [0.0, 0.0, 1.0]])
-        self.coords = rotation3 @ rotation2 @ rotation1 @ self.coords
+        self.coords = rotation1 @ rotation2 @ rotation3 @ self.coords
         self.x, self.y, self.z = self.coords[0], self.coords[1], self.coords[2]
+
+    #---------------------------------------------------------------------------
+
+    def volume(self):
+        return 4.0 * np.pi * self.r**3 / 3.0
+
+    #---------------------------------------------------------------------------
+
+    def surface(self):
+        return 4.0 * np.pi * self.r**2
 
 #-------------------------------------------------------------------------------
 
