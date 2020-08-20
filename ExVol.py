@@ -35,12 +35,13 @@ def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
 	required_keywords = ["box_size", "tracer_radii", "number_of_trials",
-						 "xyz_templates", "xyz_range", "times",
+						 "input_xyz_template", "input_xyz_range", "times",
 						 "input_str_filename", "radii_mode"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[]}
+	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[],
+				"verbose":True, "debug":True}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
@@ -53,10 +54,10 @@ def main(input_filename):
 	nproc = multiprocessing.cpu_count()
 	print('You have {0:1d} CPUs'.format(nproc))
 
-	xyz_filenames = []
-	for template in i.input_data["xyz_templates"]:
-		for which in range(*i.input_data["xyz_range"]):
-			xyz_filenames += [ template + str(which) + '.xyz' ]
+	xyz_filenames = [ i.input_data["input_xyz_template"] + str(which) + '.xyz'
+					  for which in range(*i.input_data["input_xyz_range"]) ]
+
+	if i.input_data["verbose"]: timestamp('input xyz filenames: {}', xyz_filenames)
 
 	times_filenames = [ [time, filename] for time in i.input_data["times"] for filename in xyz_filenames ]
 
@@ -71,27 +72,13 @@ def main(input_filename):
 
 	excluded_volume = pool.map( estimate_excluded_volume_partial, tf_for_proc )
 
-	excluded_volume_sorted = [ [] for i in range(len(i.input_data["xyz_templates"])) ]
+	if i.input_data["verbose"]: timestamp('single results: {}', excluded_volume)
 
-	for element in excluded_volume:
-		for subelement in element:
-			words = subelement[1][:-4].split('_')[:-1]
-			template = ''
-			for word in words:
-				template += word + '_'
-			counter = 0
-			for xyz_template in i.input_data["xyz_templates"]:
-				if template == xyz_template:
-					excluded_volume_sorted[counter].append( subelement[2] )
-					break
-				else:
-					counter += 1
+	exvol = np.array([ excluded_volume[i][j][-1] for i in range( len(excluded_volume) ) for j in range( len(excluded_volume[i]) ) ])
 
-	for template, exvol in zip(i.input_data["xyz_templates"], excluded_volume_sorted):
-		print(exvol)
-		print('{}: fex = {} +/- {}'.format(template[:-1], np.mean(exvol), np.std(exvol, ddof=1)))
+	if i.input_data["debug"]: timestamp('single results: {}', exvol)
 
-
+	print('fex = {} +/- {}'.format(np.mean(exvol), np.std(exvol, ddof=1)))
 
 #-------------------------------------------------------------------------------
 
