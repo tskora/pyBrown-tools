@@ -208,8 +208,31 @@ Successful computations should produce:
 * `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
 * `"verbose": boolean` &mdash; print extra information (default: `false`)
 * `"bond_lengths": option` &mdash; way of defining separations between beads in case of nonspherical tracer (default (*for now only option*): `"hydrodynamic_radii"`)
-* `"withdraw": [string, ...]` &mdash; list of labels representing particles that are randomly withdrawn before every insertion,
+* `"withdraw": [string, ...]` &mdash; list of labels representing particles that are randomly withdrawn before every insertion (default: `[]`),
 * `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
+
+<a name="mcev.ev.example"></a>
+#### Example input file
+
+```json
+{
+  "box_size": 750.0,
+  "tracer_radii": [0.0],
+  "number_of_trials": 1000,
+  "input_xyz_template": "ficoll_42_",
+  "input_xyz_range": [1, 4],
+  "input_str_filename": "ficoll_42_1.str",
+  "radii_mode": "hydrodynamic",
+  "times": [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0],
+  "withdraw": ["FIC", "FIC"]
+}
+```
+
+<a name="mcev.ev.usage"></a>
+#### Usage
+If you have already prepared an input JSON file (using keywords introduced above), you can run the `ExVol.py` program using following command:
+
+`python ExVol.py input.json`
 
 <a name="vox"></a>
 ## Snapshot voxelization

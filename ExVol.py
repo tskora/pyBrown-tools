@@ -41,7 +41,7 @@ def main(input_filename):
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[], "float_type": 32,
-				"verbose":True, "debug":True}
+				"verbose":False, "debug":False}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
