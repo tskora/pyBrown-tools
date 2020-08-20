@@ -20,46 +20,55 @@ from pyBrown.monte_carlo import MonteCarlo, place_crowders_linearly, place_trace
 from pyBrown.sphere import Sphere, overlap
 
 import numpy as np
+import random
 
 from tqdm import tqdm
 
+def read_radii_from_str_file(input_str_filename, mode):
 
-def _read_snapshot_from_xyz_file(xyz_file, time):
+	with open(input_str_filename) as str_file:
+		labels = []
+		radii = []
+		for line in str_file:
+			if line.split()[0] == 'sub':
+				label = line.split()[1]
+				hydrodynamic_radius = float(line.split()[6])
+				lennard_jones_radius = float(line.split()[8]) / 2
 
-	snapshot = [  ]
-	labels = [  ]
+				if label not in labels:
+					labels.append(label)
+					if mode == 'hydrodynamic': radii.append( hydrodynamic_radius )
+					elif mode == 'lennard-jones': radii.append( lennard_jones_radius )
+					else: print('radii mode unknown')
 
-	number_of_beads_per_file = int( xyz_file.readline() )
+	return labels, radii
 
-	this_one = False
+#-------------------------------------------------------------------------------
 
-	for i, line in enumerate(xyz_file):
+def _read_snapshot_from_xyz_file(xyz_filename, snapshot_time):
 
-		is_line_unimportant = len( line.split() ) == 1
+	snapshot = [ ]
+	labels = [ ]
 
-		if 'xyz' in line.split()[0].split('.'):
+	start_snapshot = False
 
-			time_of_snapshot = float( line.split()[3] )
-
-			if time == time_of_snapshot:
-
-				this_one = True
-
-			else:
-
-				this_one = False
-
-		elif is_line_unimportant: continue
-
-		else:
-
-			if this_one:
-
-				labels.append( line.split()[0] )
-
-				coords = np.array( [ float(line.split()[x]) for x in range(1, 4) ], float )
-						
-				snapshot.append( coords )
+	with open(xyz_filename, 'r') as xyz_file:
+		for line in xyz_file:
+			if start_snapshot:
+				# 'time' here means it is already the next snapshot, 
+                # so we can break
+				if 'time' in line.split():
+					break
+				elif len( line.split() ) == 4:
+					label = line.split()[0]
+					labels.append(label)
+					coords = [ line.split()[i] for i in range(1,4) ]
+					snapshot.append( coords )
+			if 'time' in line.split():
+				time = float(line.split()[-1])
+				if time >= snapshot_time:
+					# print('Saving snapshot for time %f (requested: %f)' % (time, snapshot_time))
+					start_snapshot = True
 
 	return labels, snapshot
 
@@ -73,25 +82,23 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 		time, xyz_filename = time_filename
 
-		with open(xyz_filename, 'r') as xyz_file:
-
-			labels, snapshot = _read_snapshot_from_xyz_file(xyz_file, time)
-
-		import random
+		labels, snapshot = _read_snapshot_from_xyz_file(xyz_filename, time)
 
 		# print('before\n{}\n'.format(labels))
 
-		while len(to_be_withdrawn) > 0:
+		tbw = to_be_withdrawn.copy()
+
+		while len(tbw) > 0:
 
 			random_index = random.randint( 0, len(labels) - 1 )
 
-			if labels[random_index] == to_be_withdrawn[0]:
+			if labels[random_index] == tbw[0]:
 
 				del labels[random_index]
 
 				del snapshot[random_index]
 
-				del to_be_withdrawn[0]
+				del tbw[0]
 
 		# print('after\n{}\n'.format(labels))
 
@@ -106,21 +113,12 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 					r_crowders.append( input_radii[i] )
 
 		crowders = place_crowders_xyz(r_crowders, snapshot)
-
-		# crowders = crowders[:-1]
-		# crowders = crowders[1:]
 	
 		count = 0
-
-		# for crowder in crowders:
-		# 	crowder.r -= 1.5
 
 		for i in tqdm( range(number_of_trials) ):
 
 			tracers = place_tracers_linearly(r_tracer, box_size)
-
-			# for tracer in tracers:
-			# 	tracer.r -= 1.5
 
 			if overlap(crowders, tracers, 0.0):
 				count += 1

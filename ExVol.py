@@ -17,7 +17,7 @@
 import click
 
 from pyBrown.input_ExVol import InputDataExVol
-from pyBrown.ex_vol import estimate_excluded_volume
+from pyBrown.ex_vol import estimate_excluded_volume, read_radii_from_str_file
 from pyBrown.messaging import timestamp
 
 import multiprocessing
@@ -34,9 +34,9 @@ import numpy as np
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["box_size", "crowder_radii", "tracer_radii",
-						 "labels", "number_of_trials",
-						 "xyz_templates", "xyz_range", "times"]
+	required_keywords = ["box_size", "tracer_radii", "number_of_trials",
+						 "xyz_templates", "xyz_range", "times",
+						 "input_str_filename", "radii_mode"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
@@ -44,6 +44,10 @@ def main(input_filename):
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
+	i.input_data["labels"], i.input_data["crowder_radii"] = read_radii_from_str_file(
+														i.input_data["input_str_filename"],
+											 			i.input_data["radii_mode"] )
+
 	timestamp( 'Input data:\n{}', i )
 
 	nproc = multiprocessing.cpu_count()
