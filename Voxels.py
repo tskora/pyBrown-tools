@@ -65,16 +65,19 @@ def populate_box(input_xyz_filename, labels, radii, snapshot_time):
 	with open(input_xyz_filename, 'r') as xyz_file:
 		for line in xyz_file:
 			if start_snapshot:
+				# 'time' here means it is already the next snapshot, 
+                # so we can break
 				if 'time' in line.split():
-					start_snapshot = False
-				else:
-					if len( line.split() ) == 4:
-						label = line.split()[0]
-						radius = what_radius_based_on_label(label, labels, radii)
-						s = Sphere( [ line.split()[i] for i in range(1,4) ], radius )
-						populated_box.append( s )
+					break
+				elif len( line.split() ) == 4:
+					label = line.split()[0]
+					radius = what_radius_based_on_label(label, labels, radii)
+					s = Sphere( [ line.split()[i] for i in range(1,4) ], radius )
+					populated_box.append( s )
 			if 'time' in line.split():
-				if float(line.split()[-1]) == snapshot_time:
+				time = float(line.split()[-1])
+				if time >= snapshot_time:
+					print('Saving snapshot for time %f (requested: %f)' % (time, snapshot_time))
 					start_snapshot = True
 	return populated_box
 
