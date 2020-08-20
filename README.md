@@ -191,18 +191,24 @@ Successful computations should produce:
 **Required keywords:**
 
 * `"box_size": float` &mdash; size of simulation (cubic) box (*Å*),
-* `"tracer_radii": [float, ...]` &mdash;
-* `"number_of_trials": integer` &mdash;
-* `"xyz_templates": [string, ...]` &mdash;
-* `"xyz_range": [integer, integer]` &mdash;
-* `"input_str_filename": string` &mdash;
+* `"tracer_radii": [float, ...]` &mdash; radii of tracers randomly inserted into the box: if list contains one value, spherical particle is being inserted; else, linear particle composed of beads of given radii is being inserted (*Å*),
+* `"number_of_trials": integer` &mdash; number of Monte Carlo insertions per snapshot,
+* `"input_str_filename": string` &mdash; input str file, from which crowder sizes are loaded,
 * `"radii_mode": option` &mdash; bead radius definition (options: `"hydrodynamic"`/`"lennard-jones"`)
-* `"times": [float, ...]` &mdash;
+* `"times": [float, ...]` &mdash; times for which configurations are loaded from `.xyz` files,
+* `"input_xyz_template": string` &mdash; template of input xyz filenames,
+* `"input_xyz_range": [integer, integer]` &mdash; the number range defining input xyz filenames.
+
+*pyBrown expects input `xyz` files to follow a specific naming scheme:
+..., `(TEMPLATE)(NUMBER).xyz`, `(TEMPLATE)(NUMBER).xyz`, ...
+(where TEMPLATE is a string variable defined with the keyword `"input_xyz_template"` and NUMBER is an integer from range defined with the keyword `"input_xyz_range"`)*
 
 **Optional keywords:**
 
-* `"bond_lengths": option` &mdash;
-* `"withdraw": [string, ...]` &mdash;
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
+* `"verbose": boolean` &mdash; print extra information (default: `false`)
+* `"bond_lengths": option` &mdash; way of defining separations between beads in case of nonspherical tracer (default (*for now only option*): `"hydrodynamic_radii"`)
+* `"withdraw": [string, ...]` &mdash; list of labels representing particles that are randomly withdrawn before every insertion,
 * `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
 
 <a name="vox"></a>
