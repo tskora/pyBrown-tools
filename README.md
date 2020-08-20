@@ -41,7 +41,12 @@ Type following commands in a terminal:
         * [Example input file](#traj.enr.example)
         * [Usage](#traj.enr.usage)
         * [Output files](#traj.enr.output)
-3. [Snapshot voxelization](#vox)
+3. [Monte Carlo Excluded Volume](#mcev)
+    * [`ExVol.py`](#mcev.ev)
+        * [Keywords](#mcev.ev.keywords)
+        * [Example input file](#mcev.ev.example)
+        * [Usage](#mcev.ev.usage)
+4. [Snapshot voxelization](#vox)
     * [`Voxels.py`](#vox.vox)
         * [Keywords](#vox.vox.keywords)
         * [Example input file](#vox.vox.example)
@@ -176,6 +181,29 @@ If you have already prepared an input JSON file (using keywords introduced above
 Successful computations should produce:
 * `(TEMPLATE)enr.txt` data file with mean energy as a function of time,
 * `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit)
+
+<a name="mcev"></a>
+## Monte Carlo Excluded Volume
+<a name="mcev.ev"></a>
+### `ExVol.py`
+<a name="mcev.ev.keywords"></a>
+#### Keywords
+**Required keywords:**
+
+* `"box_size": float` &mdash; size of simulation (cubic) box (*Å*),
+* `"tracer_radii": [float, ...]` &mdash;
+* `"number_of_trials": integer` &mdash;
+* `"xyz_templates": [string, ...]` &mdash;
+* `"xyz_range": [integer, integer]` &mdash;
+* `"input_str_filename": string` &mdash;
+* `"radii_mode": option` &mdash; bead radius definition (options: `"hydrodynamic"`/`"lennard-jones"`)
+* `"times": [float, ...]` &mdash;
+
+**Optional keywords:**
+
+* `"bond_lengths": option` &mdash;
+* `"withdraw": [string, ...]` &mdash;
+* `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
 
 <a name="vox"></a>
 ## Snapshot voxelization
