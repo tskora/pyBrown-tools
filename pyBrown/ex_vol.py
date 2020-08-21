@@ -116,7 +116,7 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 	
 		count = 0
 
-		for i in tqdm( range(number_of_trials) ):
+		for i in range(number_of_trials):
 
 			tracers = place_tracers_linearly(r_tracer, box_size)
 

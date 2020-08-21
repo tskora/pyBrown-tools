@@ -46,6 +46,7 @@ Type following commands in a terminal:
         * [Keywords](#mcev.ev.keywords)
         * [Example input file](#mcev.ev.example)
         * [Usage](#mcev.ev.usage)
+        * [Output](#mcev.ev.output)
 4. [Snapshot voxelization](#vox)
     * [`Voxels.py`](#vox.vox)
         * [Keywords](#vox.vox.keywords)
@@ -209,6 +210,8 @@ Successful computations should produce:
 * `"verbose": boolean` &mdash; print extra information (default: `false`)
 * `"bond_lengths": option` &mdash; way of defining separations between beads in case of nonspherical tracer (default (*for now only option*): `"hydrodynamic_radii"`)
 * `"withdraw": [string, ...]` &mdash; list of labels representing particles that are randomly withdrawn before every insertion (default: `[]`),
+* `"scan_mode": boolean` &mdash; if `false`: excluded volume is computed for tracer defined by `"tracer_radii"`; if `true`: excluded volume is computed for tracers of size from `0.0` to `"tracer_radii"` (default: `false`)
+* `"scan_density": integer` &mdash; number of tracer radii scanned in `"scan_mode"` (default: `2`)
 * `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
 
 <a name="mcev.ev.example"></a>
@@ -233,6 +236,12 @@ Successful computations should produce:
 If you have already prepared an input JSON file (using keywords introduced above), you can run the `ExVol.py` program using following command:
 
 `python ExVol.py input.json`
+
+<a name="mcev.ev.output"></a>
+#### Output files
+
+Successful computations should produce:
+* `*fex.txt` data file with excluded volume fractions as a function of tracer radii,
 
 <a name="vox"></a>
 ## Snapshot voxelization
