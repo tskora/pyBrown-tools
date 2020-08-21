@@ -40,8 +40,8 @@ def main(input_filename):
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[], "float_type": 32}
-				"verbose":True, "debug":True}
+	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[], "float_type": 32,
+				"scan_mode":False, "scan_density":2, "verbose":False, "debug":False}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
@@ -54,31 +54,47 @@ def main(input_filename):
 	nproc = multiprocessing.cpu_count()
 	print('You have {0:1d} CPUs'.format(nproc))
 
-	xyz_filenames = [ i.input_data["input_xyz_template"] + str(which) + '.xyz'
-					  for which in range(*i.input_data["input_xyz_range"]) ]
+	results = []
 
-	if i.input_data["verbose"]: timestamp('input xyz filenames: {}', xyz_filenames)
+	if i.input_data["scan_mode"]: scales = np.linspace(0.0, 1.0, i.input_data["scan_density"])
+	else: scales = [1.0]
 
-	times_filenames = [ [time, filename] for time in i.input_data["times"] for filename in xyz_filenames ]
+	for scale in scales:
 
-	tf_per_proc = len(times_filenames) // nproc
+		xyz_filenames = [ i.input_data["input_xyz_template"] + str(which) + '.xyz'
+						  for which in range(*i.input_data["input_xyz_range"]) ]
 
-	tf_for_proc = [ times_filenames[m * tf_per_proc:( m + 1 ) * tf_per_proc] for m in range(nproc - 1) ] \
-					+ [ times_filenames[ ( nproc - 1 ) * tf_per_proc:] ]
+		tracer_radii = list( scale * np.array( i.input_data["tracer_radii"] ) )
+	
+		if i.input_data["verbose"]: timestamp('input xyz filenames: {}', xyz_filenames)
+	
+		times_filenames = [ [time, filename] for time in i.input_data["times"] for filename in xyz_filenames ]
+	
+		tf_per_proc = len(times_filenames) // nproc
+	
+		tf_for_proc = [ times_filenames[m * tf_per_proc:( m + 1 ) * tf_per_proc] for m in range(nproc - 1) ] \
+						+ [ times_filenames[ ( nproc - 1 ) * tf_per_proc:] ]
+	
+		pool = Pool(processes=nproc)
+	
+		estimate_excluded_volume_partial = partial( estimate_excluded_volume, input_labels = i.input_data["labels"], input_radii = i.input_data["crowder_radii"], r_tracer = tracer_radii, number_of_trials = i.input_data["number_of_trials"], box_size = i.input_data["box_size"], to_be_withdrawn = i.input_data["withdraw"] )
+	
+		excluded_volume = pool.map( estimate_excluded_volume_partial, tf_for_proc )
+	
+		if i.input_data["verbose"]: timestamp('single results: {}', excluded_volume)
+	
+		exvol = np.array([ excluded_volume[i][j][-1] for i in range( len(excluded_volume) ) for j in range( len(excluded_volume[i]) ) ])
+	
+		if i.input_data["debug"]: timestamp('single results: {}', exvol)
+	
+		print('r = {}; fex = {} +/- {}'.format(tracer_radii, np.mean(exvol), np.std(exvol, ddof=1)))
 
-	pool = Pool(processes=nproc)
+		results.append( [ tracer_radii[0], np.mean(exvol), np.std(exvol, ddof=1) ] )
 
-	estimate_excluded_volume_partial = partial( estimate_excluded_volume, input_labels = i.input_data["labels"], input_radii = i.input_data["crowder_radii"], r_tracer = i.input_data["tracer_radii"], number_of_trials = i.input_data["number_of_trials"], box_size = i.input_data["box_size"], to_be_withdrawn = i.input_data["withdraw"] )
-
-	excluded_volume = pool.map( estimate_excluded_volume_partial, tf_for_proc )
-
-	if i.input_data["verbose"]: timestamp('single results: {}', excluded_volume)
-
-	exvol = np.array([ excluded_volume[i][j][-1] for i in range( len(excluded_volume) ) for j in range( len(excluded_volume[i]) ) ])
-
-	if i.input_data["debug"]: timestamp('single results: {}', exvol)
-
-	print('fex = {} +/- {}'.format(np.mean(exvol), np.std(exvol, ddof=1)))
+	with open(i.input_data["input_xyz_template"]+'fex.txt', 'w') as output_file:
+		output_file.write('R_tr fex dfex\n')
+		for result in results:
+			output_file.write( '{} {} {}\n'.format(*result) )
 
 #-------------------------------------------------------------------------------
 

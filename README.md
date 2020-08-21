@@ -44,8 +44,9 @@ Type following commands in a terminal:
 3. [Monte Carlo Excluded Volume](#mcev)
     * [`ExVol.py`](#mcev.ev)
         * [Keywords](#mcev.ev.keywords)
-        * [Example input file](#mcev.ev.example)
+        * [Example input files](#mcev.ev.example)
         * [Usage](#mcev.ev.usage)
+        * [Output](#mcev.ev.output)
 4. [Snapshot voxelization](#vox)
     * [`Voxels.py`](#vox.vox)
         * [Keywords](#vox.vox.keywords)
@@ -191,19 +192,71 @@ Successful computations should produce:
 **Required keywords:**
 
 * `"box_size": float` &mdash; size of simulation (cubic) box (*Å*),
-* `"tracer_radii": [float, ...]` &mdash;
-* `"number_of_trials": integer` &mdash;
-* `"xyz_templates": [string, ...]` &mdash;
-* `"xyz_range": [integer, integer]` &mdash;
-* `"input_str_filename": string` &mdash;
+* `"tracer_radii": [float, ...]` &mdash; radii of tracers randomly inserted into the box: if list contains one value, spherical particle is being inserted; else, linear particle composed of beads of given radii is being inserted (*Å*),
+* `"number_of_trials": integer` &mdash; number of Monte Carlo insertions per snapshot,
+* `"input_str_filename": string` &mdash; input str file, from which crowder sizes are loaded,
 * `"radii_mode": option` &mdash; bead radius definition (options: `"hydrodynamic"`/`"lennard-jones"`)
-* `"times": [float, ...]` &mdash;
+* `"times": [float, ...]` &mdash; times for which configurations are loaded from `.xyz` files,
+* `"input_xyz_template": string` &mdash; template of input xyz filenames,
+* `"input_xyz_range": [integer, integer]` &mdash; the number range defining input xyz filenames.
+
+*pyBrown expects input `xyz` files to follow a specific naming scheme:
+..., `(TEMPLATE)(NUMBER).xyz`, `(TEMPLATE)(NUMBER).xyz`, ...
+(where TEMPLATE is a string variable defined with the keyword `"input_xyz_template"` and NUMBER is an integer from range defined with the keyword `"input_xyz_range"`)*
 
 **Optional keywords:**
 
-* `"bond_lengths": option` &mdash;
-* `"withdraw": [string, ...]` &mdash;
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
+* `"verbose": boolean` &mdash; print extra information (default: `false`)
+* `"bond_lengths": option` &mdash; way of defining separations between beads in case of nonspherical tracer (default (*for now only option*): `"hydrodynamic_radii"`)
+* `"withdraw": [string, ...]` &mdash; list of labels representing particles that are randomly withdrawn before every insertion (default: `[]`),
+* `"scan_mode": boolean` &mdash; if `false`: excluded volume is computed for tracer defined by `"tracer_radii"`; if `true`: excluded volume is computed for tracers of size from `0.0` to `"tracer_radii"` (default: `false`)
+* `"scan_density": integer` &mdash; number of tracer radii scanned in `"scan_mode"` (default: `2`)
 * `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
+
+<a name="mcev.ev.example"></a>
+#### Example input files
+
+```json
+{
+  "box_size": 750.0,
+  "tracer_radii": [0.0],
+  "number_of_trials": 1000,
+  "input_xyz_template": "ficoll_42_",
+  "input_xyz_range": [1, 4],
+  "input_str_filename": "ficoll_42_1.str",
+  "radii_mode": "hydrodynamic",
+  "times": [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0],
+  "withdraw": ["FIC", "FIC"]
+}
+```
+```json
+{
+  "box_size": 750.0,
+  "tracer_radii": [51],
+  "number_of_trials": 1000,
+  "input_xyz_template": "ficoll_42_",
+  "input_xyz_range": [1, 4],
+  "input_str_filename": "ficoll_42_1.str",
+  "radii_mode": "hydrodynamic",
+  "times": [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0],
+  "withdraw": [],
+  "scan_mode": true,
+  "scan_density": 3
+}
+```
+
+<a name="mcev.ev.usage"></a>
+#### Usage
+If you have already prepared an input JSON file (using keywords introduced above), you can run the `ExVol.py` program using following command:
+
+`python ExVol.py input.json`
+
+<a name="mcev.ev.output"></a>
+#### Output files
+
+Successful computations should produce:
+* `*fex.txt` data file with excluded volume fractions as a function of tracer radii,
 
 <a name="vox"></a>
 ## Snapshot voxelization
