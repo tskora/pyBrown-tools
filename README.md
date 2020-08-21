@@ -44,7 +44,7 @@ Type following commands in a terminal:
 3. [Monte Carlo Excluded Volume](#mcev)
     * [`ExVol.py`](#mcev.ev)
         * [Keywords](#mcev.ev.keywords)
-        * [Example input file](#mcev.ev.example)
+        * [Example input files](#mcev.ev.example)
         * [Usage](#mcev.ev.usage)
         * [Output](#mcev.ev.output)
 4. [Snapshot voxelization](#vox)
@@ -215,7 +215,7 @@ Successful computations should produce:
 * `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
 
 <a name="mcev.ev.example"></a>
-#### Example input file
+#### Example input files
 
 ```json
 {
@@ -228,6 +228,21 @@ Successful computations should produce:
   "radii_mode": "hydrodynamic",
   "times": [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0],
   "withdraw": ["FIC", "FIC"]
+}
+```
+```json
+{
+  "box_size": 750.0,
+  "tracer_radii": [51],
+  "number_of_trials": 1000,
+  "input_xyz_template": "ficoll_42_",
+  "input_xyz_range": [1, 4],
+  "input_str_filename": "ficoll_42_1.str",
+  "radii_mode": "hydrodynamic",
+  "times": [0.0, 1000000.0, 2000000.0, 3000000.0, 4000000.0, 4500000.0],
+  "withdraw": [],
+  "scan_mode": true,
+  "scan_density": 3
 }
 ```
 
