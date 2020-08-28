@@ -153,3 +153,99 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 		result.append( [time, xyz_filename, ex_vol] )
 
 	return result
+
+#-------------------------------------------------------------------------------
+
+def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tracer, number_of_trials, box_size):
+
+	d_pores = []
+
+	for time_filename in tfs:
+
+		time, xyz_filename = time_filename
+
+		labels, snapshot = _read_snapshot_from_xyz_file(xyz_filename, time)
+
+		r_crowders = []
+
+		for label in labels:
+
+			for i, input_label in enumerate( input_labels ):
+
+				if label == input_label:
+
+					r_crowders.append( input_radii[i] )
+
+		crowders = place_crowders_xyz(r_crowders, snapshot)
+	
+		for i in range(number_of_trials):
+
+			tracer = place_tracers_linearly(0.0, box_size)
+
+			r_pore = _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer)
+
+			if r_pore == 0.0: continue
+
+			else: d_pores.append( 2. * r_pore )
+
+	return d_pores
+
+#-------------------------------------------------------------------------------
+
+def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
+
+	init_tracer = tracer.copy()
+
+	r_tracers = np.arange(0, r_tracer_max, dr_tracer)
+
+	if overlap_pbc(tracer, crowders, 0.0, box_size):
+
+		return 0.0
+
+	for r_tracer in r_tracers[1:]:
+
+		tracer.r = r_tracer
+
+		if overlap_pbc(tracer, crowders, dr_tracer, box_size):
+
+			r_0 = r_tracer
+
+			break
+
+	while True:
+
+		r_tracers = np.arange(r_0, r_tracer_max, dr_tracer)
+
+		force_direction = np.zeros(3)
+
+		for crowder in crowders:
+
+				if overlap_pbc(tracer, crowder, dr, box_size):
+
+					connecting_vector = tracer.coords - crowder.coords
+
+					force_direction += connecting_vector / np.linalg.norm(connecting_vector)
+
+		force_direction = force_direction / np.linalg.norm(force_direction) * dr_tracer
+
+		tracer.translate(force_direction)
+
+		if overlap_pbc(tracer, crowders, dr_tracer, box_size):
+
+			return r_0
+
+		for r_tracer in r_tracers[1:]:
+
+			for tracer in tracers: tracer.r = r_tracer
+
+			if not overlap_pbc(tracers, crowders, dr, box_size): continue
+
+			else: break
+
+		if overlap_pbc(tracers, init_tracers, dr_tracer, box_size):
+
+			r_0 = r_tracer
+
+		else:
+
+			return r_0
