@@ -60,26 +60,27 @@ def what_radius_based_on_label(label, labels, radii):
 
 def populate_box(input_xyz_filename, labels, radii, snapshot_time):
 
-	populated_box = []
-	start_snapshot = False
-	with open(input_xyz_filename, 'r') as xyz_file:
-		for line in xyz_file:
-			if start_snapshot:
-				# 'time' here means it is already the next snapshot, 
-                # so we can break
-				if 'time' in line.split():
-					break
-				elif len( line.split() ) == 4:
-					label = line.split()[0]
-					radius = what_radius_based_on_label(label, labels, radii)
-					s = Sphere( [ line.split()[i] for i in range(1,4) ], radius )
-					populated_box.append( s )
-			if 'time' in line.split():
-				time = float(line.split()[-1])
-				if time >= snapshot_time:
-					print('Saving snapshot for time %f (requested: %f)' % (time, snapshot_time))
-					start_snapshot = True
-	return populated_box
+    populated_box = []
+    start_snapshot = False
+    with open(input_xyz_filename, 'r') as xyz_file:
+    	for line in xyz_file:
+            if start_snapshot:
+                # 'time' with start_snapshot means the next snapshot, so break
+                if 'time' in line.split():
+                    break;
+                elif len( line.split() ) == 4:
+                    label = line.split()[0]
+                    radius = what_radius_based_on_label(label, labels, radii)
+                    s = Sphere( [ line.split()[i] for i in range(1,4) ], radius )
+                    populated_box.append( s )
+
+            if 'time' in line.split():
+                time = float(line.split()[-1])  
+                if time >= snapshot_time:
+                    print('Saving snapshot for time %f (requested: %f)' % (time, snapshot_time))
+                    start_snapshot = True
+
+    return populated_box
 
 #-------------------------------------------------------------------------------
 
@@ -181,15 +182,17 @@ def _digitize_grid(grid, populated_box, dx, box_size):
 #-------------------------------------------------------------------------------
 
 def write_digitized_grid_to_file(input_data, digitized_grid):
+    
+    #input_xyz_filename = input_data["input_xyz_filename"]
+    output_filename = input_data["output_filename"]
 
-	input_xyz_filename = input_data["input_xyz_filename"]
-
-	with open(input_xyz_filename[:-4]+'_voxels.txt', 'w') as voxels_file:
-		voxels_file.write('{} {}\n'.format(input_data["grid_density"], input_data["box_size"]))
-		for i in range( input_data["grid_density"] ):
-			for j in range( input_data["grid_density"] ):
-				for k in range( input_data["grid_density"] ):
-					voxels_file.write('{} {} {} {}\n'.format(i, j, k, int(digitized_grid[i][j][k])))
+    #with open(input_xyz_filename[:-4]+'_voxels.txt', 'w') as voxels_file:
+    with open(output_filename, 'w') as voxels_file:
+        voxels_file.write('{} {}\n'.format(input_data["grid_density"], input_data["box_size"]))
+        for i in range( input_data["grid_density"] ):
+            for j in range( input_data["grid_density"] ):
+                for k in range( input_data["grid_density"] ):
+                    voxels_file.write('{} {} {} {}\n'.format(i, j, k, int(digitized_grid[i][j][k])))
 
 #-------------------------------------------------------------------------------
 
