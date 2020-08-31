@@ -57,11 +57,21 @@ def plot_digitized_grid(digitized_grid):
 @click.command()
 @click.argument('input_filename',
 				type = click.Path( exists = True ))
-def main(input_filename):
+@click.option('-s', '--slice-index',
+			  type = int, required = False)
+def main(input_filename, slice_index):
 
 	digitized_grid = read_digitized_grid_from_file( input_filename )
 
 	plot_digitized_grid(digitized_grid)
+
+	if slice_index != None:
+
+		plane = digitized_grid[slice_index]
+
+		plt.imshow(plane)
+		
+		plt.show()
 	
 #-------------------------------------------------------------------------------
 

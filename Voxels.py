@@ -91,6 +91,13 @@ def create_grid(grid_density, box_size):
 					   for y in np.linspace( -(box_size - dx)/2, (box_size - dx)/2, grid_density )
 					   for z in np.linspace( -(box_size - dx)/2, (box_size - dx)/2, grid_density ) ]
 
+	i = 0
+	for x in np.linspace( -(box_size - dx)/2, (box_size - dx)/2, grid_density ):
+		idx_float = ( x + ( box_size - dx ) / 2 ) / dx
+		idx = int( round( idx_float, 0 ) )
+		assert i == idx, 'float addition error'
+		i += 1
+
 	return grid
 
 #-------------------------------------------------------------------------------
@@ -148,9 +155,9 @@ def _digitize_grid(grid, populated_box, dx, box_size):
 		with Sphere(point, radius) as probe:
 			if overlap( probe, populated_box, 0.0 ):
 				overlapping_points += 1
-				i = int( ( point[0] + ( box_size - dx ) / 2 ) / dx )
-				j = int( ( point[1] + ( box_size - dx ) / 2 ) / dx )
-				k = int( ( point[2] + ( box_size - dx ) / 2 ) / dx )
+				i = int( round( ( point[0] + ( box_size - dx ) / 2 ) / dx, 0 ) )
+				j = int( round( ( point[1] + ( box_size - dx ) / 2 ) / dx, 0 ) )
+				k = int( round( ( point[2] + ( box_size - dx ) / 2 ) / dx, 0 ) )
 				# print( '{} {} {}'.format( i, j, k ) )
 				overlap_indices.append( (i, j, k) )
 			else:
