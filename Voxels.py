@@ -180,9 +180,9 @@ def _digitize_grid(grid, populated_box, dx, box_size):
 				if if_overlap:
 					overlapping_points += 1
 					# print('{} {} {} 1'.format(*point))
-					i = int( ( point[0] + ( box_size - dx ) / 2 ) / dx )
-					j = int( ( point[1] + ( box_size - dx ) / 2 ) / dx )
-					k = int( ( point[2] + ( box_size - dx ) / 2 ) / dx )
+					i = int( round( ( point[0] + ( box_size - dx ) / 2 ) / dx, 0 ) )
+					j = int( round( ( point[1] + ( box_size - dx ) / 2 ) / dx, 0 ) )
+					k = int( round( ( point[2] + ( box_size - dx ) / 2 ) / dx, 0 ) )
 					# print( '{} {} {}'.format( i, j, k ) )
 					overlap_indices.append( (i, j, k) )
 
