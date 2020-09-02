@@ -107,6 +107,8 @@ def overlap_pbc(sphere1, sphere2, minimal_distance, box_size):
                               for ny in np.arange(-1, 2, 1)
                               for nz in np.arange(-1, 2, 1) ]
 
+        if_overlap = False
+
         for versor in versors:
 
             for s1 in sphere1:

@@ -17,7 +17,7 @@
 from pyBrown.input import InputData
 from pyBrown.parse import parse_input_filename
 from pyBrown.monte_carlo import MonteCarlo, place_crowders_linearly, place_tracers_linearly, place_crowders_xyz
-from pyBrown.sphere import Sphere, overlap
+from pyBrown.sphere import Sphere, overlap, overlap_pbc
 
 import numpy as np
 import random
@@ -180,7 +180,7 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 	
 		for i in range(number_of_trials):
 
-			tracer = place_tracers_linearly(0.0, box_size)
+			tracer = place_tracers_linearly(0.0, box_size)[0]
 
 			r_pore = _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer)
 
@@ -194,13 +194,17 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
-	init_tracer = tracer.copy()
+	from copy import copy
+
+	init_tracer = copy(tracer)
 
 	r_tracers = np.arange(0, r_tracer_max, dr_tracer)
 
 	if overlap_pbc(tracer, crowders, 0.0, box_size):
 
 		return 0.0
+
+	r_0 = r_tracer_max
 
 	for r_tracer in r_tracers[1:]:
 
@@ -212,6 +216,10 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 			break
 
+	if r_0 == r_tracer_max:
+
+		return r_tracer_max
+
 	while True:
 
 		r_tracers = np.arange(r_0, r_tracer_max, dr_tracer)
@@ -220,7 +228,7 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		for crowder in crowders:
 
-				if overlap_pbc(tracer, crowder, dr, box_size):
+				if overlap_pbc(tracer, crowder, dr_tracer, box_size):
 
 					connecting_vector = tracer.coords - crowder.coords
 
@@ -236,13 +244,13 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		for r_tracer in r_tracers[1:]:
 
-			for tracer in tracers: tracer.r = r_tracer
+			tracer.r = r_tracer
 
-			if not overlap_pbc(tracers, crowders, dr, box_size): continue
+			if not overlap_pbc(tracer, crowders, dr_tracer, box_size): continue
 
 			else: break
 
-		if overlap_pbc(tracers, init_tracers, dr_tracer, box_size):
+		if overlap_pbc(tracer, init_tracer, dr_tracer, box_size):
 
 			r_0 = r_tracer
 
