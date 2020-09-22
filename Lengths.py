@@ -30,7 +30,8 @@ from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibead
 def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
-	required_keywords = ["labels", "sizes", "box_size", "input_xyz_template", "input_xyz_range"]
+	required_keywords = ["labels", "sizes", "box_size", "input_xyz_template", "input_xyz_range",
+						 "bin_range"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value

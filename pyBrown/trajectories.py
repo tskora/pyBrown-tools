@@ -477,7 +477,7 @@ def compute_length_distribution(input_data, length_labels, auxiliary_data):
 
 	for i in range(len(input_data["sizes"])):
 
-		l, b = np.histogram( lengths_separated[i], bins = input_data["number_of_bins"] )
+		l, b = np.histogram( lengths_separated[i], bins = input_data["number_of_bins"], range = input_data["bin_range"] )
 
 		bins.append( b )
 
