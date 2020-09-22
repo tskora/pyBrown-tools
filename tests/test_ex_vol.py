@@ -68,6 +68,16 @@ class TestExVol(unittest.TestCase):
 
 	#---------------------------------------------------------------------------
 
+	def test_in_cube_3(self):
+
+		crowders = [ Sphere([i, j, k], 1.0) for i in [0,4] for j in [0,4] for k in [-2,2] ]
+
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 5.0, 0.01)
+
+		self.assertAlmostEqual( pore_radius, 1, places=2 )
+
+	#---------------------------------------------------------------------------
+
 	def test_in_cube_fcc(self):
 
 		crowders = [ Sphere([i, j, k], 1.0) for i in [-2,2] for j in [-2,2] for k in [-2,2] ]

@@ -37,7 +37,7 @@ def main(input_filename):
 	# here the list of keywords that are required for program to work is provided
 	required_keywords = ["box_size", "max_tracer_radius", "dr_tracer", "number_of_trials",
 						 "input_xyz_template", "input_xyz_range", "times",
-						 "input_str_filename", "radii_mode"]
+						 "input_str_filename", "radii_mode", "number_of_bins"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
@@ -74,7 +74,46 @@ def main(input_filename):
 
 	pores_histogram_partial = pool.map( compute_pores_histogram_partial, tf_for_proc )
 
-	print( pores_histogram_partial )
+	pores_histogram = []
+
+	for element in pores_histogram_partial:
+
+		pores_histogram += element
+
+	timestamp('pore sizes: {}', pores_histogram)
+
+	pores_histogram, pores_histogram_bins = np.histogram( pores_histogram, bins = i.input_data["number_of_bins"], range = (0, i.input_data["max_tracer_radius"] ) )
+
+	pores_histogram = pores_histogram / np.sum(pores_histogram)
+
+	pores_histogram_cum = 1-np.cumsum( pores_histogram )
+
+	pore_size_distribution = -np.gradient( pores_histogram_cum )
+
+	timestamp('pores histogram: {}', pores_histogram)
+	timestamp('bins: {}', pores_histogram_bins)
+	timestamp('pores cumulative histogram: {}', pores_histogram_cum)
+	timestamp('pore size distribution: {}', pore_size_distribution)
+
+	import matplotlib.pyplot as plt
+
+	plt.plot( pores_histogram_bins[:-1], pores_histogram_cum )
+
+	plt.show()
+
+	plt.close()
+	
+	plt.plot( pores_histogram_bins[:-1], pore_size_distribution )
+
+	plt.show()
+
+	with open(i.input_data["input_xyz_template"]+'psd.txt', 'w') as output_file:
+
+		output_file.write('size/A PSD\n')
+
+		for i, ps in enumerate(pore_size_distribution):
+
+			output_file.write('{} {}\n'.format(pores_histogram_bins[i], ps))
 
 	# if i.input_data["verbose"]: timestamp('single results: {}', excluded_volume)
 

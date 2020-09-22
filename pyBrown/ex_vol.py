@@ -22,6 +22,7 @@ from pyBrown.sphere import Sphere, overlap, overlap_pbc
 import numpy as np
 import random
 
+from copy import deepcopy
 from tqdm import tqdm
 
 def read_radii_from_str_file(input_str_filename, mode):
@@ -180,6 +181,10 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 	
 		for i in range(number_of_trials):
 
+			from pyBrown.messaging import timestamp
+
+			timestamp('trial {}', i)
+
 			tracer = place_tracers_linearly(0.0, box_size)[0]
 
 			r_pore = _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer)
@@ -194,9 +199,7 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
-	from copy import copy
-
-	init_tracer = copy(tracer)
+	init_tracer = deepcopy(tracer)
 
 	r_tracers = np.arange(0, r_tracer_max, dr_tracer)
 
@@ -220,7 +223,11 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		return r_tracer_max
 
+	previous_force_direction = np.zeros(3)
+
 	while True:
+
+		# print('r0 = {}'.format(r_0))
 
 		r_tracers = np.arange(r_0, r_tracer_max, dr_tracer)
 
@@ -228,32 +235,58 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		for crowder in crowders:
 
-				if overlap_pbc(tracer, crowder, dr_tracer, box_size):
+			if overlap_pbc(tracer, crowder, dr_tracer, box_size):
 
-					connecting_vector = tracer.coords - crowder.coords
+				# print('cr = {}'.format(crowder))
 
-					force_direction += connecting_vector / np.linalg.norm(connecting_vector)
+				connecting_vector = tracer.coords - crowder.coords
+
+				for i in range(3):
+
+					if connecting_vector[i] >= box_size/2: connecting_vector[i] -= box_size
+
+				force_direction += connecting_vector / np.linalg.norm(connecting_vector)
 
 		force_direction = force_direction / np.linalg.norm(force_direction) * dr_tracer
 
+		av_force_direction = 0.5 * ( previous_force_direction + force_direction )
+
+		previous_force_direction = force_direction
+
+		# print('dF = {}'.format(force_direction))
+
+		# print('tr = {} ->'.format(tracer))
+
 		tracer.translate(force_direction)
 
-		if overlap_pbc(tracer, crowders, dr_tracer, box_size):
+		# print('-> tr = {}'.format(tracer))
+
+		if overlap_pbc(tracer, crowders, 0, box_size):
+
+			print('stop due to overlap with the crowders')
 
 			return r_0
 
-		for r_tracer in r_tracers[1:]:
+		for r_tracer in r_tracers:
 
 			tracer.r = r_tracer
 
-			if not overlap_pbc(tracer, crowders, dr_tracer, box_size): continue
+			if not overlap_pbc(tracer, crowders, dr_tracer, box_size):
 
-			else: break
+				continue
+
+			else:
+
+				break
+
+		# print('^ tr = {}'.format(tracer))
 
 		if overlap_pbc(tracer, init_tracer, dr_tracer, box_size):
 
-			r_0 = r_tracer
+			r_0 = tracer.r
 
 		else:
+
+			print('stop due to lack of overlap with the initial tracer')
 
 			return r_0
