@@ -41,6 +41,11 @@ Type following commands in a terminal:
         * [Example input file](#traj.enr.example)
         * [Usage](#traj.enr.usage)
         * [Output files](#traj.enr.output)
+    * [`Lengths.py`](#traj.len)
+        * [Keywords](#traj.len.keywords)
+        * [Example input file](#traj.len.example)
+        * [Usage](#traj.len.usage)
+        * [Output files](#traj.len.output)
 3. [Monte Carlo Excluded Volume](#mcev)
     * [`ExVol.py`](#mcev.ev)
         * [Keywords](#mcev.ev.keywords)
@@ -182,6 +187,63 @@ If you have already prepared an input JSON file (using keywords introduced above
 Successful computations should produce:
 * `(TEMPLATE)enr.txt` data file with mean energy as a function of time,
 * `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit)
+
+<a name="traj.len"></a>
+### `Energy.py`
+<a name="traj.len.keywords"></a>
+#### Keywords
+**Required keywords:**
+
+* `"labels": [string, ...]` &mdash; bead labels in input XYZ file,
+* `"sizes": [integer, ...]` &mdash; numbers of beads representing individual entities,
+* `"box_size": float` &mdash; size of simulation (cubic) box (*Å*),
+* `"bin_range": [float, float]` &mdash; range of length values (*Å*) used to construct histogram bins;
+* `"number_of_bins": integer` &mdash; number of bins
+
+* `"input_xyz_template": string` &mdash; template of input xyz filenames,
+* `"input_xyz_range": [integer, integer]` &mdash; the number range defining input xyz filenames.
+
+*pyBrown expects input `xyz` files to follow a specific naming scheme:
+..., `(TEMPLATE)(NUMBER).xyz`, `(TEMPLATE)(NUMBER).xyz`, ...
+(where TEMPLATE is a string variable defined with the keyword `"input_xyz_template"` and NUMBER is an integer from range defined with the keyword `"input_xyz_range"`)*
+
+*(Have in mind, that ranges in python are defined in such a way that the upper limit is not contained in a range. For example, range(1,4) returns [1, 2, 3]  (without 4!).)*
+
+**Optional keywords:**
+
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
+* `"verbose": boolean` &mdash; print extra information (default: `false`)
+* `"probing_frequency": integer` &mdash; read every *N*-th geometry (default: `1`)
+* `"min_time:" float` &mdash; not include snapshots with time smaller than `"min_time"` (default: `0.0`)
+* `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
+
+<a name="traj.len.example"></a>
+#### Example input file
+
+```json
+{
+  "labels": ["ALD", "TRC"],
+  "sizes": [2, 1],
+  "box_size": 250.0,
+  "input_xyz_template": "enzymes_double_100_tracers_492_",
+  "input_xyz_range": [1, 11],
+  "min_time": 0.0,
+  "number_of_bins": 100,
+  "bin_range": [0, 30]
+}
+```
+
+<a name="traj.len.usage"></a>
+#### Usage
+If you have already prepared an input JSON file (using keywords introduced above), you can run the `Lengths.py` program using following command:
+
+`python Lengths.py input.json`
+
+<a name="traj.len.output"></a>
+#### Output files
+
+Successful computations should produce:
+* `(TEMPLATE)len.txt` data file with bond lengths histogram,
 
 <a name="mcev"></a>
 ## Monte Carlo Excluded Volume
