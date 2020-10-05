@@ -229,6 +229,8 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		# print('r0 = {}'.format(r_0))
 
+		assert r_0 == tracer.r
+
 		r_tracers = np.arange(r_0, r_tracer_max, dr_tracer)
 
 		force_direction = np.zeros(3)
