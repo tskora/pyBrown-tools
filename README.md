@@ -52,7 +52,13 @@ Type following commands in a terminal:
         * [Example input files](#mcev.ev.example)
         * [Usage](#mcev.ev.usage)
         * [Output](#mcev.ev.output)
-4. [Snapshot voxelization](#vox)
+4. [Pore Size Distribution](#psd)
+    * [`Pores.py`](#psd.por)
+        * [Keywords](#psd.por.keywords)
+        * [Example input files](#psd.por.example)
+        * [Usage](#psd.por.usage)
+        * [Output](#psd.por.output)
+5. [Snapshot voxelization](#vox)
     * [`Voxels.py`](#vox.vox)
         * [Keywords](#vox.vox.keywords)
         * [Example input file](#vox.vox.example)
@@ -75,6 +81,8 @@ Type following commands in a terminal:
 ## Generating structure files
 <a name="strs.keywords"></a>
 ### Keywords
+
+
 
 <a name="traj"></a>
 ## Trajectory analysis
@@ -142,6 +150,8 @@ Successful computations should produce:
 * `(TEMPLATE)msd.pdf` image file with MSD as a function of time (and optionally, linear fit),
 <!-- * `(TEMPLATE)enr.jpg` image file with total energy as a function of time, if `"input_enr_template"` and `"input_enr_range"` are present in the input JSON file. -->
 
+
+
 <a name="traj.enr"></a>
 ### `Energy.py`
 <a name="traj.enr.keywords"></a>
@@ -187,6 +197,8 @@ If you have already prepared an input JSON file (using keywords introduced above
 Successful computations should produce:
 * `(TEMPLATE)enr.txt` data file with mean energy as a function of time,
 * `(TEMPLATE)enr.pdf` image file with mean energy as a function of time (and optionally, linear fit)
+
+
 
 <a name="traj.len"></a>
 ### `Energy.py`
@@ -244,6 +256,8 @@ If you have already prepared an input JSON file (using keywords introduced above
 
 Successful computations should produce:
 * `(TEMPLATE)len.txt` data file with bond lengths histogram,
+
+
 
 <a name="mcev"></a>
 ## Monte Carlo Excluded Volume
@@ -320,6 +334,68 @@ If you have already prepared an input JSON file (using keywords introduced above
 Successful computations should produce:
 * `*fex.txt` data file with excluded volume fractions as a function of tracer radii,
 
+
+
+<a name="psd"></a>
+## Pore Size Distribution
+<a name="psd.por"></a>
+### `Pores.py`
+<a name="psd.por.keywords"></a>
+#### Keywords
+**Required keywords:**
+
+* `"box_size": float` &mdash; size of simulation (cubic) box (*Å*),
+* `"max_tracer_radius": float` &mdash; (*Å*),
+* `"dr_tracer": float` &mdash; tracer size increment (*Å*),
+* `"input_xyz_template": string` &mdash; template of input xyz filenames,
+* `"input_xyz_range": [integer, integer]` &mdash; the number range defining input xyz filenames,
+* `"input_str_filename": string` &mdash; input str filename,
+* `"times": [float, ...]` &mdash; times for which configurations are loaded from `.xyz` files (*ps*),
+* `"radii_mode": option` &mdash; bead radius definition (options: `"hydrodynamic"`/`"lennard-jones"`),
+* `"number_of_bins": integer` &mdash; number of histogram bins.
+
+**Optional keywords:**
+
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`),
+* `"verbose": boolean` &mdash; print extra information (default: `false`),
+* `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`),
+* `"omp_cores": integer` &mdash; number of CPU units (default: `0` meaning autopick *via* `multiprocessing.cpu_count()`).
+
+<a name="psd.por.example"></a>
+#### Example input file
+
+```json
+{
+  "box_size": 750.0,
+  "input_xyz_template": "cytoplasm_250_",
+  "input_xyz_range": [1,2],
+  "times": [1000000.0],
+  "input_str_filename": "cytoplasm_250_1.str",
+  "radii_mode": "lennard-jones",
+  "max_tracer_radius": 200.0,
+  "dr_tracer": 1.0,
+  "number_of_trials": 100,
+  "number_of_bins": 40,
+  "verbose": true,
+  "omp_cores": 4
+}
+```
+
+<a name="psd.por.usage"></a>
+#### Usage
+If you have already prepared an input JSON file (using keywords introduced above), you can run the `Pores.py` program using following command:
+
+`python Pores.py input.json`
+
+<a name="psd.por.output"></a>
+#### Output files
+
+Successful computations should produce:
+* `*psd.txt` data file with pore size distribution,
+* `*psd.pdf` image file with pore size distribution
+
+
+
 <a name="vox"></a>
 ## Snapshot voxelization
 <a name="vox.vox"></a>
@@ -337,9 +413,10 @@ Successful computations should produce:
 
 **Optional keywords:**
 
-* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`)
-* `"verbose": boolean` &mdash; print extra information (default: `false`)
-* `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`)
+* `"debug": boolean` &mdash; print extra information useful for debugging purposes (default: `false`),
+* `"verbose": boolean` &mdash; print extra information (default: `false`),
+* `"float_type": option` &mdash; number of bits per float number (options: `32`/`64`, default: `32`),
+* `"omp_cores": integer` &mdash; number of CPU units (default: `0` meaning autopick *via* `multiprocessing.cpu_count()`).
 
 <a name="vox.vox.example"></a>
 #### Example input file
@@ -368,6 +445,8 @@ If you have already prepared an input JSON file (using keywords introduced above
 
 Successful computations should produce:
 * `*voxels.txt` data file with digitized snapshot,
+
+
 
 <a name="vox.plt"></a>
 ### `PlotVoxels.py`
