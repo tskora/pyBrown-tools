@@ -114,3 +114,20 @@ def plot_menergies(input_data, times, menergies):
 	plt.savefig(input_data["input_enr_template"] + 'enr.pdf')
 
 	plt.close()
+
+#-------------------------------------------------------------------------------
+
+def plot_pore_size_distribution(input_data, bins, psd):
+
+	plot_config()
+
+	plt.xlabel(r'd [$\AA$]')
+	plt.ylabel(r'PSD')
+
+	bins += 0.5*(bins[1] - bins[0])
+
+	plt.plot(bins[:-1], psd, '-')
+
+	plt.savefig(input_data["input_xyz_template"] + 'psd.pdf')
+
+	plt.close()
