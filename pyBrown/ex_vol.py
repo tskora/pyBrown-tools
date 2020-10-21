@@ -183,7 +183,7 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 			from pyBrown.messaging import timestamp
 
-			timestamp('trial {}', i)
+			timestamp('trial {}', i + 1)
 
 			tracer = place_tracers_linearly(0.0, box_size)[0]
 
@@ -205,6 +205,8 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 	if overlap_pbc(tracer, crowders, 0.0, box_size):
 
+		print('stop due to instant overlap with the crowder\n')
+
 		return 0.0
 
 	r_0 = r_tracer_max
@@ -221,15 +223,45 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 	if r_0 == r_tracer_max:
 
+		print('stop due to exceeding max tracer size\n')
+
 		return r_tracer_max
 
-	previous_force_direction = np.zeros(3)
+	stuck_count = 0
+
+	prev_r_0 = r_0
+
+	damping_factor = 1.0
 
 	while True:
 
 		# print('r0 = {}'.format(r_0))
 
 		assert r_0 == tracer.r
+
+		increment_radius = prev_r_0 < r_0
+
+		if increment_radius:
+
+			stuck_count = 0
+
+			damping_factor = 1.0
+
+		else:
+
+			stuck_count += 1
+
+		if stuck_count > 100:
+
+			damping_factor = np.exp(-0.46*(stuck_count - 100)/10)
+
+		if stuck_count > 200:
+
+			print('stop despite the loop behaviour\n')
+
+			return r_0
+
+		prev_r_0 = r_0
 
 		r_tracers = np.arange(r_0, r_tracer_max, dr_tracer)
 
@@ -247,25 +279,23 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 					if connecting_vector[i] >= box_size/2: connecting_vector[i] -= box_size
 
+					elif connecting_vector[i] <= -box_size/2: connecting_vector[i] += box_size
+
 				force_direction += connecting_vector / np.linalg.norm(connecting_vector)
 
 		force_direction = force_direction / np.linalg.norm(force_direction) * dr_tracer
-
-		av_force_direction = 0.5 * ( previous_force_direction + force_direction )
-
-		previous_force_direction = force_direction
 
 		# print('dF = {}'.format(force_direction))
 
 		# print('tr = {} ->'.format(tracer))
 
-		tracer.translate(force_direction)
+		tracer.translate(force_direction * damping_factor)
 
 		# print('-> tr = {}'.format(tracer))
 
 		if overlap_pbc(tracer, crowders, 0, box_size):
 
-			print('stop due to overlap with the crowders')
+			print('stop due to overlap with the crowders\n')
 
 			return r_0
 
@@ -289,6 +319,6 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		else:
 
-			print('stop due to lack of overlap with the initial tracer')
+			print('stop due to lack of overlap with the initial tracer\n')
 
 			return r_0

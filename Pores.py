@@ -20,6 +20,7 @@ from pyBrown.input_Pores import InputDataPores
 from pyBrown.ex_vol import estimate_excluded_volume, read_radii_from_str_file, \
 						   compute_pores_histogram
 from pyBrown.messaging import timestamp
+from pyBrown.plotting import plot_pore_size_distribution
 
 import multiprocessing
 from multiprocessing import Pool
@@ -41,7 +42,7 @@ def main(input_filename):
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
-	defaults = {"float_type": 32, "verbose":False, "debug":False}
+	defaults = {"float_type": 32, "verbose": False, "debug": False, "omp_cores": 0}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataPores(input_filename, required_keywords, defaults)
@@ -51,7 +52,10 @@ def main(input_filename):
 
 	timestamp( 'Input data:\n{}', i )
 
-	nproc = multiprocessing.cpu_count()
+	if i.input_data["omp_cores"] == 0:
+		nproc = multiprocessing.cpu_count()
+	else:
+		nproc = i.input_data["omp_cores"]
 	print('You have {0:1d} CPUs'.format(nproc))
 
 	results = []
@@ -80,7 +84,7 @@ def main(input_filename):
 
 		pores_histogram += element
 
-	timestamp('pore sizes: {}', pores_histogram)
+	if i.input_data["verbose"]: timestamp('pore sizes: {}', pores_histogram)
 
 	pores_histogram, pores_histogram_bins = np.histogram( pores_histogram, bins = i.input_data["number_of_bins"], range = (0, i.input_data["max_tracer_radius"] ) )
 
@@ -90,45 +94,22 @@ def main(input_filename):
 
 	pore_size_distribution = -np.gradient( pores_histogram_cum )
 
-	timestamp('pores histogram: {}', pores_histogram)
-	timestamp('bins: {}', pores_histogram_bins)
-	timestamp('pores cumulative histogram: {}', pores_histogram_cum)
-	timestamp('pore size distribution: {}', pore_size_distribution)
+	pore_size_distribution = pore_size_distribution / np.sum(pore_size_distribution) / (pores_histogram_bins[1] - pores_histogram_bins[0])
 
-	import matplotlib.pyplot as plt
-
-	plt.plot( pores_histogram_bins[:-1], pores_histogram_cum )
-
-	plt.show()
-
-	plt.close()
+	if i.input_data["verbose"]: timestamp('pores histogram: {}', pores_histogram)
+	if i.input_data["verbose"]: timestamp('bins: {}', pores_histogram_bins)
+	if i.input_data["verbose"]: timestamp('pores cumulative histogram: {}', pores_histogram_cum)
+	if i.input_data["verbose"]: timestamp('pore size distribution: {}', pore_size_distribution)
 	
-	plt.plot( pores_histogram_bins[:-1], pore_size_distribution )
-
-	plt.show()
-
 	with open(i.input_data["input_xyz_template"]+'psd.txt', 'w') as output_file:
 
 		output_file.write('size/A PSD\n')
 
-		for i, ps in enumerate(pore_size_distribution):
+		for j, ps in enumerate(pore_size_distribution):
 
-			output_file.write('{} {}\n'.format(pores_histogram_bins[i], ps))
+			output_file.write('{} {}\n'.format(pores_histogram_bins[j] + 0.5 * (pores_histogram_bins[1] - pores_histogram_bins[0]), ps))
 
-	# if i.input_data["verbose"]: timestamp('single results: {}', excluded_volume)
-
-	# exvol = np.array([ excluded_volume[i][j][-1] for i in range( len(excluded_volume) ) for j in range( len(excluded_volume[i]) ) ])
-
-	# if i.input_data["debug"]: timestamp('single results: {}', exvol)
-
-	# print('r = {}; fex = {} +/- {}'.format(tracer_radii, np.mean(exvol), np.std(exvol, ddof=1)))
-
-	# results.append( [ tracer_radii[0], np.mean(exvol), np.std(exvol, ddof=1) ] )
-
-	# with open(i.input_data["input_xyz_template"]+'fex.txt', 'w') as output_file:
-	# 	output_file.write('R_tr fex dfex\n')
-	# 	for result in results:
-	# 		output_file.write( '{} {} {}\n'.format(*result) )
+	plot_pore_size_distribution( i.input_data, pores_histogram_bins, pore_size_distribution )
 
 #-------------------------------------------------------------------------------
 
