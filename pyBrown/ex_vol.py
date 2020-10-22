@@ -18,6 +18,7 @@ from pyBrown.input import InputData
 from pyBrown.parse import parse_input_filename
 from pyBrown.monte_carlo import MonteCarlo, place_crowders_linearly, place_tracers_linearly, place_crowders_xyz
 from pyBrown.sphere import Sphere, overlap, overlap_pbc
+from pyBrown.messaging import timestamp
 
 import numpy as np
 import random
@@ -178,10 +179,10 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 					r_crowders.append( input_radii[i] )
 
 		crowders = place_crowders_xyz(r_crowders, snapshot)
-	
-		for i in range(number_of_trials):
 
-			from pyBrown.messaging import timestamp
+		i = 0
+	
+		while i <= number_of_trials:
 
 			timestamp('trial {}', i + 1)
 
@@ -189,9 +190,15 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 			r_pore = _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer)
 
-			if r_pore == 0.0: continue
+			if r_pore == 0.0:
 
-			else: d_pores.append( 2. * r_pore )
+				continue
+
+			else:
+
+				d_pores.append( 2. * r_pore )
+
+				i += 1
 
 	return d_pores
 
