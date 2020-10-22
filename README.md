@@ -201,7 +201,7 @@ Successful computations should produce:
 
 
 <a name="traj.len"></a>
-### `Energy.py`
+### `Lengths.py`
 <a name="traj.len.keywords"></a>
 #### Keywords
 **Required keywords:**
