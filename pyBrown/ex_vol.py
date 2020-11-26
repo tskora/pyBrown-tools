@@ -76,7 +76,7 @@ def _read_snapshot_from_xyz_file(xyz_filename, snapshot_time):
 
 #-------------------------------------------------------------------------------
 
-def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of_trials, box_size, to_be_withdrawn):
+def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, bond_lengths, number_of_trials, box_size, to_be_withdrawn):
 
 	result = []
 
@@ -120,7 +120,7 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 		for i in range(number_of_trials):
 
-			tracers = place_tracers_linearly(r_tracer, box_size)
+			tracers = place_tracers_linearly(r_tracer, box_size, bond_lengths)
 
 			if overlap(crowders, tracers, 0.0):
 				count += 1

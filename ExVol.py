@@ -41,7 +41,8 @@ def main(input_filename):
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[], "float_type": 32,
-				"scan_mode":False, "scan_density":2, "verbose":False, "debug":False}
+				"scan_mode":False, "scan_density":2, "verbose":False, "debug":False,
+				"bond_lengths":None}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
@@ -77,7 +78,7 @@ def main(input_filename):
 	
 		pool = Pool(processes=nproc)
 	
-		estimate_excluded_volume_partial = partial( estimate_excluded_volume, input_labels = i.input_data["labels"], input_radii = i.input_data["crowder_radii"], r_tracer = tracer_radii, number_of_trials = i.input_data["number_of_trials"], box_size = i.input_data["box_size"], to_be_withdrawn = i.input_data["withdraw"] )
+		estimate_excluded_volume_partial = partial( estimate_excluded_volume, input_labels = i.input_data["labels"], input_radii = i.input_data["crowder_radii"], r_tracer = tracer_radii, bond_lengths = i.input_data["bond_lengths"], number_of_trials = i.input_data["number_of_trials"], box_size = i.input_data["box_size"], to_be_withdrawn = i.input_data["withdraw"] )
 	
 		excluded_volume = pool.map( estimate_excluded_volume_partial, tf_for_proc )
 	
