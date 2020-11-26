@@ -41,7 +41,8 @@ def main(input_filename):
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[], "float_type": 32,
-				"scan_mode":False, "scan_density":2, "verbose":False, "debug":False}
+				"scan_mode":False, "scan_density":2, "verbose":False, "debug":False,
+				"omp_cores": 0}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
@@ -51,7 +52,10 @@ def main(input_filename):
 
 	timestamp( 'Input data:\n{}', i )
 
-	nproc = multiprocessing.cpu_count()
+	if i.input_data["omp_cores"] == 0:
+		nproc = multiprocessing.cpu_count()
+	else:
+		nproc = i.input_data["omp_cores"]
 	print('You have {0:1d} CPUs'.format(nproc))
 
 	results = []
@@ -88,6 +92,7 @@ def main(input_filename):
 		if i.input_data["debug"]: timestamp('single results: {}', exvol)
 	
 		print('r = {}; fex = {} +/- {}'.format(tracer_radii, np.mean(exvol), np.std(exvol, ddof=1)))
+		print('R = {}'.format((np.mean(exvol)*i.input_data["box_size"]**3/(4/3*np.pi))**(1/3)))
 
 		results.append( [ tracer_radii[0], np.mean(exvol), np.std(exvol, ddof=1) ] )
 

@@ -136,6 +136,35 @@ def _distance(sphere1, sphere2):
 
 #-------------------------------------------------------------------------------
 
+def _distance_pbc(sphere1, sphere2, box_size):
+
+    dist0 =  np.sqrt( (sphere1.x - sphere2.x)**2 +
+                      (sphere1.y - sphere2.y)**2 +
+                      (sphere1.z - sphere2.z)**2 )
+
+    versors = [ np.array([nx * box_size,
+                          ny * box_size,
+                          nz * box_size])
+                          for nx in np.arange(-1, 2, 1)
+                          for ny in np.arange(-1, 2, 1)
+                          for nz in np.arange(-1, 2, 1) ]
+
+    for versor in versors:
+
+        sphere1.translate(versor)
+
+        dist1 = np.sqrt( (sphere1.x - sphere2.x)**2 +
+                         (sphere1.y - sphere2.y)**2 +
+                         (sphere1.z - sphere2.z)**2 )
+
+        if dist1 < dist0: dist0 = dist1
+
+        sphere1.translate(-versor)
+
+    return dist0
+
+#-------------------------------------------------------------------------------
+
 def distance_matrix(spheres):
 
     return np.array([ [ _distance(s1, s2) for s2 in spheres ]

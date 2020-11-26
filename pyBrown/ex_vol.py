@@ -115,6 +115,13 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 					r_crowders.append( input_radii[i] )
 
 		crowders = place_crowders_xyz(r_crowders, snapshot)
+
+		###
+		from pyBrown.sphere import fit
+
+		print( fit(crowders, box_size) )
+		# 1/0
+		###
 	
 		count = 0
 
@@ -122,33 +129,133 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 			tracers = place_tracers_linearly(r_tracer, box_size)
 
-			if overlap(crowders, tracers, 0.0):
-				count += 1
+			###
+			from pyBrown.sphere import _distance_pbc
 
-			else:
-				versors = [ np.array([nx * box_size,
-									  ny * box_size,
-									  nz * box_size])
-							for nx in np.arange(-1, 2, 1)
-							for ny in np.arange(-1, 2, 1)
-							for nz in np.arange(-1, 2, 1) ]
+			def hs_potential(distance, size):
 
-				if_overlap = False
+				if distance < size: return np.inf
 
-				for versor in versors:
+				else: return 0
 
-					for tracer in tracers:
-						tracer.translate( versor )
+			def cesp_potential(distance, e0, dc, de, Ur, n):
 
-					if overlap(crowders, tracers, 0.0):
-						if_overlap = True
+				if de-dc != 0: Vr = Ur/2 * ( 1 - np.tanh(dc/(de-dc)*(distance-(de+dc)/2)) )
 
-					for tracer in tracers:
-						tracer.translate( -versor )
+				else: Vr = 0
 
-					if if_overlap:
-						count += 1
-						break
+				return e0*(dc/distance)**n + Vr
+
+			def cesp_surface_potential(distance, e0, dc, de, Ur, n):
+   				
+   				if distance <= dc: return np.inf
+
+   				if de-dc != 0: Vr = Ur/2 * ( 1 - np.tanh(dc/(de-dc)*(distance-(de+dc)/2)) )
+
+   				else: Vr = 0
+
+   				return e0*(1.0/(distance-dc))**n + Vr
+
+			def cesp_hs_potential(distance, dc, de, Ur):
+
+   				if distance <= dc: return np.inf
+
+   				if de-dc != 0: return Ur/2 * ( 1 - np.tanh(dc/(de-dc)*(distance-(de+dc)/2)) )
+
+   				else: return 0
+
+			def our_potential(distance, dc, Ur, sigma):
+
+   				b = dc - sigma
+
+   				if distance <= b: return np.inf
+
+   				else: return 4*Ur*sigma**12 * 4*np.pi/45*b**3 * (15*distance**6 + 63*distance**4*b**2 + 45*distance**2*b**4 + 5*b**6) / (distance**2 - b**2)**9
+
+			def future_potential(distance, dc, de, E, Ur, sigma):
+
+   				b = dc - sigma
+
+   				if distance <= b: return np.inf
+
+   				Vhard = 4*E*sigma**12 * 4*np.pi/45*b**3 * (15*distance**6 + 63*distance**4*b**2 + 45*distance**2*b**4 + 5*b**6) / (distance**2 - b**2)**9
+
+   				dc /= 10
+
+   				de /= 10
+
+   				distance /= 10
+
+   				sigma /= 10
+
+   				if de-dc != 0: Vsoft = Ur/2 * ( 1 - np.tanh(dc/(de-dc)*(distance-(de+dc)/2)) )
+
+   				else: Vsoft = 0
+
+   				return Vhard + Vsoft
+
+			def compute_potential(tracers, crowders, box_size, potential, potential_args):
+
+				V = 0
+
+				for tracer in tracers:
+
+					for crowder in crowders:
+
+						dist = _distance_pbc(tracer, crowder, box_size)
+
+						# V += potential(dist, crowder.r + tracer.r)
+						# V += potential(0.1*dist, 1/2500, 5.1, 8.6, 800/2500, 24)
+						# V += potential(0.1*dist, 1/2500, 5.1, 8.6, 0/2500, 7)
+						# V += potential(0.1*dist, 2.8, 7.4, 2500/2500)
+						# V += potential(dist, 51.0, 0.64, 1.5)
+						V += potential(dist, 49, 53, 0.64, 5000/2500, 1.5)
+
+				return V
+
+			V = compute_potential( tracers, crowders, box_size, future_potential, [] )
+
+			# rs = np.linspace(0, 70, 1000)
+			# import matplotlib.pyplot as plt
+			# print( [ cesp_hs_potential(0.1*r, 5.1-0.5, 5.1+0.5, 2000/2500) for r in rs ] )
+			# plt.plot(rs, [ cesp_hs_potential(0.1*r, 5.1-0.5, 5.1+0.5, 2000/2500) for r in rs ])
+			# plt.show()
+			# 1/0
+
+			if V >= 0:
+
+				rand_number = np.random.rand(1)
+
+				count += 1 - np.exp(-V)
+			###
+
+			# if overlap(crowders, tracers, 0.0):
+			# 	count += 1
+
+			# else:
+			# 	versors = [ np.array([nx * box_size,
+			# 						  ny * box_size,
+			# 						  nz * box_size])
+			# 				for nx in np.arange(-1, 2, 1)
+			# 				for ny in np.arange(-1, 2, 1)
+			# 				for nz in np.arange(-1, 2, 1) ]
+
+			# 	if_overlap = False
+
+			# 	for versor in versors:
+
+			# 		for tracer in tracers:
+			# 			tracer.translate( versor )
+
+			# 		if overlap(crowders, tracers, 0.0):
+			# 			if_overlap = True
+
+			# 		for tracer in tracers:
+			# 			tracer.translate( -versor )
+
+			# 		if if_overlap:
+			# 			count += 1
+			# 			break
 
 		ex_vol = count / number_of_trials
 
