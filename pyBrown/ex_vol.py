@@ -178,6 +178,8 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
    				if distance <= b: return np.inf
 
+   				if distance <= b + 0.8: distance = b + 0.8
+
    				Vhard = 4*E*sigma**12 * 4*np.pi/45*b**3 * (15*distance**6 + 63*distance**4*b**2 + 45*distance**2*b**4 + 5*b**6) / (distance**2 - b**2)**9
 
    				dc /= 10
@@ -209,7 +211,7 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 						# V += potential(0.1*dist, 1/2500, 5.1, 8.6, 0/2500, 7)
 						# V += potential(0.1*dist, 2.8, 7.4, 2500/2500)
 						# V += potential(dist, 51.0, 0.64, 1.5)
-						V += potential(dist, 49, 53, 0.64, 5000/2500, 1.5)
+						V += potential(dist, 40, 62, 0.64, 3750/2500, 1.5)
 
 				return V
 
