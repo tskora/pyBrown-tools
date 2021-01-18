@@ -86,15 +86,19 @@ def main(input_filename):
 
 	if i.input_data["verbose"]: timestamp('pore sizes: {}', pores_histogram)
 
-	pores_histogram, pores_histogram_bins = np.histogram( pores_histogram, bins = i.input_data["number_of_bins"], range = (0, i.input_data["max_tracer_radius"] ) )
+	pores_histogram, pores_histogram_bins = np.histogram( pores_histogram, bins = i.input_data["number_of_bins"], range = (0, 2*i.input_data["max_tracer_radius"] ) )
 
 	pores_histogram = pores_histogram / np.sum(pores_histogram)
+
+	pores_histogram_bins = pores_histogram_bins + 0.5 * (pores_histogram_bins[1] - pores_histogram_bins[0])
 
 	pores_histogram_cum = 1-np.cumsum( pores_histogram )
 
 	pore_size_distribution = -np.gradient( pores_histogram_cum )
 
 	pore_size_distribution = pore_size_distribution / np.sum(pore_size_distribution) / (pores_histogram_bins[1] - pores_histogram_bins[0])
+
+	pores_histogram = pores_histogram / (pores_histogram_bins[1] - pores_histogram_bins[0])
 
 	if i.input_data["verbose"]: timestamp('pores histogram: {}', pores_histogram)
 	if i.input_data["verbose"]: timestamp('bins: {}', pores_histogram_bins)
@@ -103,11 +107,11 @@ def main(input_filename):
 	
 	with open(i.input_data["input_xyz_template"]+'psd.txt', 'w') as output_file:
 
-		output_file.write('size/A PSD\n')
+		output_file.write('size/A PSD CCPSD -der(CCPSD)\n')
 
 		for j, ps in enumerate(pore_size_distribution):
 
-			output_file.write('{} {}\n'.format(pores_histogram_bins[j] + 0.5 * (pores_histogram_bins[1] - pores_histogram_bins[0]), ps))
+			output_file.write('{} {} {} {}\n'.format(pores_histogram_bins[j], pores_histogram[j], pores_histogram_cum[j], ps))
 
 	plot_pore_size_distribution( i.input_data, pores_histogram_bins, pore_size_distribution )
 

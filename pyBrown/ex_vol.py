@@ -182,7 +182,7 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 		i = 0
 	
-		while i <= number_of_trials:
+		while i < number_of_trials:
 
 			timestamp('trial {}', i + 1)
 
@@ -204,7 +204,7 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 #-------------------------------------------------------------------------------
 
-def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
+def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer, debug = False):
 
 	init_tracer = deepcopy(tracer)
 
@@ -242,7 +242,7 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 	while True:
 
-		# print('r0 = {}'.format(r_0))
+		if debug: print('r0 = {}'.format(r_0))
 
 		assert r_0 == tracer.r
 
@@ -278,7 +278,7 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 			if overlap_pbc(tracer, crowder, dr_tracer, box_size):
 
-				# print('cr = {}'.format(crowder))
+				if debug: print('cr = {}'.format(crowder))
 
 				connecting_vector = tracer.coords - crowder.coords
 
@@ -292,13 +292,13 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 		force_direction = force_direction / np.linalg.norm(force_direction) * dr_tracer
 
-		# print('dF = {}'.format(force_direction))
+		if debug: print('dF = {}'.format(force_direction))
 
-		# print('tr = {} ->'.format(tracer))
+		if debug: print('tr = {} ->'.format(tracer))
 
 		tracer.translate(force_direction * damping_factor)
 
-		# print('-> tr = {}'.format(tracer))
+		if debug: print('-> tr = {}'.format(tracer))
 
 		if overlap_pbc(tracer, crowders, 0, box_size):
 
@@ -318,7 +318,7 @@ def _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer):
 
 				break
 
-		# print('^ tr = {}'.format(tracer))
+		if debug: print('^ tr = {}'.format(tracer))
 
 		if overlap_pbc(tracer, init_tracer, dr_tracer, box_size):
 
