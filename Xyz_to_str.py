@@ -26,25 +26,17 @@ from pyBrown.messaging import timestamp
 				type = click.Path( exists = True ))
 def main(input_filename):
 
-	# here the list of keywords that are required for program to work is provided
-	# required_keywords = ["labels", "sizes", "box_size", "temperature", "viscosity",
-	# 					 "input_xyz_template", "input_enr_template", "input_xyz_range",
-	# 					 "input_enr_range"]
-	required_keywords = []
-
-	# here the dict of keywords:default values is provided
-	# if given keyword is absent in JSON, it is added with respective default value
-	# defaults = {"debug": False, "verbose": False, "fit_MSD": False,
-	# 			"probing_frequency": 1}
-	defaults = {}
+	# here the list of keywords that are required for program to work is provided]
+	required_keywords = ["input_xyz_filename", "input_str_filename", "output_str_filename",
+						 "snapshot_time"]
 
 	timestamp( 'Reading input from {} file', input_filename )
-	i = InputData(input_filename, required_keywords, defaults).input_data
+	i = InputData(input_filename, required_keywords, {}).input_data
 
 	print(i)
 
 	xyz_file = open(i["input_xyz_filename"], 'r')
-	template_file = open(i["template_str_filename"], 'r')
+	template_file = open(i["input_str_filename"], 'r')
 	str_file = open(i["output_str_filename"], 'w')
 
 	labels = []
