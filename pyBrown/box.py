@@ -45,7 +45,7 @@ class Box():
 
 	def compute_Dmatrix(self):
 
-		self.compute_pointers()
+		# self.compute_pointers()
 
 		self.D = np.identity(3*len(self.beads)) * 10**19 * Boltzmann / (6 * np.pi) * self.T / ( self.beads[0].a * self.viscosity )
 
