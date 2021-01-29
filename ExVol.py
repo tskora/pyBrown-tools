@@ -42,13 +42,26 @@ def main(input_filename):
 	# if given keyword is absent in JSON, it is added with respective default value
 	defaults = {"bond_lengths":'hydrodynamic_radii', "withdraw":[], "float_type": 32,
 				"scan_mode":False, "scan_density":2, "verbose":False, "debug":False,
-				"omp_cores": 0}
+				"omp_cores": 0, "potential": "hs"}
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataExVol(input_filename, required_keywords, defaults)
 	i.input_data["labels"], i.input_data["crowder_radii"] = read_radii_from_str_file(
 														i.input_data["input_str_filename"],
 											 			i.input_data["radii_mode"] )
+
+	potential_and_params = [ i.input_data["potential"] ]
+
+	if i.input_data["potential"] != "hs":
+		potential_param_names = i.input_data["potential_params"].keys()
+		if i.input_data["potential"] == "cesp-hs":
+			assert ( "dc" in potential_param_names and
+				     "de" in potential_param_names and
+				     "Ur" in potential_param_names )
+			if "d0" not in potential_param_names:
+				i.input_data["potential_params"]["d0"] = 10.0
+
+	potential_and_params.append(i.input_data["potential_params"])
 
 	timestamp( 'Input data:\n{}', i )
 
@@ -81,7 +94,7 @@ def main(input_filename):
 	
 		pool = Pool(processes=nproc)
 	
-		estimate_excluded_volume_partial = partial( estimate_excluded_volume, input_labels = i.input_data["labels"], input_radii = i.input_data["crowder_radii"], r_tracer = tracer_radii, number_of_trials = i.input_data["number_of_trials"], box_size = i.input_data["box_size"], to_be_withdrawn = i.input_data["withdraw"] )
+		estimate_excluded_volume_partial = partial( estimate_excluded_volume, input_labels = i.input_data["labels"], input_radii = i.input_data["crowder_radii"], r_tracer = tracer_radii, number_of_trials = i.input_data["number_of_trials"], box_size = i.input_data["box_size"], to_be_withdrawn = i.input_data["withdraw"], potential_and_params = potential_and_params )
 	
 		excluded_volume = pool.map( estimate_excluded_volume_partial, tf_for_proc )
 	

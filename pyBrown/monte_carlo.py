@@ -64,12 +64,16 @@ def place_crowders_linearly(radii, box_size):
 
 #-------------------------------------------------------------------------------
 
-def place_crowders_xyz(radii, positions):
+def place_crowders_xyz(radii, positions, labels = None):
 
     crowders = []
 
-    for radius, position in zip( radii, positions ):
-        crowders.append( Sphere(position, radius) )
+    if labels is None:
+        for radius, position in zip( radii, positions ):
+            crowders.append( Sphere(position, radius) )
+    else:
+        for radius, position, label in zip( radii, positions, labels ):
+            crowders.append( Sphere(position, radius, label) )
 
     return crowders
 
