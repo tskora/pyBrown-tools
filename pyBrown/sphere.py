@@ -20,15 +20,16 @@ import numpy as np
 
 class Sphere:
 
-    def __init__(self, coords, radius):
+    def __init__(self, coords, radius, label = None):
         self.coords = np.array(coords, float)
         self.x, self.y, self.z = self.coords[0], self.coords[1], self.coords[2]
         self.r = radius
+        self.label = label
 
     #---------------------------------------------------------------------------
 
     def __str__(self):
-        return "{} r = {}".format(self.coords, self.r)
+        return "{} {} r = {}".format(self.label, self.coords, self.r)
 
     #---------------------------------------------------------------------------
 
