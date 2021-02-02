@@ -79,14 +79,9 @@ def _read_snapshot_from_xyz_file(xyz_filename, snapshot_time):
 
 def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of_trials, box_size, to_be_withdrawn, potential_and_params):
 
-	potential, params = potential_and_params
-	if potential == "hs": effective = False
+	potential_name, params = potential_and_params
+	if potential_name == "hs": effective = False
 	else: effective = True
-
-	if potential == "cesp-hs":
-
-		from pyBrown.potentials import cesp_hs_potential
-		potential = cesp_hs_potential
 
 	result = []
 
@@ -136,7 +131,7 @@ def estimate_excluded_volume(tfs, input_labels, input_radii, r_tracer, number_of
 
 			if effective:
 
-				V = compute_potential( tracers, crowders, box_size, potential, params )
+				V = compute_potential( tracers, crowders, box_size, potential_name, params )
 
 				if V >= 0:
 
