@@ -195,7 +195,7 @@ def separate_center_of_mass(input_data, labels, auxiliary_data):
 
 #-------------------------------------------------------------------------------
 
-def compute_msds(input_data, cm_labels, auxiliary_data):
+def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
 	number_of_xyz_files = len( input_xyz_filenames )
@@ -204,6 +204,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 	molecule_numbers = auxiliary_data["molecule_numbers"]
 	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
 	cm_temp_filename = auxiliary_data["cm_temp_filename"]
+	number_of_cm_trajectories_per_file = number_of_cm_trajectories // number_of_xyz_files
 
 	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
@@ -218,36 +219,96 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 	if FREUD:
 
+		from pyBrown.sphere import Sphere, _distance_pbc
+
 		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
-						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+						   	   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
-		trajs_all = []
+		distances = True
 
-		for k in range(len(input_data["labels"])):
+		if distances:
 
-			trajs_list = [ [ cm_trajectories[i][j] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes ) ]
+			trajs_all = []
 
-			trajs = np.array( trajs_list )
+			for k in range(len(input_data["labels"])):
 
-			trajs_all.append(trajs)
+				mrssqs = np.zeros(number_of_timeframes)
 
-		msds = []
+				for l in range(number_of_xyz_files):
 
-		for k in range(len(input_data["labels"])):
+					# trajs_list = [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ]
+					# for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ):
+					# 	for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ):
+					# 		for j in range( number_of_timeframes ):
+					# 			# a = Sphere(cm_trajectories[i][j], 0.0)
+					# 			# disto = _distance_pbc( a, Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] )
+					# 			disto = _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] )
+					# 			# print( a.x )
+					# 			# 1/0
+					# 			if disto > 750.0*np.sqrt(3)/2:
+					# 				print(cm_trajectories[i][j])
+					# 				print(cm_trajectories[i2][j])
+					# 				print(disto)
 
-			box = freud.box.Box.cube( input_data["box_size"] )
+					trajs_list = [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ]
 
-			if (input_data["mode"] == "direct"):
-				msd = freud.msd.MSD(box, 'direct')
-			elif (input_data["mode"] == "window"):
-				msd = freud.msd.MSD(box, 'window')
+					# print(trajs_list)
 
-			msd.compute( positions = trajs_all[k] )
-			msds.append(msd.msd)
+					# 1/0
+
+					rs = np.transpose( np.array( [ [trajs_list[i][j] for i in range(number_of_timeframes) ] for j in range((number_of_cm_trajectories_per_file**2-number_of_cm_trajectories_per_file)//2) ] ) )
+
+					print(rs)
+
+					print(rs-rs[0])
+
+					mrssq = (rs - rs[0])**2
+
+					print(mrssq)
+
+					mrssq = np.mean( np.transpose(mrssq), axis = 0 )
+
+					mrssqs += mrssq
+
+				trajs_all.append(mrssqs/number_of_xyz_files)
+
+			print(trajs_all)
+
+			msds = trajs_all
+
+			return msds
+
+		else:
+
+			trajs_all = []
+
+			for k in range(len(input_data["labels"])):
+
+				trajs_list = [ [ cm_trajectories[i][j] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes ) ]
+
+				trajs = np.array( trajs_list )
+
+				trajs_all.append(trajs)
+
+			msds = []
+
+			for k in range(len(input_data["labels"])):
+
+				box = freud.box.Box.cube( input_data["box_size"] )
+
+				if (input_data["mode"] == "direct"):
+					msd = freud.msd.MSD(box, 'direct')
+				elif (input_data["mode"] == "window"):
+					msd = freud.msd.MSD(box, 'window')
+
+				msd.compute( positions = trajs_all[k] )
+				msds.append(msd.msd)
 
 	### FREUD VERSION END ###
 
 	else:
+
+		if distances: return None
 
 		# temporary binary file which will contain the squared angular displacements
 		sd_temp_filename = input_data["input_xyz_template"] + 'sd_tmp.dat'
