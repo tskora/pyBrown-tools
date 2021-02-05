@@ -20,6 +20,8 @@ import math
 import numpy as np
 from scipy.constants import Boltzmann
 
+from pyBrown.bead import overlap_pbc
+
 class Box():
 
 	def __init__(self, beads, box_length, T, viscosity):
@@ -29,19 +31,41 @@ class Box():
 		self.T = T
 		self.viscosity = viscosity
 
-	def propagate(self, dt, build_D = True, cholesky = True):
+	def propagate(self, dt, build_D = True, cholesky = True, overlaps = True):
 
 		if build_D: self.compute_Dmatrix()
 		# if cholesky: self.decompose_Dmatrix()
 		# BX = self.B @ np.random.normal(0.0, 1.0, 3 * len(self.beads)) * math.sqrt(2 * dt)
-		X = np.random.normal(0.0, 1.0, 3 * len(self.beads))
-		for i in range(len(self.beads)): X[3*i: 3*(i+1)] /= np.linalg.norm(X[3*i: 3*(i+1)])
-		X *= math.sqrt(6 * dt)
+		while True:
 
-		for i, bead in enumerate( self.beads ):
-			# bead.translate( BX[3 * i: 3 * (i + 1)] )
-			bead.translate( math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)])
-			bead.keep_in_box(self.box_length)
+			X = np.random.normal(0.0, 1.0, 3 * len(self.beads))
+			for i in range(len(self.beads)): X[3*i: 3*(i+1)] /= np.linalg.norm(X[3*i: 3*(i+1)])
+			X *= math.sqrt(6 * dt)
+
+			for i, bead in enumerate( self.beads ):
+				# bead.translate( BX[3 * i: 3 * (i + 1)] )
+				bead.translate( math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)] )
+				# bead.keep_in_box(self.box_length)
+
+			if self.check_overlaps():
+				print('OVERLAP!!!')
+				for i, bead in enumerate( self.beads ):
+					bead.translate( -math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)])
+			else:
+				# print('NO OVERLAP!!!')
+				for i, bead in enumerate( self.beads ):
+					bead.keep_in_box(self.box_length)
+				break
+		print()
+
+	def check_overlaps(self):
+
+		overlaps = False
+		for i in range(len(self.beads)-1):
+			for j in range(i+1, len(self.beads)):
+				# print('{} {}'.format(i, j))
+				if overlap_pbc(self.beads[i], self.beads[j], self.box_length): overlaps = True
+		return overlaps
 
 	def compute_Dmatrix(self):
 

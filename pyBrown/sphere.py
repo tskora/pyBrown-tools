@@ -81,6 +81,43 @@ def overlap(sphere1, sphere2, minimal_distance):
 
 #-------------------------------------------------------------------------------
 
+def overlap_pbc(sphere1, sphere2, minimal_distance, box_size):
+    if not isinstance(sphere1, list): sphere1 = [sphere1]
+    if not isinstance(sphere2, list): sphere2 = [sphere2]
+
+    if any([_overlap(s1, s2, minimal_distance)
+                for s1 in sphere1 for s2 in sphere2]):
+        return True
+
+    else:
+        versors = [ np.array([nx * box_size,
+                              ny * box_size,
+                              nz * box_size])
+                              for nx in np.arange(-1, 2, 1)
+                              for ny in np.arange(-1, 2, 1)
+                              for nz in np.arange(-1, 2, 1) ]
+
+        if_overlap = False
+
+        for versor in versors:
+
+            for s1 in sphere1:
+                s1.translate( versor )
+
+            if any([_overlap(s1, s2, minimal_distance)
+                        for s1 in sphere1 for s2 in sphere2]):
+                if_overlap = True
+
+            for s1 in sphere1:
+                s1.translate( -versor )
+
+            if if_overlap:
+                return True
+
+    return False
+
+#-------------------------------------------------------------------------------
+
 def _distance(sphere1, sphere2):
 
     return np.sqrt( (sphere1.x - sphere2.x)**2 +

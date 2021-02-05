@@ -41,8 +41,8 @@ def plot_msds(input_data, times, msds):
 
 		plt.plot( times / 1000000, msd, '-', label = input_data["labels"][i], color = colors[i] )
 
-		print(times / 1000000)
-		print(msd)
+		# print(times / 1000000)
+		# print(msd)
 
 		if input_data["fit_MSD"]:
 			#TODO: swap for scipy routine to preserve b=0
@@ -58,7 +58,7 @@ def plot_msds(input_data, times, msds):
 			Rh = 10**17 * Boltzmann / (6 * np.pi) * input_data["temperature"] / ( D * 0.1 * input_data["viscosity"] ) # in nm
 			Rh_string = '{:4.2f}'.format(Rh) # in nm
 
-			print(a*np.array(times))
+			# print(a*np.array(times))
 
 			plt.text( 0.0 * times[-1], (0.70 - i * 0.15) * np.ndarray.max( np.array( msds ) ), input_data["labels"][i] )
 			plt.text( 0.0 * times[-1], (0.65 - i * 0.15) * np.ndarray.max( np.array( msds ) ), r'$D =$' + D_string + r' $\frac{\AA ^2}{ns}$')
