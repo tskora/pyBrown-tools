@@ -10,7 +10,7 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filename = 'test_4.xyz'
+filename = 'test_5.xyz'
 dt = 1.0
 
 T = 298.15
@@ -48,6 +48,8 @@ print('D = {} A**2/ns'.format( 10**19 * Boltzmann / (6 * np.pi) * 293.15 / ( box
 
 # A = np.random.rand(n_dim,n_dim)
 # A = A @ A.transpose()
+
+box.box_length *= 100
 
 with open(filename, 'w') as output_file:
 	start = time.time()
