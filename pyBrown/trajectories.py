@@ -236,44 +236,30 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 				for l in range(number_of_xyz_files):
 
-					# trajs_list = [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ]
-					# for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ):
-					# 	for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ):
-					# 		for j in range( number_of_timeframes ):
-					# 			# a = Sphere(cm_trajectories[i][j], 0.0)
-					# 			# disto = _distance_pbc( a, Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] )
-					# 			disto = _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] )
-					# 			# print( a.x )
-					# 			# 1/0
-					# 			if disto > 750.0*np.sqrt(3)/2:
-					# 				print(cm_trajectories[i][j])
-					# 				print(cm_trajectories[i2][j])
-					# 				print(disto)
-
-					trajs_list = [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ]
-
-					# print([ trajs_list[j][0] for j in range(number_of_timeframes) ])
-
-					# 1/0
-
-					rs = np.transpose( np.array( [ [trajs_list[i][j] for i in range(number_of_timeframes) ] for j in range((number_of_cm_trajectories_per_file**2-number_of_cm_trajectories_per_file)//2) ] ) )
+					rs = np.transpose( [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
 
 					print(rs[0])
 					print(rs[1])
-					print(rs[2])
+					print()
 
-					# print(rs-rs[0])
+					rs_sq = rs**2
 
-					rsnorm = np.transpose( rs - rs[0] )
+					print(rs_sq[0])
+					print(rs_sq[1])
+					print()
 
-					print(rsnorm[0])
-					print(rsnorm[1])
-					print(rsnorm[2])
+					# rs_sq = np.transpose( np.array( [ [trajs_list[i][j] for i in range(number_of_timeframes) ] for j in range((number_of_cm_trajectories_per_file**2-number_of_cm_trajectories_per_file)//2) ] ) )**2
+
+					rs_sq_norm = np.transpose( np.transpose(rs_sq) - np.transpose(rs_sq)[0] )
+
+					print(rs_sq_norm[0])
+					print(rs_sq_norm[1])
+					# print(rsnorm[2])
 					# 1/0
 
-					mrssq = rsnorm**2
-					print(mrssq)
-					1/0
+					# mrssq = rs_sq_norm
+					# print(mrssq)
+					# 1/0
 
 					# mrssq = np.transpose( mrssq )
 
@@ -284,10 +270,11 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 					# print(mrssq)
 
-					mrssq = np.mean( mrssq, axis = 0 )
-
+					mrssq = np.mean( rs_sq_norm, axis = 0 )
 					print(mrssq)
-					1/0
+
+					# print(mrssq)
+					# 1/0
 
 					mrssqs += mrssq
 
