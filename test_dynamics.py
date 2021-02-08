@@ -10,7 +10,7 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filename = 'test_6.xyz'
+filename = 'point_42_nopbc_5.xyz'
 dt = 1.0
 
 T = 298.15
