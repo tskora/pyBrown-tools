@@ -261,20 +261,19 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 					print(rs[0])
 					print(rs[1])
 					print(rs[2])
-					print(rs[3])
-					1/0
 
 					# print(rs-rs[0])
 
 					rsnorm = np.transpose( rs - rs[0] )
 
-					# print(rsnorm[0])
-					# print(rsnorm[1])
-					# print(rsnorm[2])
-					# print(rsnorm[3])
+					print(rsnorm[0])
+					print(rsnorm[1])
+					print(rsnorm[2])
 					# 1/0
 
 					mrssq = rsnorm**2
+					print(mrssq)
+					1/0
 
 					# mrssq = np.transpose( mrssq )
 
@@ -286,6 +285,9 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 					# print(mrssq)
 
 					mrssq = np.mean( mrssq, axis = 0 )
+
+					print(mrssq)
+					1/0
 
 					mrssqs += mrssq
 
