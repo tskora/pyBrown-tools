@@ -252,29 +252,52 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 					trajs_list = [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ]
 
-					# print(trajs_list)
+					# print([ trajs_list[j][0] for j in range(number_of_timeframes) ])
 
 					# 1/0
 
 					rs = np.transpose( np.array( [ [trajs_list[i][j] for i in range(number_of_timeframes) ] for j in range((number_of_cm_trajectories_per_file**2-number_of_cm_trajectories_per_file)//2) ] ) )
 
-					print(rs)
+					print(rs[0])
+					print(rs[1])
+					print(rs[2])
+					print(rs[3])
+					1/0
 
-					print(rs-rs[0])
+					# print(rs-rs[0])
 
-					mrssq = (rs - rs[0])**2
+					rsnorm = np.transpose( rs - rs[0] )
 
-					print(mrssq)
+					# print(rsnorm[0])
+					# print(rsnorm[1])
+					# print(rsnorm[2])
+					# print(rsnorm[3])
+					# 1/0
 
-					mrssq = np.mean( np.transpose(mrssq), axis = 0 )
+					mrssq = rsnorm**2
+
+					# mrssq = np.transpose( mrssq )
+
+					# print(mrssq[0])
+					# print(mrssq[1])
+					# print(mrssq[2])
+					# 1/0
+
+					# print(mrssq)
+
+					mrssq = np.mean( mrssq, axis = 0 )
 
 					mrssqs += mrssq
 
 				trajs_all.append(mrssqs/number_of_xyz_files)
 
-			print(trajs_all)
+			# print(trajs_all)
 
 			msds = trajs_all
+
+			# print(msds)
+
+			# 1/0
 
 			return msds
 

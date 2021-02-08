@@ -138,16 +138,9 @@ def _distance(sphere1, sphere2):
 
 def _distance_pbc(sphere1, sphere2, box_size):
 
-    # deepcopy(tracer)
-
-    # print(sphere1)
-    # print(sphere2)
-
     pointing = np.array( [sphere1.x - sphere2.x,
                           sphere1.y - sphere2.y,
                           sphere1.z - sphere2.z] )
-
-    # print(pointing)
 
     for i in range(3):
         while pointing[i] >= box_size/2:
@@ -155,44 +148,15 @@ def _distance_pbc(sphere1, sphere2, box_size):
         while pointing[i] <= -box_size/2:
             pointing[i] += box_size
 
-    # print(pointing)
     dist = np.sqrt( np.sum( pointing**2 ) )
-    # print(dist)
-    # print()
 
     return dist
-
-    # dist0 =  np.sqrt( (sphere1.x - sphere2.x)**2 +
-    #                   (sphere1.y - sphere2.y)**2 +
-    #                   (sphere1.z - sphere2.z)**2 )
-
-    # versors = [ np.array([nx * box_size,
-    #                       ny * box_size,
-    #                       nz * box_size])
-    #                       for nx in np.arange(-1, 2, 1)
-    #                       for ny in np.arange(-1, 2, 1)
-    #                       for nz in np.arange(-1, 2, 1) ]
-
-    # for versor in versors:
-
-    #     sphere1.translate(versor)
-
-    #     dist1 = np.sqrt( (sphere1.x - sphere2.x)**2 +
-    #                      (sphere1.y - sphere2.y)**2 +
-    #                      (sphere1.z - sphere2.z)**2 )
-
-    #     if dist1 < dist0: dist0 = dist1
-
-    #     sphere1.translate(-versor)
-
-    # return dist0
 
 #-------------------------------------------------------------------------------
 
 def distance_matrix(spheres):
 
-    return np.array([ [ _distance(s1, s2) for s2 in spheres ]
-                      for s1 in spheres ], float)
+    return np.array([ [ _distance(s1, s2) for s2 in spheres ] for s1 in spheres ], float)
 
 #-------------------------------------------------------------------------------
 
