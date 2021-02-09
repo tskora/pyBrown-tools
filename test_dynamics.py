@@ -10,12 +10,12 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filename = 'point_42_nopbc_5.xyz'
+filename = 'point_42_nopbc_2.xyz'
 dt = 1.0
 
 T = 298.15
 viscosity = 0.01005
-n_particles = 3#42
+n_particles = 42
 n_steps = 1000000#100000
 n_write = 1
 n_chol = n_steps
