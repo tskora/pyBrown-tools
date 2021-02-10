@@ -219,7 +219,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 	if FREUD:
 
-		from pyBrown.sphere import Sphere, _distance_pbc
+		from pyBrown.sphere import Sphere, _distance
 
 		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   	   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
@@ -236,7 +236,7 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 				for l in range(number_of_xyz_files):
 
-					rs = np.transpose( [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
+					rs = np.transpose( [ [ _distance( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0) ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
 
 					print(rs[0])
 					print(rs[1])
