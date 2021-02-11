@@ -10,14 +10,14 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filename = 'point_42_nopbc_2.xyz'
-dt = 1.0
+filename = 'ficoll_42_hs_5.xyz'
+dt = 10.0
 
-T = 298.15
+T = 293.15
 viscosity = 0.01005
 n_particles = 42
-n_steps = 1000000#100000
-n_write = 1
+n_steps = 100000#100000
+n_write = 100
 n_chol = n_steps
 
 from pyBrown.sphere import overlap_pbc, Sphere
@@ -49,7 +49,7 @@ print('D = {} A**2/ns'.format( 10**19 * Boltzmann / (6 * np.pi) * 293.15 / ( box
 # A = np.random.rand(n_dim,n_dim)
 # A = A @ A.transpose()
 
-box.box_length *= 100
+# box.box_length *= 100
 
 with open(filename, 'w') as output_file:
 	start = time.time()

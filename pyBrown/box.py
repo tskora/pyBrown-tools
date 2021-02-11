@@ -47,8 +47,8 @@ class Box():
 				bead.translate( math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)] )
 				# bead.keep_in_box(self.box_length)
 
-			if False:
-			# if self.check_overlaps():
+			# if False:
+			if self.check_overlaps():
 				print('OVERLAP!!!')
 				for i, bead in enumerate( self.beads ):
 					bead.translate( -math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)])
