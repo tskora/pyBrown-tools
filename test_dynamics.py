@@ -10,7 +10,7 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filename = 'ficoll_42_hs_5.xyz'
+filename = 'ficoll_42_hs_10.xyz'
 dt = 10.0
 
 T = 293.15
