@@ -10,12 +10,12 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filenames = ['ficoll_42_hs_{}.xyz'.format(i) for i in range(11, 21)]
+filenames = ['ficoll_152_hs_{}.xyz'.format(i) for i in range(2, 11)]
 dt = 10.0
 
 T = 293.15
 viscosity = 0.01005
-n_particles = 42
+n_particles = 152
 n_steps = 100000#100000
 n_write = 100
 n_chol = n_steps
@@ -57,8 +57,9 @@ for filename in filenames:
 	
 	with open(filename, 'w') as output_file:
 		start = time.time()
-		# for i in tqdm( range(n_steps) ):
-		for i in range(n_steps):
+		for i in tqdm( range(n_steps) ):
+		# for i in range(n_steps):
+			# print('{}/{}'.format(i+1, n_steps))
 			if i % n_write == 0:
 				output_file.write('{}\n'.format(len(box.beads)))
 				output_file.write('{} time [ps] {}\n'.format(filename, i*dt))

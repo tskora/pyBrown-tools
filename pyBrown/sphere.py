@@ -85,36 +85,67 @@ def overlap_pbc(sphere1, sphere2, minimal_distance, box_size):
     if not isinstance(sphere1, list): sphere1 = [sphere1]
     if not isinstance(sphere2, list): sphere2 = [sphere2]
 
-    if any([_overlap(s1, s2, minimal_distance)
-                for s1 in sphere1 for s2 in sphere2]):
-        return True
+    for s1 in sphere1:
+        for s2 in sphere2:
 
-    else:
-        versors = [ np.array([nx * box_size,
-                              ny * box_size,
-                              nz * box_size])
-                              for nx in np.arange(-1, 2, 1)
-                              for ny in np.arange(-1, 2, 1)
-                              for nz in np.arange(-1, 2, 1) ]
+            pointing = np.array( [s1.x - s2.x,
+                                  s1.y - s2.y,
+                                  s1.z - s2.z] )
 
-        if_overlap = False
+            radii_sum = s1.r + s2.r + minimal_distance
+            radii_sum_pbc = box_size - radii_sum
 
-        for versor in versors:
+            if ( pointing[0] > radii_sum and pointing[0] < radii_sum_pbc ) or ( pointing[0] < -radii_sum and pointing[0] > -radii_sum_pbc ):
+                continue
+            elif ( pointing[1] > radii_sum and pointing[1] < radii_sum_pbc ) or ( pointing[1] < -radii_sum and pointing[1] > -radii_sum_pbc ):
+                continue
+            elif ( pointing[2] > radii_sum and pointing[2] < radii_sum_pbc ) or ( pointing[2] < -radii_sum and pointing[2] > -radii_sum_pbc ):
+                continue
+            else:
+                for i in range(3):
+                    while pointing[i] >= box_size/2:
+                        pointing[i] -= box_size
+                    while pointing[i] <= -box_size/2:
+                        pointing[i] += box_size
 
-            for s1 in sphere1:
-                s1.translate( versor )
-
-            if any([_overlap(s1, s2, minimal_distance)
-                        for s1 in sphere1 for s2 in sphere2]):
-                if_overlap = True
-
-            for s1 in sphere1:
-                s1.translate( -versor )
-
-            if if_overlap:
-                return True
+                if np.sum( pointing**2 ) <= radii_sum**2 + minimal_distance: return True
 
     return False
+
+# def overlap_pbc(sphere1, sphere2, minimal_distance, box_size):
+#     if not isinstance(sphere1, list): sphere1 = [sphere1]
+#     if not isinstance(sphere2, list): sphere2 = [sphere2]
+
+#     if any([_overlap(s1, s2, minimal_distance)
+#                 for s1 in sphere1 for s2 in sphere2]):
+#         return True
+
+#     else:
+#         versors = [ np.array([nx * box_size,
+#                               ny * box_size,
+#                               nz * box_size])
+#                               for nx in np.arange(-1, 2, 1)
+#                               for ny in np.arange(-1, 2, 1)
+#                               for nz in np.arange(-1, 2, 1) ]
+
+#         if_overlap = False
+
+#         for versor in versors:
+
+#             for s1 in sphere1:
+#                 s1.translate( versor )
+
+#             if any([_overlap(s1, s2, minimal_distance)
+#                         for s1 in sphere1 for s2 in sphere2]):
+#                 if_overlap = True
+
+#             for s1 in sphere1:
+#                 s1.translate( -versor )
+
+#             if if_overlap:
+#                 return True
+
+#     return False
 
 #-------------------------------------------------------------------------------
 
@@ -123,6 +154,24 @@ def _distance(sphere1, sphere2):
     return np.sqrt( (sphere1.x - sphere2.x)**2 +
                     (sphere1.y - sphere2.y)**2 +
                     (sphere1.z - sphere2.z)**2 )
+
+#-------------------------------------------------------------------------------
+
+def _distance_pbc(sphere1, sphere2, box_size):
+
+    pointing = np.array( [sphere1.x - sphere2.x,
+                          sphere1.y - sphere2.y,
+                          sphere1.z - sphere2.z] )
+
+    for i in range(3):
+        while pointing[i] >= box_size/2:
+            pointing[i] -= box_size
+        while pointing[i] <= -box_size/2:
+            pointing[i] += box_size
+
+    dist = np.sqrt( np.sum( pointing**2 ) )
+
+    return dist
 
 #-------------------------------------------------------------------------------
 

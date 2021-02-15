@@ -64,8 +64,17 @@ class Box():
 		overlaps = False
 		for i in range(len(self.beads)-1):
 			for j in range(i+1, len(self.beads)):
-				# print('{} {}'.format(i, j))
-				if overlap_pbc(self.beads[i], self.beads[j], self.box_length): overlaps = True
+				pointer = self.beads[i].r - self.beads[j].r
+				radii_sum = self.beads[i].a + self.beads[j].a
+				radii_sum_pbc = self.box_length - radii_sum
+				if ( pointer[0] > radii_sum and pointer[0] < radii_sum_pbc ) or ( pointer[0] < -radii_sum and pointer[0] > -radii_sum_pbc ):
+					continue
+				elif ( pointer[1] > radii_sum and pointer[1] < radii_sum_pbc ) or ( pointer[1] < -radii_sum and pointer[1] > -radii_sum_pbc ):
+					continue
+				elif ( pointer[2] > radii_sum and pointer[2] < radii_sum_pbc ) or ( pointer[2] < -radii_sum and pointer[2] > -radii_sum_pbc ):
+					continue
+				else:
+					if overlap_pbc(self.beads[i], self.beads[j], self.box_length): overlaps = True
 		return overlaps
 
 	def compute_Dmatrix(self):
