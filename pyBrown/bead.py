@@ -52,9 +52,7 @@ class Bead():
 
 def distance_pbc(bead1, bead2, box_size):
 
-	pointing = bead1.r - bead2.r
-	# print('pointing: {}'.format(pointing))
-	# print('box size: {}'.format(box_size))	
+	pointing = bead1.r - bead2.r	
 
 	for i in range(3):
 		while pointing[i] >= box_size/2:
@@ -62,16 +60,10 @@ def distance_pbc(bead1, bead2, box_size):
 		while pointing[i] <= -box_size/2:
 			pointing[i] += box_size
 
-	# print('pointing: {}'.format(pointing))
-
 	return np.sqrt( np.sum( pointing**2 ) )
 
 def overlap_pbc(bead1, bead2, box_size):
 
-	# print(bead1)
-	# print(bead2)
 	dist = distance_pbc(bead1, bead2, box_size)
-	# print(dist)
-	# print(bead1.a + bead2.a)
-	# print()
+
 	return dist <= bead1.a + bead2.a

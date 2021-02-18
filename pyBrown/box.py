@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
-from pyBrown.hydrodynamics import M_rpy, M_rpy_smith, R_lub_corr
+from pyBrown.hydrodynamics import M_rpy#, M_rpy_smith, R_lub_corr
 
 import math
 import numpy as np
 from scipy.constants import Boltzmann
 
-from pyBrown.bead import overlap_pbc
+from pyBrown.bead import overlap_pbc, distance_pbc
 
 class Box():
 
@@ -33,31 +33,26 @@ class Box():
 
 	def propagate(self, dt, build_D = True, cholesky = True, overlaps = True):
 
-		if build_D: self.compute_Dmatrix()
-		# if cholesky: self.decompose_Dmatrix()
-		# BX = self.B @ np.random.normal(0.0, 1.0, 3 * len(self.beads)) * math.sqrt(2 * dt)
+		if build_D:
+			self.compute_rijmatrix()
+			self.compute_Dmatrix()
+		if cholesky:
+			self.decompose_Dmatrix()
+		
 		while True:
 
-			X = np.random.normal(0.0, 1.0, 3 * len(self.beads))
-			for i in range(len(self.beads)): X[3*i: 3*(i+1)] /= np.linalg.norm(X[3*i: 3*(i+1)])
-			X *= math.sqrt(6 * dt)
+			BX = self.B @ np.random.normal(0.0, 1.0, 3 * len(self.beads)) * math.sqrt(2 * dt)
 
 			for i, bead in enumerate( self.beads ):
-				# bead.translate( BX[3 * i: 3 * (i + 1)] )
-				bead.translate( math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)] )
-				# bead.keep_in_box(self.box_length)
+				bead.translate( BX[3 * i: 3 * (i + 1)] )
 
-			# if False:
 			if self.check_overlaps():
-				# print('OVERLAP!!!')
 				for i, bead in enumerate( self.beads ):
-					bead.translate( -math.sqrt(self.D[0][0]) * X[3*i: 3*(i+1)])
+					bead.translate( -BX[3 * i: 3 * (i + 1)] )
 			else:
-				# print('NO OVERLAP!!!')
 				for i, bead in enumerate( self.beads ):
 					bead.keep_in_box(self.box_length)
 				break
-		# print()
 
 	def check_overlaps(self):
 
@@ -77,29 +72,24 @@ class Box():
 					if overlap_pbc(self.beads[i], self.beads[j], self.box_length): overlaps = True
 		return overlaps
 
+	def compute_rijmatrix(self, nearest = True):
+
+		self.rij = np.zeros((len(self.beads), len(self.beads), 3))
+
+		for i in range(1, len(self.beads)):
+			for j in range(0, i):
+				self.rij[i][j] = self._pointer(self.beads[i], self.beads[j], nearest)
+				self.rij[j][i] = -self.rij[i][j]
+
 	def compute_Dmatrix(self):
 
-		# self.compute_pointers()
+		self.D = Boltzmann * self.T * 10**19 * M_rpy(self.beads, self.rij) / self.viscosity
 
-		self.D = np.identity(3*len(self.beads)) * 10**19 * Boltzmann / (6 * np.pi) * self.T / ( self.beads[0].a * self.viscosity )
-
-		# self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * M_rpy(self.beads, self.pointers) / self.viscosity )
-
-		# print(self.D)
-
-		# self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * M_rpy_smith(self.beads, self.box_length, math.sqrt(np.pi), 3, 3) / self.viscosity )
-
-		# print(self.D)
-
-		# self.D = np.asfortranarray( Boltzmann * self.T * 10**19 * np.linalg.inv( ( np.linalg.inv( M_rpy(self.beads, self.pointers) ) + R_lub_corr(self.beads) ) ) / self.viscosity  )
+		# self.D = Boltzmann * self.T * 10**19 * M_rpy_smith(self.beads, self.rij) / self.viscosity
 
 	def decompose_Dmatrix(self):
 
 		self.B = np.linalg.cholesky(self.D)
-
-	def compute_pointers(self, nearest = True):
-
-		self.pointers = [ [ self._pointer(self.beads[i], self.beads[j], nearest) for i in range(len(self.beads)) ] for j in range(len(self.beads)) ]
 
 	def _pointer(self, p1, p2, nearest = True):
 

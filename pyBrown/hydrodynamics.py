@@ -30,30 +30,30 @@ class Hydrodynamics_RPY(Hydrodynamics):
 
 		return self.super()
 
-def Mii_rpy(p):
+def Mii_rpy(a):
 
-	return np.identity(3) / ( 6 * np.pi * p.a )
+	return np.identity(3) / ( 6 * np.pi * a )
 
-def Mij_rpy(pi, pj, point):
+def Mij_rpy(ai, aj, pointer):
 
-	Rh_larger = max( pi.a, pj.a )
-	Rh_smaller = min( pi.a, pj.a )
+	Rh_larger = max( ai, aj )
+	Rh_smaller = min( ai, aj )
 
-	# point = self.pointer(pi, pj)
-	dist = math.sqrt( point[0]**2 + point[1]**2 + point[2]**2 )
-	outer = np.outer(point/dist, point/dist)
+	dist2 = pointer[0]**2 + pointer[1]**2 + pointer[2]**2
+	dist = math.sqrt( dist2 )
+	outer = np.outer(pointer, pointer)/dist2
 
-	if dist > ( pi.a + pj.a ):
+	aij2 = ai**2 + aj**2
+
+	if dist > ( ai + aj ):
 	
 		coef_1 = 1.0 / ( 8 * np.pi * dist )
-		coef_2 = 1.0 + ( pi.a**2 + pj.a**2) / ( 3 * dist**2 )
-		coef_3 = 1.0 - ( pi.a**2 + pj.a**2) / dist**2
+		coef_2 = 1.0 + aij2 / ( 3 * dist2 )
+		coef_3 = 1.0 - aij2 / dist2
 	
 		answer = coef_2 * np.identity(3)
 		answer += coef_3 * outer
 		answer *= coef_1
-
-		# endmij = time.time()
 	
 		return answer
         
@@ -63,12 +63,15 @@ def Mij_rpy(pi, pj, point):
 
 	else:
 
-		coef_1 = 1.0 / ( 6 * np.pi * pi.a * pj.a )
-		coef_2 = 16 * dist**3 * ( pi.a + pj.a )
-		coef_3 = ( (pi.a - pj.a )**2 + 3 * dist**2 )**2
-		coef_4 = ( coef_2 - coef_3 ) / ( 32 * dist**3 )
-		coef_5 = 3 * ( (pi.a - pj.a)**2 - dist**2 )**2
-		coef_6 = coef_5 / ( 32 * dist**3 )
+		dist3 = dist * dist2
+
+		coef_1 = 1.0 / ( 6 * np.pi * ai * aj )
+		coef_2 = 16 * dist3 * ( ai + aj )
+		coef_3 = (ai - aj)**2 + 3 * dist2
+		coef3 *= coef3
+		coef_4 = ( coef_2 - coef_3 ) / ( 32 * dist3 )
+		coef_5 = 3 * ( (ai - aj)**2 - dist2 )**2
+		coef_6 = coef_5 / ( 32 * dist3 )
 
 		answer = coef_4 * np.identity(3)
 		answer += coef_6 * outer
@@ -76,436 +79,453 @@ def Mij_rpy(pi, pj, point):
         
 		return answer
 
-def M_rpy(beads, points):
+def M_rpy(beads, pointers):
 
 	M = [ [ None for j in range( len(beads) ) ] for i in range( len(beads) ) ]
 
-	for i, pi in enumerate(beads):
+	for i, bi in enumerate(beads):
 
-		M[i][i] = Mii_rpy(pi)
+		M[i][i] = Mii_rpy(bi.a)
 
 		for j in range(i):
 
-			pj = beads[j]
+			bj = beads[j]
 
-			M[i][j] = Mij_rpy(pi, pj, points[i][j])
+			M[i][j] = Mij_rpy(bi.a, bj.a, pointers[i][j])
 			M[j][i] = np.transpose( M[i][j] )
 
 	return np.block(M)
 
-def O(r):
+# def M_rpy_smith(beads, points, box_length, alpha, m, n):
 
-	dist = math.sqrt( r[0]**2 + r[1]**2 + r[2]**2 )
+# 	M = [ [ None for j in range( len(beads) ) ] for i in range( len(beads) ) ]
 
-	return ( np.identity(3) + np.outer( r / dist, r / dist ) ) / dist
+# 	for i, pi in enumerate(beads):
 
-def Q(r):
+# 		M[i][i] = Mii_rpy_smith(pi, box_length, alpha, m, n)
 
-	dist = math.sqrt( r[0]**2 + r[1]**2 + r[2]**2 )
+# 		for j in range(i):
 
-	return ( np.identity(3) - 3.0 * np.outer( r / dist, r / dist ) ) / dist**3
+# 			pj = ps[j]
 
-def Oii_pbc_smith(p, box_length, alpha, m, n ):
+# 			M[i][j] = Mij_rpy_smith(pi, pj, box_length, alpha, m, n)
+# 			M[j][i] = np.transpose( M[i][j] )
 
-	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) if not (mi==0 and mj==0 and mk==0 ) ]
+# 	return np.block(M)
 
-	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
+# def O(r):
 
-	answer = 0.0
+# 	dist = math.sqrt( r[0]**2 + r[1]**2 + r[2]**2 )
 
-	for mvec in ms:
+# 	return ( np.identity(3) + np.outer( r / dist, r / dist ) ) / dist
 
-		mlength = math.sqrt( mvec[0]**2 + mvec[1]**2 + mvec[2]**2 )
+# def Q(r):
 
-		answer += erfc( alpha * mlength ) * O(mvec)
+# 	dist = math.sqrt( r[0]**2 + r[1]**2 + r[2]**2 )
 
-		answer += 2.0 * alpha / math.sqrt(np.pi) * math.exp( - alpha**2 * mlength**2 ) * np.outer(mvec/mlength, mvec/mlength)
+# 	return ( np.identity(3) - 3.0 * np.outer( r / dist, r / dist ) ) / dist**3
 
-	for nvec in ns:
+# def Oii_pbc_smith(p, box_length, alpha, m, n ):
 
-		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
+# 	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) if not (mi==0 and mj==0 and mk==0 ) ]
 
-		mult = np.identity(3) - ( 1 + np.pi**2 * nlength**2 / alpha**2 ) * np.outer(nvec/nlength, nvec/nlength)
+# 	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
 
-		answer += 2.0 / ( np.pi * nlength**2 ) * math.exp( - np.pi**2 * nlength**2 / alpha**2 ) * mult
+# 	answer = 0.0
 
-	return answer - 3.0 * alpha * p.a / ( 2.0 * math.sqrt(np.pi) * box_length ) * np.identity(3)
+# 	for mvec in ms:
 
-def Oij_pbc_smith(sigma, alpha, m, n):
+# 		mlength = math.sqrt( mvec[0]**2 + mvec[1]**2 + mvec[2]**2 )
 
-	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) ]
+# 		answer += erfc( alpha * mlength ) * O(mvec)
 
-	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
+# 		answer += 2.0 * alpha / math.sqrt(np.pi) * math.exp( - alpha**2 * mlength**2 ) * np.outer(mvec/mlength, mvec/mlength)
 
-	answer = 0.0
+# 	for nvec in ns:
 
-	for mvec in ms:
+# 		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
 
-		msvec = mvec + sigma
+# 		mult = np.identity(3) - ( 1 + np.pi**2 * nlength**2 / alpha**2 ) * np.outer(nvec/nlength, nvec/nlength)
 
-		mslength = math.sqrt( msvec[0]**2 + msvec[1]**2 + msvec[2]**2 )
+# 		answer += 2.0 / ( np.pi * nlength**2 ) * math.exp( - np.pi**2 * nlength**2 / alpha**2 ) * mult
 
-		answer += erfc( alpha * mslength ) * O( mvec + sigma )
+# 	return answer - 3.0 * alpha * p.a / ( 2.0 * math.sqrt(np.pi) * box_length ) * np.identity(3)
 
-		answer += 2.0 * alpha / math.sqrt(np.pi) * math.exp( - alpha**2 * mslength**2 ) * np.outer(mvec+sigma, mvec+sigma)/mslength**2
+# def Oij_pbc_smith(sigma, alpha, m, n):
 
-	for nvec in ns:
+# 	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) ]
 
-		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
+# 	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
 
-		mult = 2.0 / ( np.pi * nlength**2 ) * math.exp( - np.pi**2 * nlength**2 / alpha**2 ) * np.exp( 2 * np.pi * 1j * np.dot(nvec, sigma)  )
+# 	answer = 0.0
 
-		mult_real = mult.real
+# 	for mvec in ms:
 
-		answer += mult_real * ( np.identity(3) - (1 + np.pi**2 * nlength**2 / alpha**2 ) * np.outer(nvec / nlength, nvec / nlength) )
+# 		msvec = mvec + sigma
 
-	return answer
+# 		mslength = math.sqrt( msvec[0]**2 + msvec[1]**2 + msvec[2]**2 )
 
-def Qii_pbc_smith(p, box_length, alpha, m, n):
+# 		answer += erfc( alpha * mslength ) * O( mvec + sigma )
 
-	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) if not (mi==0 and mj==0 and mk==0 ) ]
+# 		answer += 2.0 * alpha / math.sqrt(np.pi) * math.exp( - alpha**2 * mslength**2 ) * np.outer(mvec+sigma, mvec+sigma)/mslength**2
 
-	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
+# 	for nvec in ns:
 
-	answer = 0.0
+# 		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
 
-	for mvec in ms:
+# 		mult = 2.0 / ( np.pi * nlength**2 ) * math.exp( - np.pi**2 * nlength**2 / alpha**2 ) * np.exp( 2 * np.pi * 1j * np.dot(nvec, sigma)  )
 
-		mlength = math.sqrt( mvec[0]**2 + mvec[1]**2 + mvec[2]**2 )
+# 		mult_real = mult.real
 
-		mult = erfc( alpha * mlength ) + 2.0 * alpha / math.sqrt(np.pi) * mlength * math.exp( -alpha**2 * mlength**2 )
+# 		answer += mult_real * ( np.identity(3) - (1 + np.pi**2 * nlength**2 / alpha**2 ) * np.outer(nvec / nlength, nvec / nlength) )
 
-		answer += mult * Q(mvec)
+# 	return answer
 
-		answer -= 4.0 * alpha**3 / math.sqrt(np.pi) * math.exp(-alpha**2 * mlength**2) * np.outer(mvec/mlength, mvec/mlength)
+# def Qii_pbc_smith(p, box_length, alpha, m, n):
 
-	for nvec in ns:
+# 	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) if not (mi==0 and mj==0 and mk==0 ) ]
 
-		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
+# 	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
 
-		answer += 4.0 * np.pi * math.exp( -np.pi**2 * nlength**2 / alpha**2) * np.outer(nvec/nlength, nvec/nlength)
+# 	answer = 0.0
 
-	return answer - 1.0 / ( 3.0 * math.sqrt(np.pi) ) * (alpha * p.a / box_length)**3 * np.identity(3)
+# 	for mvec in ms:
 
-def Qij_pbc_smith( sigma, alpha, m, n ):
+# 		mlength = math.sqrt( mvec[0]**2 + mvec[1]**2 + mvec[2]**2 )
 
-	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) ]
+# 		mult = erfc( alpha * mlength ) + 2.0 * alpha / math.sqrt(np.pi) * mlength * math.exp( -alpha**2 * mlength**2 )
 
-	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
+# 		answer += mult * Q(mvec)
 
-	answer = 0.0
+# 		answer -= 4.0 * alpha**3 / math.sqrt(np.pi) * math.exp(-alpha**2 * mlength**2) * np.outer(mvec/mlength, mvec/mlength)
 
-	for mvec in ms:
+# 	for nvec in ns:
 
-		msvec = mvec + sigma
+# 		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
 
-		mslength = math.sqrt( msvec[0]**2 + msvec[1]**2 + msvec[2]**2 )
+# 		answer += 4.0 * np.pi * math.exp( -np.pi**2 * nlength**2 / alpha**2) * np.outer(nvec/nlength, nvec/nlength)
 
-		mult = erfc( alpha * mslength ) + 2.0 * alpha / np.sqrt( np.pi ) * mslength * math.exp(- alpha**2 * mslength**2)
+# 	return answer - 1.0 / ( 3.0 * math.sqrt(np.pi) ) * (alpha * p.a / box_length)**3 * np.identity(3)
 
-		answer += mult * Q(mvec + sigma)
+# def Qij_pbc_smith( sigma, alpha, m, n ):
 
-		answer -= 4.0 * alpha**3 / np.sqrt(np.pi) * math.exp( -alpha**2 * mslength**2 ) * np.outer(mvec+sigma,mvec+sigma)/mslength**2
+# 	ms = [ np.array([ mi,mj,mk ], float) for mi in range(m+1) for mj in range(m+1) for mk in range(m+1) if (mi+mj+mk<=m) ]
 
-	for nvec in ns:
+# 	ns = [ np.array([ ni,nj,nk ], float) for ni in range(n+1) for nj in range(n+1) for nk in range(n+1) if (ni+nj+nk<=n) if not (ni==0 and nj==0 and nk==0 ) ]
 
-		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
+# 	answer = 0.0
 
-		addi = 4.0 * np.pi * math.exp( -np.pi**2 * nlength**2 / alpha**2 ) * np.exp(2*np.pi*1j*np.dot(nvec,sigma)) * np.outer(nvec/nlength, nvec/nlength)
+# 	for mvec in ms:
 
-		addi_real = addi.real
+# 		msvec = mvec + sigma
 
-		answer += addi_real
+# 		mslength = math.sqrt( msvec[0]**2 + msvec[1]**2 + msvec[2]**2 )
 
-	return answer
+# 		mult = erfc( alpha * mslength ) + 2.0 * alpha / np.sqrt( np.pi ) * mslength * math.exp(- alpha**2 * mslength**2)
 
-def Mii_rpy_smith(p, box_length, alpha, m, n):
+# 		answer += mult * Q(mvec + sigma)
 
-	coef1 = 1.0 / ( 6 * np.pi * p.a )
+# 		answer -= 4.0 * alpha**3 / np.sqrt(np.pi) * math.exp( -alpha**2 * mslength**2 ) * np.outer(mvec+sigma,mvec+sigma)/mslength**2
 
-	coef2 = 3.0 * p.a / ( 4.0 * box_length )
+# 	for nvec in ns:
 
-	coef3 = ( p.a / box_length )**3 / 2.0
+# 		nlength = math.sqrt( nvec[0]**2 + nvec[1]**2 + nvec[2]**2 )
 
-	comp1 = np.identity(3)
+# 		addi = 4.0 * np.pi * math.exp( -np.pi**2 * nlength**2 / alpha**2 ) * np.exp(2*np.pi*1j*np.dot(nvec,sigma)) * np.outer(nvec/nlength, nvec/nlength)
 
-	comp2 = Oii_pbc_smith( p, box_length, alpha, m, n )
+# 		addi_real = addi.real
 
-	comp3 = Qii_pbc_smith( p, box_length, alpha, m, n )
+# 		answer += addi_real
 
-	return coef1 * ( comp1 + coef2 * comp2 + coef3 * comp3 )
+# 	return answer
 
-def Mij_rpy_smith(pi, pj, box_length, alpha, m, n):
+# def Mii_rpy_smith(p, box_length, alpha, m, n):
 
-	sigma = np.array( (pj.r - pi.r) / box_length, float )
+# 	coef1 = 1.0 / ( 6 * np.pi * p.a )
 
-	coef1 = 1.0 / ( 6 * np.pi * pi.a )
+# 	coef2 = 3.0 * p.a / ( 4.0 * box_length )
 
-	coef2 = 3.0 * pi.a / ( 4.0 * box_length )
+# 	coef3 = ( p.a / box_length )**3 / 2.0
 
-	coef3 = ( pi.a / box_length )**3 / 2.0
+# 	comp1 = np.identity(3)
 
-	comp1 = Oij_pbc_smith( sigma, alpha, m, n )
+# 	comp2 = Oii_pbc_smith( p, box_length, alpha, m, n )
 
-	comp2 = Qij_pbc_smith( sigma, alpha, m, n )
+# 	comp3 = Qii_pbc_smith( p, box_length, alpha, m, n )
 
-	return coef1 * ( coef2 * comp1 + coef3 * comp2 )
+# 	return coef1 * ( comp1 + coef2 * comp2 + coef3 * comp3 )
 
-def Bij_rpy_smith(pi, pj):
+# def Mij_rpy_smith(pi, pj, box_length, alpha, m, n):
 
-	rij = pj.r - pi.r
+# 	sigma = np.array( (pj.r - pi.r) / box_length, float )
 
-	rijlength = math.sqrt( rij[0]**2 + rij[1]**2 + rij[2]**2 )
+# 	coef1 = 1.0 / ( 6 * np.pi * pi.a )
 
-	coef1 = 1.0 / ( 8 * np.pi * rijlength )
+# 	coef2 = 3.0 * pi.a / ( 4.0 * box_length )
 
-	coef2 = 1.0 + ( pi.a**2 + pj.a**2 ) / ( 3.0 * rijlength**2 )
+# 	coef3 = ( pi.a / box_length )**3 / 2.0
 
-	coef3 = 1.0 - ( pi.a**2 + pj.a**2 ) / rijlength**2
+# 	comp1 = Oij_pbc_smith( sigma, alpha, m, n )
 
-	return coef1 * ( coef2 * np.identity(3) + coef3 * np.outer(rij, rij) / rijlength**2 )
+# 	comp2 = Qij_pbc_smith( sigma, alpha, m, n )
 
-def M_rpy_smith(ps, box_length, alpha, m, n):
+# 	return coef1 * ( coef2 * comp1 + coef3 * comp2 )
 
-	M = [ [ None for j in range( len(ps) ) ] for i in range( len(ps) ) ]
+# def Bij_rpy_smith(pi, pj):
 
-	for i, pi in enumerate(ps):
+# 	rij = pj.r - pi.r
 
-		M[i][i] = Mii_rpy_smith(pi, box_length, alpha, m, n)
+# 	rijlength = math.sqrt( rij[0]**2 + rij[1]**2 + rij[2]**2 )
 
-		for j in range(i):
+# 	coef1 = 1.0 / ( 8 * np.pi * rijlength )
 
-			pj = ps[j]
+# 	coef2 = 1.0 + ( pi.a**2 + pj.a**2 ) / ( 3.0 * rijlength**2 )
 
-			M[i][j] = Mij_rpy_smith(pi, pj, box_length, alpha, m, n)
-			M[j][i] = np.transpose( M[i][j] )
+# 	coef3 = 1.0 - ( pi.a**2 + pj.a**2 ) / rijlength**2
 
-	return np.block(M)
+# 	return coef1 * ( coef2 * np.identity(3) + coef3 * np.outer(rij, rij) / rijlength**2 )
 
-def B_rpy_smith(ps):
+# def M_rpy_smith(ps, box_length, alpha, m, n):
 
-	B = [ [ None for j in range( len(ps) ) ] for i in range( len(ps) ) ]
+# 	M = [ [ None for j in range( len(ps) ) ] for i in range( len(ps) ) ]
 
-	for i, pi in enumerate(ps):
+# 	for i, pi in enumerate(ps):
 
-		B[i][i] = np.zeros((3,3))
+# 		M[i][i] = Mii_rpy_smith(pi, box_length, alpha, m, n)
 
-		for j in range(i):
+# 		for j in range(i):
 
-			pj = ps[j]
+# 			pj = ps[j]
 
-			B[i][j] = Bij_rpy_smith(pi, pj)
-			B[j][i] = np.transpose( B[i][j] )
+# 			M[i][j] = Mij_rpy_smith(pi, pj, box_length, alpha, m, n)
+# 			M[j][i] = np.transpose( M[i][j] )
 
-	return np.block(B)
+# 	return np.block(M)
 
-def X_f_poly(l, rank):
+# def B_rpy_smith(ps):
 
-	if rank == 0: return 1
-	if rank == 1: return 3 * l
-	if rank == 2: return 9 * l
-	if rank == 3: return -4 * l + 27 * l**2 - 4 * l**3
-	if rank == 4: return -24 * l + 81 * l**2 + 36 * l**3
-	if rank == 5: return 72 * l**2 + 243 * l**3 + 72 * l**4
-	if rank == 6: return 16 * l + 108 * l**2 + 281 * l**3 + 648 * l**4 + 144 * l**5
-	if rank == 7: return 288 * l**2 + 1620 * l**3 + 1515 * l**4 + 1620 * l**5 + 288 * l**6
-	if rank == 8: return 576 * l**2 + 4848 * l**3 + 5409 * l**4 + 4524 * l**5 + 3888 * l**6 + 576 * l**7
-	if rank == 9: return 1152 * l**2 + 9072 * l**3 + 14752 * l**4 + 26163 * l**5 + 14752 * l**6 + 9072 * l**7 + 1152 * l**8
-	if rank == 10: return 2304 * l**2 + 20736 * l**3 + 42804 * l**4 + 115849 * l**5 + 76176 * l**6 + 39264 * l**7 + 20736 * l**8 + 2304 * l**9
-	if rank == 11: return 4608 * l**2 + 46656 * l**3 + 108912 * l**4 + 269100 * l**5 + 319899 * l**6 + 269100 * l**7 + 108912 * l**8 + 46656 * l**9 + 4608 * l**10
-	else: return None
+# 	B = [ [ None for j in range( len(ps) ) ] for i in range( len(ps) ) ]
 
-def Y_f_poly(l, rank):
+# 	for i, pi in enumerate(ps):
 
-	if rank == 0: return 1
-	if rank == 1: return 3 / 2 * l
-	if rank == 2: return 9 / 4 * l
-	if rank == 3: return 2 * l + 27 / 8 * l**2 + 2 * l**3
-	if rank == 4: return 6 * l + 81 / 16 * l**2 + 18 * l**3
-	if rank == 5: return 63 / 2 * l**2 + 243 / 32 * l**3 + 63 / 2 * l**4
-	if rank == 6: return 4 * l + 54 * l**2 + 1241 / 64 * l**3 + 81 * l**4 + 72 * l**5
-	if rank == 7: return 144 * l**2 + 1053 / 8 * l**3 + 19083 / 128 * l**4 + 1053 / 8 * l**5 + 144 * l**6
-	if rank == 8: return 279 * l**2 + 4261 / 8 * l**3 + 126369 / 256 * l**4 - 117 / 8 * l**5 + 648 * l**6 + 288 * l**7
-	if rank == 9: return 576 * l**2 + 1134 * l**3 + 60443 / 32 * l**4 + 766179 / 512 * l**5 + 60443 / 32 * l**6 + 1134 * l**7 + 576 * l**8
-	if rank == 10: return 1152 * l**2 + 7857 / 4 * l**3 + 98487 / 16 * l**4 + 10548393 / 1024 * l**5 + 67617 / 8 * l**6 - 351 / 2 * l**7 + 3888 * l**8 + 1152 * l**9
-	if rank == 11: return 2304 * l**2 + 7128 * l**3 + 22071 / 2 * l**4 + 2744505 / 128 * l**5 + 95203835 / 2048 * l**6 + 2744505 / 128 * l**7 + 22071 / 2 * l**8 + 7128 * l**9 + 2304 * l**10
-	else: return None
+# 		B[i][i] = np.zeros((3,3))
 
-#-------------------------------------------------------------------------------
+# 		for j in range(i):
 
-def X_g_poly(l, rank):
+# 			pj = ps[j]
 
-	if rank == 1: return 2 * l**2 * ( 1 + l )**(-3)
-	if rank == 2: return 1 / 5 * l * ( 1 + 7 * l + l**2 ) * ( 1 + l )**(-3)
-	if rank == 3: return 1 / 42 * ( 1 + 18 * l - 29 * l**2 + 18 * l**3 + l**4 ) * ( 1 + l )**(-3)
-	else: return None
+# 			B[i][j] = Bij_rpy_smith(pi, pj)
+# 			B[j][i] = np.transpose( B[i][j] )
 
-#-------------------------------------------------------------------------------
+# 	return np.block(B)
 
-def Y_g_poly(l, rank):
+# def X_f_poly(l, rank):
 
-	if rank == 2: return 4 / 15 * l * ( 2 + l + 2 * l**2 ) * ( 1 + l )**(-3)
-	if rank == 3: return 2 / 375 * ( 16 - 45 * l + 58 * l**2 - 45 * l**3 + 16 * l**4 ) * ( 1 + l )**(-3)
-	else: return None
+# 	if rank == 0: return 1
+# 	if rank == 1: return 3 * l
+# 	if rank == 2: return 9 * l
+# 	if rank == 3: return -4 * l + 27 * l**2 - 4 * l**3
+# 	if rank == 4: return -24 * l + 81 * l**2 + 36 * l**3
+# 	if rank == 5: return 72 * l**2 + 243 * l**3 + 72 * l**4
+# 	if rank == 6: return 16 * l + 108 * l**2 + 281 * l**3 + 648 * l**4 + 144 * l**5
+# 	if rank == 7: return 288 * l**2 + 1620 * l**3 + 1515 * l**4 + 1620 * l**5 + 288 * l**6
+# 	if rank == 8: return 576 * l**2 + 4848 * l**3 + 5409 * l**4 + 4524 * l**5 + 3888 * l**6 + 576 * l**7
+# 	if rank == 9: return 1152 * l**2 + 9072 * l**3 + 14752 * l**4 + 26163 * l**5 + 14752 * l**6 + 9072 * l**7 + 1152 * l**8
+# 	if rank == 10: return 2304 * l**2 + 20736 * l**3 + 42804 * l**4 + 115849 * l**5 + 76176 * l**6 + 39264 * l**7 + 20736 * l**8 + 2304 * l**9
+# 	if rank == 11: return 4608 * l**2 + 46656 * l**3 + 108912 * l**4 + 269100 * l**5 + 319899 * l**6 + 269100 * l**7 + 108912 * l**8 + 46656 * l**9 + 4608 * l**10
+# 	else: return None
 
-#-------------------------------------------------------------------------------
+# def Y_f_poly(l, rank):
 
-def XA11(s, l):
+# 	if rank == 0: return 1
+# 	if rank == 1: return 3 / 2 * l
+# 	if rank == 2: return 9 / 4 * l
+# 	if rank == 3: return 2 * l + 27 / 8 * l**2 + 2 * l**3
+# 	if rank == 4: return 6 * l + 81 / 16 * l**2 + 18 * l**3
+# 	if rank == 5: return 63 / 2 * l**2 + 243 / 32 * l**3 + 63 / 2 * l**4
+# 	if rank == 6: return 4 * l + 54 * l**2 + 1241 / 64 * l**3 + 81 * l**4 + 72 * l**5
+# 	if rank == 7: return 144 * l**2 + 1053 / 8 * l**3 + 19083 / 128 * l**4 + 1053 / 8 * l**5 + 144 * l**6
+# 	if rank == 8: return 279 * l**2 + 4261 / 8 * l**3 + 126369 / 256 * l**4 - 117 / 8 * l**5 + 648 * l**6 + 288 * l**7
+# 	if rank == 9: return 576 * l**2 + 1134 * l**3 + 60443 / 32 * l**4 + 766179 / 512 * l**5 + 60443 / 32 * l**6 + 1134 * l**7 + 576 * l**8
+# 	if rank == 10: return 1152 * l**2 + 7857 / 4 * l**3 + 98487 / 16 * l**4 + 10548393 / 1024 * l**5 + 67617 / 8 * l**6 - 351 / 2 * l**7 + 3888 * l**8 + 1152 * l**9
+# 	if rank == 11: return 2304 * l**2 + 7128 * l**3 + 22071 / 2 * l**4 + 2744505 / 128 * l**5 + 95203835 / 2048 * l**6 + 2744505 / 128 * l**7 + 22071 / 2 * l**8 + 7128 * l**9 + 2304 * l**10
+# 	else: return None
 
-	answer = 0.0
+# #-------------------------------------------------------------------------------
 
-	answer += X_g_poly(l, 1) * ( 1 - 4 * s**(-2) )**(-1)
+# def X_g_poly(l, rank):
 
-	answer -= X_g_poly(l, 2) * np.log( 1 - 4 * s**(-2) )
+# 	if rank == 1: return 2 * l**2 * ( 1 + l )**(-3)
+# 	if rank == 2: return 1 / 5 * l * ( 1 + 7 * l + l**2 ) * ( 1 + l )**(-3)
+# 	if rank == 3: return 1 / 42 * ( 1 + 18 * l - 29 * l**2 + 18 * l**3 + l**4 ) * ( 1 + l )**(-3)
+# 	else: return None
 
-	answer -= X_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( 1 - 4 * s**(-2) )
+# #-------------------------------------------------------------------------------
 
-	answer += X_f_poly(l, 0) - X_g_poly(l, 1)
+# def Y_g_poly(l, rank):
 
-	for m in [ mi for mi in range(1, 12) if ( mi%2 == 0 ) ]:
+# 	if rank == 2: return 4 / 15 * l * ( 2 + l + 2 * l**2 ) * ( 1 + l )**(-3)
+# 	if rank == 3: return 2 / 375 * ( 16 - 45 * l + 58 * l**2 - 45 * l**3 + 16 * l**4 ) * ( 1 + l )**(-3)
+# 	else: return None
 
-		if m == 2: m1 = -2
-		else: m1 = m - 2
+# #-------------------------------------------------------------------------------
 
-		mult = ( 2 / s )**m
+# def XA11(s, l):
 
-		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * X_f_poly(l, m) - X_g_poly(l, 1) )
+# 	answer = 0.0
 
-		answer += mult * ( 4 * m**(-1) * m1**(-1) * X_g_poly(l, 3) - 2 * m**(-1) * X_g_poly(l, 2) )
+# 	answer += X_g_poly(l, 1) * ( 1 - 4 * s**(-2) )**(-1)
 
-	return answer
+# 	answer -= X_g_poly(l, 2) * np.log( 1 - 4 * s**(-2) )
 
-#-------------------------------------------------------------------------------
+# 	answer -= X_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( 1 - 4 * s**(-2) )
 
-def YA11(s, l):
+# 	answer += X_f_poly(l, 0) - X_g_poly(l, 1)
 
-	answer = 0.0
+# 	for m in [ mi for mi in range(1, 12) if ( mi%2 == 0 ) ]:
 
-	answer -= Y_g_poly(l, 2) * np.log( 1 - 4 * s**(-2) )
+# 		if m == 2: m1 = -2
+# 		else: m1 = m - 2
 
-	answer -= Y_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( 1 - 4 * s**(-2) )
+# 		mult = ( 2 / s )**m
 
-	answer += Y_f_poly(l, 0)
+# 		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * X_f_poly(l, m) - X_g_poly(l, 1) )
 
-	for m in [ mi for mi in range(1, 12) if ( mi%2 == 0 ) ]:
+# 		answer += mult * ( 4 * m**(-1) * m1**(-1) * X_g_poly(l, 3) - 2 * m**(-1) * X_g_poly(l, 2) )
 
-		if m == 2: m1 = -2
-		else: m1 = m - 2
+# 	return answer
 
-		mult = ( 2 / s )**m
+# #-------------------------------------------------------------------------------
 
-		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * Y_f_poly(l, m) - 2 * m**(-1) * Y_g_poly(l, 2) )
+# def YA11(s, l):
 
-		answer += mult * 4 * m**(-1) * m1**(-1) * Y_g_poly(l, 3)
+# 	answer = 0.0
 
-	return answer
+# 	answer -= Y_g_poly(l, 2) * np.log( 1 - 4 * s**(-2) )
 
-#-------------------------------------------------------------------------------
+# 	answer -= Y_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( 1 - 4 * s**(-2) )
 
-def XA12(s, l):
+# 	answer += Y_f_poly(l, 0)
 
-	answer = 0.0
+# 	for m in [ mi for mi in range(1, 12) if ( mi%2 == 0 ) ]:
 
-	answer += 2 * s**(-1) * X_g_poly(l, 1) * ( 1 - 4 * s**(-2) )**(-1)
+# 		if m == 2: m1 = -2
+# 		else: m1 = m - 2
 
-	answer += X_g_poly(l, 2) * np.log( ( s + 2 ) / ( s - 2 ) )
+# 		mult = ( 2 / s )**m
 
-	answer += X_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( ( s + 2 ) / ( s - 2 ) ) + 4 * X_g_poly(l, 3) * s**(-1)
+# 		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * Y_f_poly(l, m) - 2 * m**(-1) * Y_g_poly(l, 2) )
 
-	for m in [ mi for mi in range(1, 12) if ( mi%2 == 1 ) ]:
+# 		answer += mult * 4 * m**(-1) * m1**(-1) * Y_g_poly(l, 3)
 
-		if m == 2: m1 = -2
-		else: m1 = m - 2
+# 	return answer
 
-		mult = ( 2 / s )**m
+# #-------------------------------------------------------------------------------
 
-		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * X_f_poly(l, m) - X_g_poly(l, 1) )
+# def XA12(s, l):
 
-		answer += mult * ( 4 * m**(-1) * m1**(-1) * X_g_poly(l, 3) - 2 * m**(-1) * X_g_poly(l, 2) )
+# 	answer = 0.0
 
-	divisor = -1 / 2 * ( 1 + l )
+# 	answer += 2 * s**(-1) * X_g_poly(l, 1) * ( 1 - 4 * s**(-2) )**(-1)
 
-	return answer / divisor
+# 	answer += X_g_poly(l, 2) * np.log( ( s + 2 ) / ( s - 2 ) )
 
-#-------------------------------------------------------------------------------
+# 	answer += X_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( ( s + 2 ) / ( s - 2 ) ) + 4 * X_g_poly(l, 3) * s**(-1)
 
-def YA12(s, l):
+# 	for m in [ mi for mi in range(1, 12) if ( mi%2 == 1 ) ]:
 
-	answer = 0.0
+# 		if m == 2: m1 = -2
+# 		else: m1 = m - 2
 
-	answer += Y_g_poly(l, 2) * np.log( ( s + 2 ) / ( s - 2 ) )
+# 		mult = ( 2 / s )**m
 
-	answer += Y_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( ( s + 2 ) / ( s - 2 ) )
+# 		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * X_f_poly(l, m) - X_g_poly(l, 1) )
 
-	answer += 4 * Y_g_poly(l, 3) * s**(-1)
+# 		answer += mult * ( 4 * m**(-1) * m1**(-1) * X_g_poly(l, 3) - 2 * m**(-1) * X_g_poly(l, 2) )
 
-	for m in [ mi for mi in range(1, 12) if ( mi%2 == 1 ) ]:
+# 	divisor = -1 / 2 * ( 1 + l )
 
-		if m == 2: m1 = -2
-		else: m1 = m - 2
+# 	return answer / divisor
 
-		mult = ( 2 / s )**m
+# #-------------------------------------------------------------------------------
 
-		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * Y_f_poly(l, m) - 2 * m**(-1) * Y_g_poly(l, 2) )
+# def YA12(s, l):
 
-		answer += mult * ( 4 * m**(-1) * m1**(-1) * Y_g_poly(l, 3) )
+# 	answer = 0.0
 
-	divisor = -1 / 2 * ( 1 + l )
+# 	answer += Y_g_poly(l, 2) * np.log( ( s + 2 ) / ( s - 2 ) )
 
-	return answer / divisor
+# 	answer += Y_g_poly(l, 3) * ( 1 - 4 * s**(-2) ) * np.log( ( s + 2 ) / ( s - 2 ) )
 
-#-------------------------------------------------------------------------------
+# 	answer += 4 * Y_g_poly(l, 3) * s**(-1)
 
-def R_jeffrey(p1, p2):
+# 	for m in [ mi for mi in range(1, 12) if ( mi%2 == 1 ) ]:
 
-	r = p2.r - p1.r
+# 		if m == 2: m1 = -2
+# 		else: m1 = m - 2
 
-	dist = math.sqrt( r[0]**2 + r[1]**2 + r[2]**2 )
+# 		mult = ( 2 / s )**m
 
-	s = 2 * dist / ( p1.a + p2.a )
+# 		answer += mult * ( 2**(-m) * ( 1 + l )**(-m) * Y_f_poly(l, m) - 2 * m**(-1) * Y_g_poly(l, 2) )
 
-	l = p2.a / p1.a
+# 		answer += mult * ( 4 * m**(-1) * m1**(-1) * Y_g_poly(l, 3) )
 
-	R = [ [ None , None ], [ None, None ] ]
+# 	divisor = -1 / 2 * ( 1 + l )
 
-	R[0][0] = XA11(s, l) * np.outer(r/dist, r/dist) + YA11(s, l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
+# 	return answer / divisor
 
-	R[1][1] = XA11(s, 1/l) * np.outer(r/dist, r/dist) + YA11(s, 1/l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
+# #-------------------------------------------------------------------------------
 
-	R[0][1] = XA12(s, l) * np.outer(r/dist, r/dist) + YA12(s, l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
+# def R_jeffrey(p1, p2):
 
-	R[1][0] = XA12(s, 1/l) * np.outer(r/dist, r/dist) + YA12(s, 1/l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
+# 	r = p2.r - p1.r
 
-	return 3 * np.pi * ( p1.a + p2.a ) * np.block(R)
+# 	dist = math.sqrt( r[0]**2 + r[1]**2 + r[2]**2 )
 
-#-------------------------------------------------------------------------------
+# 	s = 2 * dist / ( p1.a + p2.a )
 
-def R_lub_corr(ps):
+# 	l = p2.a / p1.a
 
-	corr = [ [ np.zeros((3,3)) for j in range( len(ps) ) ] for i in range( len(ps) ) ]
+# 	R = [ [ None , None ], [ None, None ] ]
 
-	for i, pi in enumerate(ps):
+# 	R[0][0] = XA11(s, l) * np.outer(r/dist, r/dist) + YA11(s, l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
 
-		for j in range(i):
+# 	R[1][1] = XA11(s, 1/l) * np.outer(r/dist, r/dist) + YA11(s, 1/l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
 
-			pj = ps[j]
+# 	R[0][1] = XA12(s, l) * np.outer(r/dist, r/dist) + YA12(s, l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
 
-			nf2b = R_jeffrey( pi, pj )
+# 	R[1][0] = XA12(s, 1/l) * np.outer(r/dist, r/dist) + YA12(s, 1/l) * ( np.identity(3) - np.outer(r/dist, r/dist) )
 
-			ff2b = np.linalg.inv( M_rpy( [pi, pj] ) )
+# 	return 3 * np.pi * ( p1.a + p2.a ) * np.block(R)
 
-			lub_corr = nf2b - ff2b
+# #-------------------------------------------------------------------------------
 
-			corrii = lub_corr[0:3,0:3]
-			corrjj = lub_corr[3:6,3:6]
-			corrij = lub_corr[3:6,0:3]
+# def R_lub_corr(ps):
 
-			corr[i][i] += corrii
-			corr[j][j] += corrjj
-			corr[i][j] += corrij
-			corr[j][i] += np.transpose( corrij )
+# 	corr = [ [ np.zeros((3,3)) for j in range( len(ps) ) ] for i in range( len(ps) ) ]
 
-	return np.block(corr)
+# 	for i, pi in enumerate(ps):
+
+# 		for j in range(i):
+
+# 			pj = ps[j]
+
+# 			nf2b = R_jeffrey( pi, pj )
+
+# 			ff2b = np.linalg.inv( M_rpy( [pi, pj] ) )
+
+# 			lub_corr = nf2b - ff2b
+
+# 			corrii = lub_corr[0:3,0:3]
+# 			corrjj = lub_corr[3:6,3:6]
+# 			corrij = lub_corr[3:6,0:3]
+
+# 			corr[i][i] += corrii
+# 			corr[j][j] += corrjj
+# 			corr[i][j] += corrij
+# 			corr[j][i] += np.transpose( corrij )
+
+# 	return np.block(corr)
 
 #####
 

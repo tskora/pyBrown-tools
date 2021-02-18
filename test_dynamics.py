@@ -10,15 +10,15 @@ from pyBrown.bead import Bead
 a = 51.0
 box_length = 750.0
 label = "TST"
-filenames = ['ficoll_152_hs_{}.xyz'.format(i) for i in range(2, 11)]
+filenames = ['ficoll_42_hs_hi_{}.xyz'.format(i) for i in range(91, 92)]
 dt = 10.0
 
 T = 293.15
 viscosity = 0.01005
-n_particles = 152
+n_particles = 42
 n_steps = 100000#100000
 n_write = 100
-n_chol = n_steps
+n_chol = 10
 
 from pyBrown.sphere import overlap_pbc, Sphere
 
