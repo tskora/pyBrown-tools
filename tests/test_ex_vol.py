@@ -52,7 +52,7 @@ class TestExVol(unittest.TestCase):
 
 		crowders = [ Sphere([i, j, k], 1.0) for i in [-2,2] for j in [-2,2] for k in [-2,2] ]
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertAlmostEqual( pore_radius, 2*np.sqrt(3)-1, places=2 )
 
@@ -62,7 +62,7 @@ class TestExVol(unittest.TestCase):
 
 		crowders = [ Sphere([i, j, k], 1.0) for i in [-2.3,1.7] for j in [-1.7,2.3] for k in [-2.3,1.7] ]
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertAlmostEqual( pore_radius, 2*np.sqrt(3)-1, places=2 )
 
@@ -72,7 +72,7 @@ class TestExVol(unittest.TestCase):
 
 		crowders = [ Sphere([i, j, k], 1.0) for i in [0,4] for j in [0,4] for k in [-2,2] ]
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertAlmostEqual( pore_radius, 1, places=2 )
 
@@ -84,7 +84,7 @@ class TestExVol(unittest.TestCase):
 
 		crowders += [ Sphere([i, j, k], 1.0) for i in [-2,0,2] for j in [-2,0,2] for k in [-2,0,2] if i**2 + j**2 + k**2 == 4 ]
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertAlmostEqual( pore_radius, 1, places=2 )
 
@@ -100,7 +100,7 @@ class TestExVol(unittest.TestCase):
 
 		print(crowders)
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertAlmostEqual( pore_radius, np.sqrt(3)-1, places=2 )
 
@@ -114,7 +114,7 @@ class TestExVol(unittest.TestCase):
 
 		for crowder in crowders: crowder.translate(-np.array([1.1,0.9,0.95]))
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertTrue( pore_radius < 2*np.sqrt(2)-1 )
 		self.assertTrue( pore_radius > 1)
