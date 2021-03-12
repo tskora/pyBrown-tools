@@ -42,7 +42,7 @@ class TestExVol(unittest.TestCase):
 
 		r_max = 5.0
 
-		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, r_max, 0.01)
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, r_max, 0.001)
 
 		self.assertEqual( pore_radius, r_max )
 
@@ -128,6 +128,26 @@ class TestExVol(unittest.TestCase):
 		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
 
 		self.assertAlmostEqual( pore_radius, np.sqrt(29)-1, places=2 )
+
+	#---------------------------------------------------------------------------
+
+	def test_overlapping(self):
+
+		crowders = [ Sphere([0.0, 0.0, 0.0], 1.0) ]
+
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
+
+		self.assertAlmostEqual( pore_radius, 0.0, places=2 )
+
+	#---------------------------------------------------------------------------
+
+	def test_overlapping_pbc(self):
+
+		crowders = [ Sphere([50.0, 50.0, 50.0], 1.0) ]
+
+		pore_radius = _compute_pore_radius(self.tracer, crowders, self.box_size, 50.0, 0.001)
+
+		self.assertAlmostEqual( pore_radius, 0.0, places=2 )
 
 #-------------------------------------------------------------------------------
 
