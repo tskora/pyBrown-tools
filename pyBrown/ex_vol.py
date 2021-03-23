@@ -190,8 +190,6 @@ def compute_pores_histogram(tfs, input_labels, input_radii, r_tracer_max, dr_tra
 
 			tracer = place_tracers_linearly(0.0, box_size)[0]
 
-			print(tracer)
-
 			r_pore = _compute_pore_radius(tracer, crowders, box_size, r_tracer_max, dr_tracer)
 
 			if r_pore == 0.0:
