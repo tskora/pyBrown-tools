@@ -23,6 +23,7 @@ import freud.box
 import freud.msd
 
 from pyBrown.messaging import timestamp
+from pyBrown.sphere import Sphere, _distance
 
 FREUD = True
 CM = True
@@ -195,7 +196,58 @@ def separate_center_of_mass(input_data, labels, auxiliary_data):
 
 #-------------------------------------------------------------------------------
 
-def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
+def compute_msdds(input_data, cm_labels, auxiliary_data):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
+	cm_temp_filename = auxiliary_data["cm_temp_filename"]
+	number_of_cm_trajectories_per_file = number_of_cm_trajectories // number_of_xyz_files
+
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+
+	unify_coordinates(cm_trajectories, input_data["box_size"])
+
+	del cm_trajectories
+
+	if input_data["verbose"]: timestamp("filling sds")
+
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+					   	   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+
+	trajs_all = []
+
+	for k in range(len(input_data["labels"])):
+
+		for k2 in range(k, len(input_data["labels"])):
+
+			mrssqs = np.zeros(number_of_timeframes)
+
+			for l in range(number_of_xyz_files):
+
+				rs = np.transpose( [ [ _distance( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0) ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k2] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
+
+				rs_sq = rs**2
+
+				# rs_sq_norm = np.transpose( np.transpose(rs_sq) - np.transpose(rs_sq)[0] )
+
+				# mrssq = np.mean( rs_sq_norm, axis = 0 )
+
+				# mrssqs += mrssq
+
+				mrssqs += np.array( [0.0] + [ np.mean( [ rs_sq[i][k+j]-rs_sq[i][k] for k in range(number_of_timeframes-j) for i in range( ( number_of_cm_trajectories_per_file * (number_of_cm_trajectories_per_file - 1) ) // 2) ] ) for j in range(1, number_of_timeframes) ] )
+
+			trajs_all.append(mrssqs/number_of_xyz_files)
+
+	msdds = trajs_all
+
+	return msdds
+
+#-------------------------------------------------------------------------------
+
+def compute_msds(input_data, cm_labels, auxiliary_data):
 
 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
 	number_of_xyz_files = len( input_xyz_filenames )
@@ -219,108 +271,36 @@ def compute_msds(input_data, cm_labels, auxiliary_data, distances = False):
 
 	if FREUD:
 
-		from pyBrown.sphere import Sphere, _distance
-
 		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   	   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
-		distances = True
+		trajs_all = []
 
-		if distances:
+		for k in range(len(input_data["labels"])):
 
-			trajs_all = []
+			trajs_list = [ [ cm_trajectories[i][j] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes ) ]
 
-			for k in range(len(input_data["labels"])):
+			trajs = np.array( trajs_list )
 
-				mrssqs = np.zeros(number_of_timeframes)
+			trajs_all.append(trajs)
 
-				for l in range(number_of_xyz_files):
+		msds = []
 
-					rs = np.transpose( [ [ _distance( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0) ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
+		for k in range(len(input_data["labels"])):
 
-					print(rs[0])
-					print(rs[1])
-					print()
+			box = freud.box.Box.cube( input_data["box_size"] )
 
-					rs_sq = rs**2
+			if (input_data["mode"] == "direct"):
+				msd = freud.msd.MSD(box, 'direct')
+			elif (input_data["mode"] == "window"):
+				msd = freud.msd.MSD(box, 'window')
 
-					print(rs_sq[0])
-					print(rs_sq[1])
-					print()
-
-					# rs_sq = np.transpose( np.array( [ [trajs_list[i][j] for i in range(number_of_timeframes) ] for j in range((number_of_cm_trajectories_per_file**2-number_of_cm_trajectories_per_file)//2) ] ) )**2
-
-					rs_sq_norm = np.transpose( np.transpose(rs_sq) - np.transpose(rs_sq)[0] )
-
-					print(rs_sq_norm[0])
-					print(rs_sq_norm[1])
-					# print(rsnorm[2])
-					# 1/0
-
-					# mrssq = rs_sq_norm
-					# print(mrssq)
-					# 1/0
-
-					# mrssq = np.transpose( mrssq )
-
-					# print(mrssq[0])
-					# print(mrssq[1])
-					# print(mrssq[2])
-					# 1/0
-
-					# print(mrssq)
-
-					mrssq = np.mean( rs_sq_norm, axis = 0 )
-					print(mrssq)
-
-					# print(mrssq)
-					# 1/0
-
-					mrssqs += mrssq
-
-				trajs_all.append(mrssqs/number_of_xyz_files)
-
-			# print(trajs_all)
-
-			msds = trajs_all
-
-			# print(msds)
-
-			# 1/0
-
-			return msds
-
-		else:
-
-			trajs_all = []
-
-			for k in range(len(input_data["labels"])):
-
-				trajs_list = [ [ cm_trajectories[i][j] for i in range( len(cm_labels) ) if input_data["labels"][k] == cm_labels[i]  ] for j in range( number_of_timeframes ) ]
-
-				trajs = np.array( trajs_list )
-
-				trajs_all.append(trajs)
-
-			msds = []
-
-			for k in range(len(input_data["labels"])):
-
-				box = freud.box.Box.cube( input_data["box_size"] )
-
-				if (input_data["mode"] == "direct"):
-					msd = freud.msd.MSD(box, 'direct')
-				elif (input_data["mode"] == "window"):
-					msd = freud.msd.MSD(box, 'window')
-
-				msd.compute( positions = trajs_all[k] )
-				msds.append(msd.msd)
+			msd.compute( positions = trajs_all[k] )
+			msds.append(msd.msd)
 
 	### FREUD VERSION END ###
 
 	else:
-
-		if distances: return None
 
 		# temporary binary file which will contain the squared angular displacements
 		sd_temp_filename = input_data["input_xyz_template"] + 'sd_tmp.dat'
@@ -415,6 +395,39 @@ def save_msds_to_file(input_data, times, msds):
 			for j in range( len(input_data["labels"]) ):
 
 				line_values.append( msds[j][i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
+
+#-------------------------------------------------------------------------------
+
+def save_msdds_to_file(input_data, times, msdds):
+
+	output_filename = input_data["input_xyz_template"] + 'msdd.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = 'time/ps '
+		line = '{} '
+
+		for k, label1 in enumerate(input_data["labels"]):
+
+			for k2 in range(k, len(input_data["labels"])):
+
+				label2 = input_data["labels"][k2]
+
+				first_line += (label1 + ':' + label2 + ' ')
+
+				line += '{} '
+
+		output_file.write(first_line + '\n')
+
+		for i in range( len(times) ):
+
+			line_values = [ times[i] ]
+
+			for j in range( len(input_data["labels"]) + ( len(input_data["labels"]) * ( len(input_data["labels"]) - 1 ) ) // 2 ):
+
+				line_values.append( msdds[j][i] )
 
 			output_file.write( line.format(*line_values) + '\n' )
 
