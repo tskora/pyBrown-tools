@@ -227,15 +227,9 @@ def compute_msdds(input_data, cm_labels, auxiliary_data):
 
 			for l in range(number_of_xyz_files):
 
-				rs = np.transpose( [ [ _distance( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0) ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k2] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
+				rs = np.transpose( [ [ _distance_pbc( Sphere(cm_trajectories[i][j], 0.0), Sphere(cm_trajectories[i2][j], 0.0), input_data["box_size"] ) for i in range( l*number_of_cm_trajectories_per_file, (l+1)*number_of_cm_trajectories_per_file-1 ) for i2 in range( i+1, (l+1)*number_of_cm_trajectories_per_file ) if input_data["labels"][k] == cm_labels[i] and input_data["labels"][k2] == cm_labels[i2]  ] for j in range( number_of_timeframes ) ] )
 
 				rs_sq = rs**2
-
-				# rs_sq_norm = np.transpose( np.transpose(rs_sq) - np.transpose(rs_sq)[0] )
-
-				# mrssq = np.mean( rs_sq_norm, axis = 0 )
-
-				# mrssqs += mrssq
 
 				mrssqs += np.array( [0.0] + [ np.mean( [ rs_sq[i][k+j]-rs_sq[i][k] for k in range(number_of_timeframes-j) for i in range( ( number_of_cm_trajectories_per_file * (number_of_cm_trajectories_per_file - 1) ) // 2) ] ) for j in range(1, number_of_timeframes) ] )
 
