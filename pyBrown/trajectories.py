@@ -23,7 +23,7 @@ import freud.box
 import freud.msd
 
 from pyBrown.messaging import timestamp
-from pyBrown.sphere import Sphere, _distance
+from pyBrown.sphere import Sphere, _distance_pbc
 
 FREUD = True
 CM = True
