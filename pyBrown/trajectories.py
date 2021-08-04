@@ -318,6 +318,206 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 #-------------------------------------------------------------------------------
 
+
+
+
+
+
+
+
+
+
+
+
+#####################
+
+# def compute_mdas(input_data, cm_labels, auxiliary_data):
+
+# 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+# 	number_of_xyz_files = len( input_xyz_filenames )
+# 	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+# 	molecule_sizes = auxiliary_data["molecule_sizes"]
+# 	molecule_numbers = auxiliary_data["molecule_numbers"]
+# 	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
+# 	cm_temp_filename = auxiliary_data["cm_temp_filename"]
+
+# 	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+# 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+
+# 	unify_coordinates(cm_trajectories, input_data["box_size"])
+
+# 	del cm_trajectories
+
+# 	if input_data["verbose"]: timestamp("filling sds")
+
+# 	# temporary binary file which will contain the displacement autocorrelations
+# 	da_temp_filename = input_data["input_xyz_template"] + 'da_tmp.dat'
+# 	auxiliary_data["da_temp_filename"] = da_temp_filename
+
+# 	das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
+# 							mode = 'w+',
+# 							shape = ( number_of_cm_trajectories,
+# 									  number_of_timeframes-1 ) )
+
+# 	for i in range(number_of_cm_trajectories):
+# 		das[i] = np.zeros(number_of_timeframes-1, dtype = input_data["float_type"])
+
+# 	mda = [ np.zeros(number_of_timeframes-1) for i in range(len(input_data["sizes"])) ]
+# 	amounts = np.zeros(len(input_data["sizes"]))
+
+# 	del das
+
+# 	for i in range( number_of_cm_trajectories ):
+
+# 		if input_data["verbose"]: timestamp('computing autocorrelation: {} / {}', i + 1, number_of_cm_trajectories)
+
+# 		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+# 						   shape = ( number_of_cm_trajectories,
+# 						   	number_of_timeframes, 3 ) )
+
+# 		cm_trajectory = cm_trajectories[i]
+
+# 		del cm_trajectories
+
+# 		autocorrelation = _compute_displacement_autocorrelation(cm_trajectory, mode = input_data["mode"])
+
+# 		das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
+# 					 	   shape = ( len(cm_labels), number_of_timeframes-1 ) )
+
+# 		das[i] = autocorrelation
+
+# 		del das
+
+# 	for i in range( number_of_cm_trajectories ):
+
+# 		if input_data["verbose"]: timestamp('averaging: {} / {}', i + 1, number_of_cm_trajectories)
+
+# 		counter = 0
+
+# 		for input_label in input_data["labels"] :
+
+# 			if cm_labels[i] == input_label:
+
+# 				break
+
+# 			counter += 1
+
+# 		das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
+# 					 	   shape = ( number_of_cm_trajectories, number_of_timeframes-1 ) )
+
+# 		autocorrelation = das[i]
+
+# 		mda[counter] += autocorrelation
+
+# 		del das
+
+# 	for _mda, label in zip( mda, input_data["labels"] ):
+
+# 		_mda /= molecule_numbers[ label ]
+
+# 	return mda
+
+#####################
+
+# def compute_mean_orientation_autocorrelation(input_data, orientation_labels, auxiliary_data):
+
+# 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+# 	number_of_xyz_files = len( input_xyz_filenames )
+# 	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+# 	molecule_sizes = auxiliary_data["molecule_sizes"]
+# 	molecule_numbers = auxiliary_data["molecule_numbers"]
+# 	number_of_orientation_trajectories = auxiliary_data["number_of_molecules"]
+# 	traj_temp_filename = auxiliary_data["traj_temp_filename"]
+# 	orient_temp_filename = auxiliary_data["orient_temp_filename"]
+
+# 	# temporary binary file which will contain the orientation autocorrelations
+# 	oa_temp_filename = input_data["input_xyz_template"] + 'oa_tmp.dat'
+# 	auxiliary_data["oa_temp_filename"] = oa_temp_filename
+
+# 	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
+# 						   					shape = ( number_of_orientation_trajectories,
+# 						   							  number_of_timeframes, 3 ) )
+
+# 	oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
+# 							mode = 'w+',
+# 							shape = ( number_of_orientation_trajectories,
+# 									  number_of_timeframes ) )
+
+# 	for i in range(number_of_orientation_trajectories):
+# 		oas[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
+
+# 	moa = [ np.zeros(number_of_timeframes) for i in range(len(input_data["sizes"])) ]
+# 	amounts = np.zeros(len(input_data["sizes"]))
+
+# 	del orientation_trajectories
+
+# 	del oas
+
+# 	for i in range( number_of_orientation_trajectories ):
+
+# 		if input_data["verbose"]: timestamp('computing autocorrelation: {} / {}', i + 1, number_of_orientation_trajectories)
+
+# 		orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
+# 						   shape = ( number_of_orientation_trajectories,
+# 						   	number_of_timeframes, 3 ) )
+
+# 		orientation_trajectory = orientation_trajectories[i]
+
+# 		del orientation_trajectories
+
+# 		autocorrelation = _compute_autocorrelation(orientation_trajectory, mode = input_data["mode"])
+
+# 		oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
+# 					 	   shape = ( len(orientation_labels), number_of_timeframes ) )
+
+# 		oas[i] = autocorrelation
+
+# 		del oas
+
+# 	for i in range( number_of_orientation_trajectories ):
+
+# 		if input_data["verbose"]: timestamp('averaging: {} / {}', i + 1, number_of_orientation_trajectories)
+
+# 		counter = 0
+
+# 		for input_label in input_data["labels"] :
+
+# 			if orientation_labels[i] == input_label:
+
+# 				break
+
+# 			counter += 1
+
+# 		oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
+# 					 	   shape = ( number_of_orientation_trajectories, number_of_timeframes ) )
+
+# 		autocorrelation = oas[i]
+
+# 		moa[counter] += autocorrelation
+
+# 		del oas
+
+# 	for _moa, label in zip( moa, input_data["labels"] ):
+
+# 		_moa /= molecule_numbers[ label ]
+
+# 	return moa
+
+#####################
+
+
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------
+
 def save_msds_to_file(input_data, times, msds):
 
 	output_filename = input_data["input_xyz_template"] + 'msd.txt'
@@ -834,6 +1034,123 @@ def save_mean_orientation_autocorrelation_to_file(input_data, times, moas):
 
 #-------------------------------------------------------------------------------
 
+def compute_mean_displacement_autocorrelation(input_data, cm_labels, auxiliary_data):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
+	cm_temp_filename = auxiliary_data["cm_temp_filename"]
+
+	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
+
+	unify_coordinates(cm_trajectories, input_data["box_size"])
+
+	del cm_trajectories
+
+	if input_data["verbose"]: timestamp("filling sds")
+
+	# temporary binary file which will contain the displacement autocorrelations
+	da_temp_filename = input_data["input_xyz_template"] + 'da_tmp.dat'
+	auxiliary_data["da_temp_filename"] = da_temp_filename
+
+	das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
+							mode = 'w+',
+							shape = ( number_of_cm_trajectories,
+									  number_of_timeframes-1 ) )
+
+	for i in range(number_of_cm_trajectories):
+		das[i] = np.zeros(number_of_timeframes-1, dtype = input_data["float_type"])
+
+	mda = [ np.zeros(number_of_timeframes-1) for i in range(len(input_data["sizes"])) ]
+	amounts = np.zeros(len(input_data["sizes"]))
+
+	del das
+
+	for i in range( number_of_cm_trajectories ):
+
+		if input_data["verbose"]: timestamp('computing autocorrelation: {} / {}', i + 1, number_of_cm_trajectories)
+
+		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
+						   shape = ( number_of_cm_trajectories,
+						   	number_of_timeframes, 3 ) )
+
+		cm_trajectory = cm_trajectories[i]
+
+		del cm_trajectories
+
+		autocorrelation = _compute_displacement_autocorrelation(cm_trajectory, mode = input_data["mode"])
+
+		das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
+					 	   shape = ( len(cm_labels), number_of_timeframes-1 ) )
+
+		das[i] = autocorrelation
+
+		del das
+
+	for i in range( number_of_cm_trajectories ):
+
+		if input_data["verbose"]: timestamp('averaging: {} / {}', i + 1, number_of_cm_trajectories)
+
+		counter = 0
+
+		for input_label in input_data["labels"] :
+
+			if cm_labels[i] == input_label:
+
+				break
+
+			counter += 1
+
+		das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
+					 	   shape = ( number_of_cm_trajectories, number_of_timeframes-1 ) )
+
+		autocorrelation = das[i]
+
+		mda[counter] += autocorrelation
+
+		del das
+
+	for _mda, label in zip( mda, input_data["labels"] ):
+
+		_mda /= molecule_numbers[ label ]
+
+	return mda
+
+#-------------------------------------------------------------------------------
+
+def save_mean_displacement_autocorrelation_to_file(input_data, times, mdas):
+
+	output_filename = input_data["input_xyz_template"] + 'mda.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = 'time/ps '
+		line = '{} '
+
+		for label in input_data["labels"]:
+
+			first_line += ( label + ' ' )
+
+			line += '{} '
+
+		output_file.write(first_line + '\n')
+
+		for i in range( len(times) - 1 ):
+
+			line_values = [ times[i] ]
+
+			for j in range( len(input_data["labels"]) ):
+
+				line_values.append( mdas[j][i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
+
+#-------------------------------------------------------------------------------
+
 def compute_mean_director( input_data, orientation_labels, auxiliary_data ):
 
 	number_of_timeframes = auxiliary_data["number_of_timeframes"]
@@ -1247,6 +1564,19 @@ def _compute_autocorrelation(orientation, mode = 'direct'):
 	elif mode == 'window':
 
 		return np.array( [1.0] + [ np.mean( [ np.dot(orientation[k], orientation[k+j]) for k in range(len(orientation)-j) ] ) for j in range(1, len(orientation)) ] )
+
+def _compute_displacement_autocorrelation(trajectory, mode = 'direct'):
+
+	if mode == 'direct':
+
+		autocorrelation =  np.array( [ np.dot( trajectory[1] - trajectory[0], trajectory[j] - trajectory[j-1] ) for j in range(1, len(trajectory)) ] )
+
+	elif mode == 'window':
+
+		autocorrelation = np.array( [ np.mean( [ np.dot(trajectory[k+1] - trajectory[k], trajectory[k+j] - trajectory[k+j-1]) for k in range(len(trajectory)-j) ] ) for j in range(1, len(trajectory)) ] )
+
+	return autocorrelation
+
 
 #-------------------------------------------------------------------------------
 
