@@ -318,206 +318,6 @@ def compute_msds(input_data, cm_labels, auxiliary_data):
 
 #-------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
-#####################
-
-# def compute_mdas(input_data, cm_labels, auxiliary_data):
-
-# 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
-# 	number_of_xyz_files = len( input_xyz_filenames )
-# 	number_of_timeframes = auxiliary_data["number_of_timeframes"]
-# 	molecule_sizes = auxiliary_data["molecule_sizes"]
-# 	molecule_numbers = auxiliary_data["molecule_numbers"]
-# 	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
-# 	cm_temp_filename = auxiliary_data["cm_temp_filename"]
-
-# 	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
-# 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
-
-# 	unify_coordinates(cm_trajectories, input_data["box_size"])
-
-# 	del cm_trajectories
-
-# 	if input_data["verbose"]: timestamp("filling sds")
-
-# 	# temporary binary file which will contain the displacement autocorrelations
-# 	da_temp_filename = input_data["input_xyz_template"] + 'da_tmp.dat'
-# 	auxiliary_data["da_temp_filename"] = da_temp_filename
-
-# 	das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
-# 							mode = 'w+',
-# 							shape = ( number_of_cm_trajectories,
-# 									  number_of_timeframes-1 ) )
-
-# 	for i in range(number_of_cm_trajectories):
-# 		das[i] = np.zeros(number_of_timeframes-1, dtype = input_data["float_type"])
-
-# 	mda = [ np.zeros(number_of_timeframes-1) for i in range(len(input_data["sizes"])) ]
-# 	amounts = np.zeros(len(input_data["sizes"]))
-
-# 	del das
-
-# 	for i in range( number_of_cm_trajectories ):
-
-# 		if input_data["verbose"]: timestamp('computing autocorrelation: {} / {}', i + 1, number_of_cm_trajectories)
-
-# 		cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
-# 						   shape = ( number_of_cm_trajectories,
-# 						   	number_of_timeframes, 3 ) )
-
-# 		cm_trajectory = cm_trajectories[i]
-
-# 		del cm_trajectories
-
-# 		autocorrelation = _compute_displacement_autocorrelation(cm_trajectory, mode = input_data["mode"])
-
-# 		das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
-# 					 	   shape = ( len(cm_labels), number_of_timeframes-1 ) )
-
-# 		das[i] = autocorrelation
-
-# 		del das
-
-# 	for i in range( number_of_cm_trajectories ):
-
-# 		if input_data["verbose"]: timestamp('averaging: {} / {}', i + 1, number_of_cm_trajectories)
-
-# 		counter = 0
-
-# 		for input_label in input_data["labels"] :
-
-# 			if cm_labels[i] == input_label:
-
-# 				break
-
-# 			counter += 1
-
-# 		das = np.memmap( da_temp_filename, dtype = input_data["float_type"],
-# 					 	   shape = ( number_of_cm_trajectories, number_of_timeframes-1 ) )
-
-# 		autocorrelation = das[i]
-
-# 		mda[counter] += autocorrelation
-
-# 		del das
-
-# 	for _mda, label in zip( mda, input_data["labels"] ):
-
-# 		_mda /= molecule_numbers[ label ]
-
-# 	return mda
-
-#####################
-
-# def compute_mean_orientation_autocorrelation(input_data, orientation_labels, auxiliary_data):
-
-# 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
-# 	number_of_xyz_files = len( input_xyz_filenames )
-# 	number_of_timeframes = auxiliary_data["number_of_timeframes"]
-# 	molecule_sizes = auxiliary_data["molecule_sizes"]
-# 	molecule_numbers = auxiliary_data["molecule_numbers"]
-# 	number_of_orientation_trajectories = auxiliary_data["number_of_molecules"]
-# 	traj_temp_filename = auxiliary_data["traj_temp_filename"]
-# 	orient_temp_filename = auxiliary_data["orient_temp_filename"]
-
-# 	# temporary binary file which will contain the orientation autocorrelations
-# 	oa_temp_filename = input_data["input_xyz_template"] + 'oa_tmp.dat'
-# 	auxiliary_data["oa_temp_filename"] = oa_temp_filename
-
-# 	orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
-# 						   					shape = ( number_of_orientation_trajectories,
-# 						   							  number_of_timeframes, 3 ) )
-
-# 	oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
-# 							mode = 'w+',
-# 							shape = ( number_of_orientation_trajectories,
-# 									  number_of_timeframes ) )
-
-# 	for i in range(number_of_orientation_trajectories):
-# 		oas[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
-
-# 	moa = [ np.zeros(number_of_timeframes) for i in range(len(input_data["sizes"])) ]
-# 	amounts = np.zeros(len(input_data["sizes"]))
-
-# 	del orientation_trajectories
-
-# 	del oas
-
-# 	for i in range( number_of_orientation_trajectories ):
-
-# 		if input_data["verbose"]: timestamp('computing autocorrelation: {} / {}', i + 1, number_of_orientation_trajectories)
-
-# 		orientation_trajectories = np.memmap( orient_temp_filename, dtype = input_data["float_type"],
-# 						   shape = ( number_of_orientation_trajectories,
-# 						   	number_of_timeframes, 3 ) )
-
-# 		orientation_trajectory = orientation_trajectories[i]
-
-# 		del orientation_trajectories
-
-# 		autocorrelation = _compute_autocorrelation(orientation_trajectory, mode = input_data["mode"])
-
-# 		oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
-# 					 	   shape = ( len(orientation_labels), number_of_timeframes ) )
-
-# 		oas[i] = autocorrelation
-
-# 		del oas
-
-# 	for i in range( number_of_orientation_trajectories ):
-
-# 		if input_data["verbose"]: timestamp('averaging: {} / {}', i + 1, number_of_orientation_trajectories)
-
-# 		counter = 0
-
-# 		for input_label in input_data["labels"] :
-
-# 			if orientation_labels[i] == input_label:
-
-# 				break
-
-# 			counter += 1
-
-# 		oas = np.memmap( oa_temp_filename, dtype = input_data["float_type"],
-# 					 	   shape = ( number_of_orientation_trajectories, number_of_timeframes ) )
-
-# 		autocorrelation = oas[i]
-
-# 		moa[counter] += autocorrelation
-
-# 		del oas
-
-# 	for _moa, label in zip( moa, input_data["labels"] ):
-
-# 		_moa /= molecule_numbers[ label ]
-
-# 	return moa
-
-#####################
-
-
-
-
-
-
-
-
-
-
-
-
-#-------------------------------------------------------------------------------
-
 def save_msds_to_file(input_data, times, msds):
 
 	output_filename = input_data["input_xyz_template"] + 'msd.txt'
@@ -711,6 +511,188 @@ def save_lengths_to_file(input_data, bins, lengths):
 
 				line_values.append( bins[j][i] )
 				line_values.append( lengths[j][i] )
+
+			output_file.write( line.format(*line_values) + '\n' )
+
+#-------------------------------------------------------------------------------
+
+def compute_angles(input_data, labels, auxiliary_data):
+
+	which_trajectory = 0
+	which_angle_trajectory = 0
+	number_of_angle_trajctories = 0
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_beads = auxiliary_data["number_of_beads"]
+	number_of_beads_per_file = auxiliary_data["number_of_beads_per_file"]
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	number_of_angle_trajectories = auxiliary_data["number_of_molecules"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	traj_temp_filename = auxiliary_data["traj_temp_filename"]
+
+	print( 'number of angle trajectories: {}'.format(number_of_angle_trajectories) )
+
+	# # temporary binary file which will contain the angle trajectories
+	angle_temp_filename = input_data["input_xyz_template"] + 'ang_tmp.dat'
+	auxiliary_data["angle_temp_filename"] = angle_temp_filename
+
+	angle_trajectories = np.memmap( angle_temp_filename, dtype = input_data["float_type"],
+									 mode = 'w+',
+									 shape = ( number_of_angle_trajectories,
+									  		   number_of_timeframes ) )
+
+	for i in range(number_of_angle_trajectories):
+		angle_trajectories[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
+
+	del angle_trajectories
+
+	angle_labels = [ '___' for i in range(number_of_angle_trajectories) ]
+
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
+						shape = ( number_of_beads, number_of_timeframes, 3 ) )
+
+	angle_trajectories = np.memmap( angle_temp_filename, dtype = input_data["float_type"],
+									 shape = ( number_of_angle_trajectories, number_of_timeframes ) )
+
+	while( which_trajectory < number_of_beads ):
+
+		multiplicity = molecule_sizes[ labels[ which_trajectory ] ]
+
+		if multiplicity == 1:
+
+			angle_labels[ which_angle_trajectory ] = labels[ which_trajectory ]
+
+			which_trajectory += 1
+			which_angle_trajectory += 1
+
+		elif multiplicity == 2:
+
+			angle_labels[ which_angle_trajectory ] = labels[ which_trajectory ]
+
+			which_trajectory += 2
+			which_angle_trajectory += 1
+
+		else:
+
+			for i in range( number_of_timeframes ):
+
+				r_ref = trajectories[which_trajectory, i, :]
+
+				for j in range( 1, multiplicity ):
+
+					r = trajectories[which_trajectory + j, i, :]
+
+					_keep_bound_beads_in_the_same_box( r, r_ref, input_data["box_size"] )
+
+					r_ref = r
+
+					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
+
+			ANGLE_DEFINITYION = (0, 1, 2)
+
+			vector_1 = trajectories[which_trajectory + ANGLE_DEFINITYION[1], :, :] - trajectories[which_trajectory + ANGLE_DEFINITYION[0], :, :]
+
+			vector_2 = trajectories[which_trajectory + ANGLE_DEFINITYION[1], :, :] - trajectories[which_trajectory + ANGLE_DEFINITYION[2], :, :]
+
+			angles = np.array([ np.rad2deg( np.arccos( np.dot( vector_1[n], vector_2[n] ) / np.sqrt( np.dot(vector_1[n], vector_1[n]) * np.dot(vector_2[n], vector_2[n]) ) ) ) for n in range(number_of_timeframes) ])
+			
+			angle_trajectories[which_angle_trajectory] = angles
+
+			angle_labels[ which_angle_trajectory ] = labels[ which_trajectory ]
+
+			which_trajectory += multiplicity
+			which_angle_trajectory += 1
+
+	del trajectories
+	del angle_trajectories
+
+	if input_data["verbose"]: print('angle computation performed')
+
+	return angle_labels
+
+#-------------------------------------------------------------------------------
+
+def compute_angle_distribution(input_data, angle_labels, auxiliary_data):
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	number_of_angle_trajectories = auxiliary_data["number_of_molecules"]
+	angle_temp_filename = auxiliary_data["angle_temp_filename"]
+	number_of_bins = input_data["number_of_bins"]
+
+	angle_trajectories = np.memmap( angle_temp_filename, dtype = input_data["float_type"],
+						   			 shape = ( number_of_angle_trajectories, number_of_timeframes ) )
+
+	angles_separated = [ [ ] for i in range(len(input_data["sizes"])) ]
+
+	bins = []
+	angle_distribution = []
+
+	for i in range( number_of_angle_trajectories ):
+
+		# if input_data["verbose"]: timestamp('computing sad: {} / {}', i + 1, number_of_orientation_trajectories)
+
+		angle_trajectories = np.memmap( angle_temp_filename, dtype = input_data["float_type"],
+						   				 shape = ( number_of_angle_trajectories, number_of_timeframes) )
+
+		angle_trajectory = angle_trajectories[i]
+
+		del angle_trajectories
+
+		counter = 0
+
+		for input_label in input_data["labels"] :
+
+			if angle_labels[i] == input_label:
+
+				break
+
+			counter += 1
+
+		angles_separated[counter].append( angle_trajectory )
+
+	for i in range(len(input_data["sizes"])):
+
+		a, b = np.histogram( angles_separated[i], bins = input_data["number_of_bins"], range = input_data["bin_range"] )
+
+		bins.append( b )
+
+		angle_distribution.append( a )
+
+	return bins, angle_distribution
+
+#-------------------------------------------------------------------------------
+
+def save_angles_to_file(input_data, bins, angles):
+
+	output_filename = input_data["input_xyz_template"] + 'ang.txt'
+
+	with open(output_filename, 'w') as output_file:
+
+		first_line = ''
+		line = ''
+
+		for i, label in enumerate( input_data["labels"] ):
+
+			first_line += ( 'angle/deg ' + label + ' ' )
+
+			line += '{} {} '
+
+		output_file.write(first_line + '\n')
+
+		for i in range( input_data["number_of_bins"] ):
+
+			line_values = [ ]
+
+			for j in range( len(input_data["labels"]) ):
+
+				line_values.append( bins[j][i] )
+				line_values.append( angles[j][i] )
 
 			output_file.write( line.format(*line_values) + '\n' )
 
@@ -1576,7 +1558,6 @@ def _compute_displacement_autocorrelation(trajectory, mode = 'direct'):
 		autocorrelation = np.array( [ np.mean( [ np.dot(trajectory[k+1] - trajectory[k], trajectory[k+j] - trajectory[k+j-1]) for k in range(len(trajectory)-j) ] ) for j in range(1, len(trajectory)) ] )
 
 	return autocorrelation
-
 
 #-------------------------------------------------------------------------------
 

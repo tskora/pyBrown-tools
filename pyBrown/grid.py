@@ -55,51 +55,54 @@ def pack_molecules(input_data):
 # TODO: how to use grid for mixtures?
 def _generate_grid(input_data):
 
-    return None
+    # return None
 
-#     input_data = input_data_object.input_data
+    # input_data = input_data_object.input_data
 
-#     box_size = input_data["box_size"]
-#     molecule_radius = input_data["hydrodynamic_radii"][0][0]
-#     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
+    box_size = input_data["box_size"]
+    molecule_radius = input_data["hydrodynamic_radii"][0][0]
+    min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
-#     unit_dist = 2 * molecule_radius + min_dist_between_surfaces
+    unit_dist = 2 * molecule_radius + min_dist_between_surfaces
 
-#     num_of_unit_x = int(box_size[0] / unit_dist)
-#     num_of_unit_y = int(box_size[1] / unit_dist)
-#     num_of_unit_z = int(box_size[2] / unit_dist)
+    num_of_unit_x = int(box_size[0] / unit_dist)
+    num_of_unit_y = int(box_size[1] / unit_dist)
+    num_of_unit_z = int(box_size[2] / unit_dist)
 
-#     grid_points = num_of_unit_x * num_of_unit_y * num_of_unit_z
+    grid_points = num_of_unit_x * num_of_unit_y * num_of_unit_z
 
-#     print('Number of available grid points is: {}'.format( grid_points ))
+    print('Number of available grid points is: {}'.format( grid_points ))
 
-#     return [[(0.5 + i) * unit_dist, (0.5 + j) * unit_dist, (0.5 + k) * unit_dist]
-#             for i in range(num_of_unit_x)
-#             for j in range(num_of_unit_y)
-#             for k in range(num_of_unit_z)]
+    return [[(0.5 + i) * unit_dist, (0.5 + j) * unit_dist, (0.5 + k) * unit_dist]
+            for i in range(num_of_unit_x)
+            for j in range(num_of_unit_y)
+            for k in range(num_of_unit_z)]
 
 #-------------------------------------------------------------------------------
 
 # TODO: how to use grid for mixtures?
 def _populate_grid(grid, input_data):
 
-    return None
+    # return None
 
-#     input_data = input_data_object.input_data
+    # input_data = input_data_object.input_data
 
-#     number_of_molecules = input_data["number_of_molecules"]
+    print(input_data)
+    1/0
 
-#     populated_grid = []
+    number_of_molecules = input_data["numbers_of_molecules"][0]
 
-#     assert number_of_molecules <= len( grid ), \
-#     'Too many molecules for that box, assuming given minimal distance'
+    populated_grid = []
 
-#     while len(populated_grid) < number_of_molecules:
-#         index_to_be_included = random.randint(0, len(grid)-1)
-#         if grid[index_to_be_included] not in populated_grid:
-#             populated_grid.append(grid[index_to_be_included])
+    assert number_of_molecules <= len( grid ), \
+    'Too many molecules for that box, assuming given minimal distance'
 
-#     return populated_grid
+    while len(populated_grid) < number_of_molecules:
+        index_to_be_included = random.randint(0, len(grid)-1)
+        if grid[index_to_be_included] not in populated_grid:
+            populated_grid.append(grid[index_to_be_included])
+
+    return populated_grid
 
 #-------------------------------------------------------------------------------
 
@@ -111,7 +114,10 @@ def _populate_monte_carlo(input_data):
     box_size = input_data["box_size"]
 
     radii = input_data["hydrodynamic_radii"]
-    # bond_lengths = input_data["bond_lengths"]
+    bond_lengths = input_data["bond_lengths"]
+
+    if bond_lengths != 'hydrodynamic_radii': bond_lengths = input_data["bond_lengths"]
+    else: bond_lengths = None
 
     min_dist_between_surfaces = input_data["minimal_distance_between_surfaces"]
 
@@ -125,7 +131,7 @@ def _populate_monte_carlo(input_data):
 
             print('{} / {}'.format(thrown, n_mol))
 
-            tracers = place_tracers_linearly(radii[i], box_size[0])
+            tracers = place_tracers_linearly(radii[i], box_size[0], bond_lengths[i])
 
             if overlap(tracers, populated_box, min_dist_between_surfaces):
                 continue
