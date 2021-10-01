@@ -590,7 +590,7 @@ def compute_angles(input_data, labels, auxiliary_data):
 
 					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
 
-			ANGLE_DEFINITYION = (0, 1, 2)
+			ANGLE_DEFINITYION = (2, 1, 4)
 
 			vector_1 = trajectories[which_trajectory + ANGLE_DEFINITYION[1], :, :] - trajectories[which_trajectory + ANGLE_DEFINITYION[0], :, :]
 
