@@ -590,25 +590,45 @@ def compute_angles(input_data, labels, auxiliary_data):
 
 					trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
 
-			ANGLE_DEFINITYION = (2, 1, 4)
-
-			vector_1 = trajectories[which_trajectory + ANGLE_DEFINITYION[1], :, :] - trajectories[which_trajectory + ANGLE_DEFINITYION[0], :, :]
-
-			vector_2 = trajectories[which_trajectory + ANGLE_DEFINITYION[1], :, :] - trajectories[which_trajectory + ANGLE_DEFINITYION[2], :, :]
-
-			angles = np.array([ np.rad2deg( np.arccos( np.dot( vector_1[n], vector_2[n] ) / np.sqrt( np.dot(vector_1[n], vector_1[n]) * np.dot(vector_2[n], vector_2[n]) ) ) ) for n in range(number_of_timeframes) ])
-			
-			angle_trajectories[which_angle_trajectory] = angles
-
-			angle_labels[ which_angle_trajectory ] = labels[ which_trajectory ]
-
 			which_trajectory += multiplicity
 			which_angle_trajectory += 1
+
+	for file_number in range(number_of_xyz_files):
+
+		shift = file_number * number_of_beads_per_file
+
+		DISTANCE_DEFINITIONS = [ (1, 2), (2, 3), (3, 4), (2, 5), (5, 6) ]
+
+		ANGLE_DEFINITIONS = [ (1, 2, 3), (2, 3, 4), (3, 2, 5), (2, 5, 6), (1, 2, 5)  ]
+
+		DIHEDRAL_DEFINITIONS = [ (1, 2, 3, 4), (4, 3, 2, 5), (1, 2, 5, 6) ]
+
+		def pointing_vector(index1, index2, shift):
+			return trajectories[shift + index2-1, :, :]-trajectories[shift + index1-1, :, :]
+
+		for distance_definition in DISTANCE_DEFINITIONS:
+			pts = pointing_vector(*distance_definition, shift)
+			for pt in pts:
+				print('distance {} {} = {}'.format(*distance_definition, np.sqrt( np.sum(pt**2) ) ))
+		for angle_definition in ANGLE_DEFINITIONS:
+			pts1 = pointing_vector(*angle_definition[:2], shift)
+			pts2 = pointing_vector(*angle_definition[1:], shift)
+			for tf in range(len(pts1)):
+				print('angle {} {} {} = {}'.format(*angle_definition, np.rad2deg( np.arccos( -np.dot( pts1[tf], pts2[tf] ) / np.sqrt( np.dot(pts1[tf], pts1[tf]) * np.dot(pts2[tf], pts2[tf]) ) ) ) ))
+		for dihedral_definition in DIHEDRAL_DEFINITIONS:
+			pts1 = pointing_vector(*dihedral_definition[:2], shift)
+			pts2 = pointing_vector(*dihedral_definition[1:3], shift)
+			pts3 = pointing_vector(*dihedral_definition[2:4], shift)
+			vec12 = np.cross(pts1, pts2)
+			vec23 = np.cross(pts2, pts3)
+			for tf in range(len(pts1)):
+				print('dihedral {} {} {} {} = {}'.format(*dihedral_definition, np.rad2deg( -np.arctan2( np.dot( pts2[tf], np.cross(vec12[tf], vec23[tf]) ), np.sqrt(np.dot(pts2[tf], pts2[tf])) * np.dot(vec12[tf], vec23[tf]) ) )))
 
 	del trajectories
 	del angle_trajectories
 
 	if input_data["verbose"]: print('angle computation performed')
+	1/0
 
 	return angle_labels
 
