@@ -347,6 +347,127 @@ def save_msds_to_file(input_data, times, msds):
 
 #-------------------------------------------------------------------------------
 
+def compute_zmat(input_data, labels, auxiliary_data):
+
+	which_trajectory = 0
+	which_zmat_trajectory = 0
+	number_of_zmat_trajectories = 0
+
+	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
+	number_of_xyz_files = len( input_xyz_filenames )
+	number_of_beads = auxiliary_data["number_of_beads"]
+	number_of_beads_per_file = auxiliary_data["number_of_beads_per_file"]
+	number_of_timeframes = auxiliary_data["number_of_timeframes"]
+	number_of_zmat_trajectories = auxiliary_data["number_of_molecules"]
+	molecule_sizes = auxiliary_data["molecule_sizes"]
+	molecule_numbers = auxiliary_data["molecule_numbers"]
+	traj_temp_filename = auxiliary_data["traj_temp_filename"]
+
+	# # temporary binary file which will contain the zmat trajectories
+	zmat_temp_filename = input_data["input_xyz_template"] + 'zmt_tmp.dat'
+	auxiliary_data["zmat_temp_filename"] = zmat_temp_filename
+
+	zmat_trajectories = np.memmap( zmat_temp_filename, dtype = input_data["float_type"],
+								   mode = 'w+',
+								   shape = ( number_of_zmat_trajectories,
+									  		 number_of_timeframes ) )
+
+	for i in range(number_of_zmat_trajectories):
+		zmat_trajectories[i] = np.zeros(number_of_timeframes, dtype = input_data["float_type"])
+
+	del zmat_trajectories
+
+	zmat_labels = [ '___' for i in range(number_of_zmat_trajectories) ]
+
+	trajectories = np.memmap( traj_temp_filename, dtype = input_data["float_type"],
+						shape = ( number_of_beads, number_of_timeframes, 3 ) )
+
+	zmat_trajectories = np.memmap( zmat_temp_filename, dtype = input_data["float_type"],
+								   shape = ( number_of_zmat_trajectories, number_of_timeframes ) )
+
+	internal_coordinates = input_data["internal_coordinates"]
+
+	with open(input_data["input_xyz_template"]+'zmt.txt', "w") as output_file:
+
+		while( which_trajectory < number_of_beads ):
+
+			multiplicity = molecule_sizes[ labels[ which_trajectory ] ]
+
+			if multiplicity == 1:
+
+				zmat_labels[ which_zmat_trajectory ] = labels[ which_trajectory ]
+
+				which_trajectory += 1
+				which_zmat_trajectory += 1
+
+			else:
+
+				zmat_labels[ which_zmat_trajectory ] = labels[ which_trajectory ]
+
+				for i in range( number_of_timeframes ):
+
+					r_ref = trajectories[which_trajectory, i, :]
+
+					for j in range( 1, multiplicity ):
+
+						r = trajectories[which_trajectory + j, i, :]
+
+						_keep_bound_beads_in_the_same_box( r, r_ref, input_data["box_size"] )
+
+						r_ref = r
+
+						trajectories[which_trajectory + j, i, :] = np.array(r, dtype = input_data["float_type"])
+
+				def pointing_vector(index1, index2):
+			 		return trajectories[which_trajectory + index2-1, :, :]-trajectories[which_trajectory + index1-1, :, :]
+
+				if "distance" in internal_coordinates[ zmat_labels[ which_zmat_trajectory ] ].keys():
+
+					distance_definitions = internal_coordinates[ zmat_labels[ which_zmat_trajectory ] ]["distance"]
+
+					for distance_definition in distance_definitions:
+
+						pts = pointing_vector(*distance_definition)
+						for pt in pts:
+							output_file.write('distance {} {} = {}\n'.format(*distance_definition, np.sqrt( np.sum(pt**2) ) ))
+
+				if "angle" in internal_coordinates[ zmat_labels[ which_zmat_trajectory ] ].keys():
+
+					angle_definitions = internal_coordinates[ zmat_labels[ which_zmat_trajectory ] ]["angle"]
+
+					for angle_definition in angle_definitions:
+
+						pts1 = pointing_vector(*angle_definition[:2], shift)
+						pts2 = pointing_vector(*angle_definition[1:], shift)
+						
+						for tf in range(len(pts1)):
+							output_file.write('angle {} {} {} = {}\n'.format(*angle_definition, np.rad2deg( np.arccos( -np.dot( pts1[tf], pts2[tf] ) / np.sqrt( np.dot(pts1[tf], pts1[tf]) * np.dot(pts2[tf], pts2[tf]) ) ) ) ))
+
+				if "dihedral" in internal_coordinates[ zmat_labels[ which_zmat_trajectory ] ].keys():
+
+					dihedral_definitions = internal_coordinates[ zmat_labels[ which_zmat_trajectory ] ]["dihedral"]
+
+					for dihedral_definition in dihedral_definitions:
+
+						pts1 = pointing_vector(*dihedral_definition[:2], shift)
+						pts2 = pointing_vector(*dihedral_definition[1:3], shift)
+						pts3 = pointing_vector(*dihedral_definition[2:4], shift)
+						vec12 = np.cross(pts1, pts2)
+						vec23 = np.cross(pts2, pts3)
+
+						for tf in range(len(pts1)):
+							output_file.write('dihedral {} {} {} {} = {}\n'.format(*dihedral_definition, np.rad2deg( -np.arctan2( np.dot( pts2[tf], np.cross(vec12[tf], vec23[tf]) ), np.sqrt(np.dot(pts2[tf], pts2[tf])) * np.dot(vec12[tf], vec23[tf]) ) )))
+
+				which_trajectory += multiplicity
+				which_zmat_trajectory += 1
+
+	del trajectories
+	del zmat_trajectories
+
+	return zmat_labels
+
+#-------------------------------------------------------------------------------
+
 def compute_lengths(input_data, labels, auxiliary_data):
 
 	which_trajectory = 0
