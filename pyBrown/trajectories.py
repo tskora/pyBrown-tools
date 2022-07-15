@@ -224,6 +224,9 @@ def compute_cons(input_data, cm_labels, auxiliary_data):
 			else:
 				cons[cm_labels[j]][i] += 1
 
+	for index in cons.keys():
+		cons[index] /= number_of_xyz_files
+
 	return cons
 
 #-------------------------------------------------------------------------------
@@ -288,6 +291,10 @@ def compute_fluxes(input_data, cm_labels, auxiliary_data):
 			if f0 == f1: fluxes[cm_labels[j]][i] += 0
 			elif f0: fluxes[cm_labels[j]][i] -= 1
 			else: fluxes[cm_labels[j]][i] += 1
+
+	for index in fluxes.keys():
+		fluxes[index] /= number_of_xyz_files
+
 
 	return fluxes
 
