@@ -205,27 +205,28 @@ def compute_cons(input_data, cm_labels, auxiliary_data):
 	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
 	cm_temp_filename = auxiliary_data["cm_temp_filename"]
 
-	x_region, y_region, z_region = input_data["chosen_box"]
-
 	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
+	cons = [ { l:np.zeros(number_of_timeframes) for l in molecule_numbers.keys() } for ii in range(len(input_data["chosen_box"])) ]
 
-	cons = { l:np.zeros(number_of_timeframes) for l in molecule_numbers.keys() }
+	for ii in range(len(input_data["chosen_box"])):
 
-	for i in range(number_of_timeframes):
-		for j in range(number_of_cm_trajectories):
-			if cm_trajectories[j][i][0] < x_region[0] or cm_trajectories[j][i][0] > x_region[1]:
-				continue
-			if cm_trajectories[j][i][1] < y_region[0] or cm_trajectories[j][i][1] > y_region[1]:
-				continue
-			if cm_trajectories[j][i][2] < z_region[0] or cm_trajectories[j][i][2] > z_region[1]:
-				continue
-			else:
-				cons[cm_labels[j]][i] += 1
+		x_region, y_region, z_region = input_data["chosen_box"][ii]
 
-	for index in cons.keys():
-		cons[index] /= number_of_xyz_files
+		for i in range(number_of_timeframes):
+			for j in range(number_of_cm_trajectories):
+				if cm_trajectories[j][i][0] < x_region[0] or cm_trajectories[j][i][0] > x_region[1]:
+					continue
+				elif cm_trajectories[j][i][1] < y_region[0] or cm_trajectories[j][i][1] > y_region[1]:
+					continue
+				elif cm_trajectories[j][i][2] < z_region[0] or cm_trajectories[j][i][2] > z_region[1]:
+					continue
+				else:
+					cons[ii][cm_labels[j]][i] += 1
+
+		for index in cons[0].keys():
+			cons[ii][index] /= number_of_xyz_files
 
 	return cons
 
@@ -242,9 +243,11 @@ def save_cons_to_file(input_data, times, cons):
 
 		for label in input_data["labels"]:
 
-			first_line += ( label + ' ' )
+			for ii in range(len(cons)):
 
-			line += '{} '
+				first_line += ( label + '(box{})'.format(ii+1) + ' ' )
+
+				line += '{} '
 
 		output_file.write(first_line + '\n')
 
@@ -254,7 +257,9 @@ def save_cons_to_file(input_data, times, cons):
 
 			for j in input_data["labels"]:
 
-				line_values.append( cons[j][i] )
+				for ii in range(len(cons)):
+
+					line_values.append( cons[ii][j][i] )
 
 			output_file.write( line.format(*line_values) + '\n' )
 
