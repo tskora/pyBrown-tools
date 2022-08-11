@@ -266,8 +266,6 @@ def save_cons_to_file(input_data, times, cons):
 
 #-------------------------------------------------------------------------------
 
-
-
 def compute_fluxes(input_data, cm_labels, auxiliary_data):
 
 	input_xyz_filenames = auxiliary_data["input_xyz_filenames"]
@@ -278,28 +276,29 @@ def compute_fluxes(input_data, cm_labels, auxiliary_data):
 	number_of_cm_trajectories = auxiliary_data["number_of_molecules"]
 	cm_temp_filename = auxiliary_data["cm_temp_filename"]
 
-	plane_normal_vector= input_data["plane_normal_vector"]
-	plane_point= input_data["plane_point"]
-
 	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
-	fluxes = { l:np.zeros(number_of_timeframes) for l in molecule_numbers.keys() }
+	fluxes = [ { l:np.zeros(number_of_timeframes) for l in molecule_numbers.keys() } for ii in range(len(input_data["plane_normal_vector"])) ]
 
-	for i in range(1, number_of_timeframes):
-		for j in range(number_of_cm_trajectories):
-			r0 = cm_trajectories[j][i-1]
-			r1 = cm_trajectories[j][i]
-			f0 = np.dot( plane_normal_vector, (r0 - plane_point) ) > 0.0
-			f1 = np.dot( plane_normal_vector, (r1 - plane_point) ) > 0.0
+	for ii in range(len(input_data["plane_normal_vector"])):
 
-			if f0 == f1: fluxes[cm_labels[j]][i] += 0
-			elif f0: fluxes[cm_labels[j]][i] -= 1
-			else: fluxes[cm_labels[j]][i] += 1
+		plane_normal_vector= input_data["plane_normal_vector"][ii]
+		plane_point= input_data["plane_point"][ii]
 
-	for index in fluxes.keys():
-		fluxes[index] /= number_of_xyz_files
+		for i in range(1, number_of_timeframes):
+			for j in range(number_of_cm_trajectories):
+				r0 = cm_trajectories[j][i-1]
+				r1 = cm_trajectories[j][i]
+				f0 = np.dot( plane_normal_vector, (r0 - plane_point) ) > 0.0
+				f1 = np.dot( plane_normal_vector, (r1 - plane_point) ) > 0.0
 
+				if f0 == f1: fluxes[ii][cm_labels[j]][i] += 0
+				elif f0: fluxes[ii][cm_labels[j]][i] -= 1
+				else: fluxes[ii][cm_labels[j]][i] += 1
+
+		for index in fluxes[0].keys():
+			fluxes[ii][index] /= number_of_xyz_files
 
 	return fluxes
 
@@ -316,9 +315,11 @@ def save_fluxes_to_file(input_data, times, fluxes):
 
 		for label in input_data["labels"]:
 
-			first_line += ( label + ' ' )
+			for ii in range(len(fluxes)):
 
-			line += '{} '
+				first_line += ( label + '(plane{})'.format(ii+1) + ' ' )
+
+				line += '{} '
 
 		output_file.write(first_line + '\n')
 
@@ -328,7 +329,9 @@ def save_fluxes_to_file(input_data, times, fluxes):
 
 			for j in input_data["labels"]:
 
-				line_values.append( fluxes[j][i] )
+				for ii in range(len(fluxes)):
+
+					line_values.append( fluxes[ii][j][i] )
 
 			output_file.write( line.format(*line_values) + '\n' )
 
