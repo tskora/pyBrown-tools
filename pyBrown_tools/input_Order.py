@@ -16,11 +16,11 @@
 
 import json
 
-from pyBrown.input import InputData
+from pyBrown_tools.input import InputData
 
 #-------------------------------------------------------------------------------
 
-class InputDataMSD(InputData):
+class InputDataOrder(InputData):
 
     def __init__(self, input_filename, obligatory_keywords = [], defaults = {}):
 

@@ -15,13 +15,14 @@
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
 import unittest
-
-import sys
-sys.path.insert(0, '../pyBrown')
 import numpy as np
+
+import os.path
+import sys
+sys.path.insert(0, os.path.abspath( os.path.join(os.path.dirname(__file__), '..') ))
 import copy as cp
 
-from pyBrown.trajectories import _compute_sd
+from pyBrown_tools.trajectories import _compute_sd
 
 #-------------------------------------------------------------------------------
 

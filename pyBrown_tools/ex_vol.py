@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see https://www.gnu.org/licenses.
 
-from pyBrown.input import InputData
-from pyBrown.parse import parse_input_filename
-from pyBrown.monte_carlo import MonteCarlo, place_crowders_linearly, place_tracers_linearly, place_crowders_xyz
-from pyBrown.sphere import Sphere, overlap, overlap_pbc
-from pyBrown.messaging import timestamp
+from pyBrown_tools.input import InputData
+from pyBrown_tools.parse import parse_input_filename
+from pyBrown_tools.monte_carlo import MonteCarlo, place_crowders_linearly, place_tracers_linearly, place_crowders_xyz
+from pyBrown_tools.sphere import Sphere, overlap, overlap_pbc
+from pyBrown_tools.messaging import timestamp
 
 import numpy as np
 import random

@@ -16,9 +16,9 @@
 
 import click
 
-from pyBrown.input_Lengths import InputDataLengths
-from pyBrown.messaging import timestamp
-from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
+from pyBrown_tools.input_Lengths import InputDataLengths
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 compute_zmat
 
 #-------------------------------------------------------------------------------

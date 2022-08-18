@@ -17,7 +17,7 @@
 import click
 import numpy as np
 
-from pyBrown.h_cell import H_cell, h_cell_simulation
+from pyBrown_tools.h_cell import H_cell, h_cell_simulation
 
 #-------------------------------------------------------------------------------
 

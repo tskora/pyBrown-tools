@@ -16,9 +16,9 @@
 
 import click
 
-from pyBrown.input_RDF import InputDataRDF
-from pyBrown.messaging import timestamp
-from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
+from pyBrown_tools.input_RDF import InputDataRDF
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 separate_center_of_mass, compute_rdfs, save_rdfs_to_file
 
 CM = True

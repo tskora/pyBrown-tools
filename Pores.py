@@ -16,11 +16,11 @@
 
 import click
 
-from pyBrown.input_Pores import InputDataPores
-from pyBrown.ex_vol import estimate_excluded_volume, read_radii_from_str_file, \
+from pyBrown_tools.input_Pores import InputDataPores
+from pyBrown_tools.ex_vol import estimate_excluded_volume, read_radii_from_str_file, \
 						   compute_pores_histogram
-from pyBrown.messaging import timestamp
-from pyBrown.plotting import plot_pore_size_distribution
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.plotting import plot_pore_size_distribution
 
 import multiprocessing
 from multiprocessing import Pool

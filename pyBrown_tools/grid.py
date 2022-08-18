@@ -20,11 +20,11 @@ import numpy as np
 import scipy.interpolate as interpolate
 from scipy.integrate import quad
 
-from pyBrown.monte_carlo import place_tracers_linearly
-from pyBrown.sphere import overlap, fit
+from pyBrown_tools.monte_carlo import place_tracers_linearly
+from pyBrown_tools.sphere import overlap, fit
 
-from pyBrown.sphere import distance_matrix
-from pyBrown.monte_carlo import MonteCarlo
+from pyBrown_tools.sphere import distance_matrix
+from pyBrown_tools.monte_carlo import MonteCarlo
 
 #-------------------------------------------------------------------------------
 

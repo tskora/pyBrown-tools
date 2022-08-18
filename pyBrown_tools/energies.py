@@ -17,7 +17,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pyBrown.messaging import timestamp
+from pyBrown_tools.messaging import timestamp
 
 #-------------------------------------------------------------------------------
 

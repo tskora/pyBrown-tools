@@ -15,7 +15,7 @@
 # along with this program.  If not, see https://www.gnu.org/licenses.
 
 import numpy as np
-from pyBrown.sphere import Sphere
+from pyBrown_tools.sphere import Sphere
 
 #-------------------------------------------------------------------------------
 

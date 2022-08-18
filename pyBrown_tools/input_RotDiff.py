@@ -1,5 +1,5 @@
-# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics simulations
-# Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
+# pyBrown is a bundle of tools useful for Brownian and Stokesian dynamics
+# simulations. Copyright (C) 2018  Tomasz Skora (tskora@ichf.edu.pl)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,27 +16,14 @@
 
 import json
 
-from pyBrown.input import InputData
+from pyBrown_tools.input import InputData
 
 #-------------------------------------------------------------------------------
 
-class InputDataPores(InputData):
+class InputDataRotDiff(InputData):
 
     def __init__(self, input_filename, obligatory_keywords = [], defaults = {}):
 
         super().__init__(input_filename, obligatory_keywords, defaults)
-
-        # if self.input_data["bond_lengths"] == 'hydrodynamic_radii':
-        #     self.bond_lengths_if_only_radii_given()
     
     #---------------------------------------------------------------------------
-
-    # def bond_lengths_if_only_radii_given(self):
-
-    #     bond_lengths = [ ]
-
-    #     for j, bfc in enumerate( self.input_data["bond_force_constants"] ):
-    #         bond_lengths.append( [ ] )
-    #         for k in range( len( bfc ) ):
-    #             bond_lengths[j].append( self.input_data["hydrodynamic_radii"][j][k] +
-    #                                     self.input_data["hydrodynamic_radii"][j][k+1] )

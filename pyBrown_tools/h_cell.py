@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
-from pyBrown.plot_config import plot_config
+from pyBrown_tools.plot_config import plot_config
 
 #-------------------------------------------------------------------------------
 

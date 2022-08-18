@@ -18,10 +18,10 @@ import click
 
 import numpy as np
 
-from pyBrown.input_Voxels import InputDataVoxels
-from pyBrown.messaging import timestamp
-from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads
-from pyBrown.sphere import Sphere, overlap
+from pyBrown_tools.input_Voxels import InputDataVoxels
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.trajectories import read_trajectories, add_auxiliary_data_multibeads
+from pyBrown_tools.sphere import Sphere, overlap
 
 #-------------------------------------------------------------------------------
 

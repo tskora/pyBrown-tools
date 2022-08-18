@@ -22,7 +22,8 @@ from scipy.linalg import eigh
 import freud.box
 import freud.msd
 
-from pyBrown.messaging import timestamp
+from pyBrown_tools.fluxes import compute_flux_single
+from pyBrown_tools.messaging import timestamp
 
 FREUD = True
 CM = True
@@ -283,19 +284,14 @@ def compute_fluxes(input_data, cm_labels, auxiliary_data):
 
 	for ii in range(len(input_data["plane_normal_vector"])):
 
-		plane_normal_vector= input_data["plane_normal_vector"][ii]
-		plane_point= input_data["plane_point"][ii]
+		plane_normal_vector = input_data["plane_normal_vector"][ii]
+		plane_point = input_data["plane_point"][ii]
 
 		for i in range(1, number_of_timeframes):
 			for j in range(number_of_cm_trajectories):
 				r0 = cm_trajectories[j][i-1]
 				r1 = cm_trajectories[j][i]
-				f0 = np.dot( plane_normal_vector, (r0 - plane_point) ) > 0.0
-				f1 = np.dot( plane_normal_vector, (r1 - plane_point) ) > 0.0
-
-				if f0 == f1: fluxes[ii][cm_labels[j]][i] += 0
-				elif f0: fluxes[ii][cm_labels[j]][i] -= 1
-				else: fluxes[ii][cm_labels[j]][i] += 1
+				fluxes[ii][cm_labels[j]][i] += compute_flux_single(r0, r1, plane_normal_vector, plane_point)
 
 		for index in fluxes[0].keys():
 			fluxes[ii][index] /= number_of_xyz_files

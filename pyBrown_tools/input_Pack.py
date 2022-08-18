@@ -16,7 +16,7 @@
 
 import json
 
-from pyBrown.input import InputData
+from pyBrown_tools.input import InputData
 
 #-------------------------------------------------------------------------------
 

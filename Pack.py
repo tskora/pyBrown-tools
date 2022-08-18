@@ -16,11 +16,11 @@
 
 import click
 
-from pyBrown.input_Pack import InputDataPack
-from pyBrown.grid import pack_molecules
-from pyBrown.write import write_structure
-from pyBrown.parse import parse_input_filename
-from pyBrown.messaging import timestamp
+from pyBrown_tools.input_Pack import InputDataPack
+from pyBrown_tools.grid import pack_molecules
+from pyBrown_tools.write import write_structure
+from pyBrown_tools.parse import parse_input_filename
+from pyBrown_tools.messaging import timestamp
 
 #-------------------------------------------------------------------------------
 

@@ -17,9 +17,9 @@
 import click
 import os
 
-from pyBrown.input_MSD import InputDataMSD
-from pyBrown.messaging import timestamp
-from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
+from pyBrown_tools.input_MSD import InputDataMSD
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 separate_center_of_mass, \
 								 compute_cons, \
 								 save_cons_to_file

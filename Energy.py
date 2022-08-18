@@ -16,10 +16,10 @@
 
 import click
 
-from pyBrown.input_Energy import InputDataEnergy
-from pyBrown.messaging import timestamp
-from pyBrown.energies import read_energies, compute_mean_energies, save_menergies_to_file
-from pyBrown.plotting import plot_menergies
+from pyBrown_tools.input_Energy import InputDataEnergy
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.energies import read_energies, compute_mean_energies, save_menergies_to_file
+from pyBrown_tools.plotting import plot_menergies
 
 #-------------------------------------------------------------------------------
 

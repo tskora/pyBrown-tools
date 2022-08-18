@@ -16,8 +16,8 @@
 
 import click
 
-from pyBrown.input import InputData
-from pyBrown.messaging import timestamp
+from pyBrown_tools.input import InputData
+from pyBrown_tools.messaging import timestamp
 
 #-------------------------------------------------------------------------------
 

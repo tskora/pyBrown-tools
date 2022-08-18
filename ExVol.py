@@ -16,9 +16,9 @@
 
 import click
 
-from pyBrown.input_ExVol import InputDataExVol
-from pyBrown.ex_vol import estimate_excluded_volume, read_radii_from_str_file
-from pyBrown.messaging import timestamp
+from pyBrown_tools.input_ExVol import InputDataExVol
+from pyBrown_tools.ex_vol import estimate_excluded_volume, read_radii_from_str_file
+from pyBrown_tools.messaging import timestamp
 
 import multiprocessing
 from multiprocessing import Pool

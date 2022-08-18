@@ -16,14 +16,14 @@
 
 import click
 
-from pyBrown.input_RotDiff import InputDataRotDiff
-from pyBrown.messaging import timestamp
-from pyBrown.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
+from pyBrown_tools.input_RotDiff import InputDataRotDiff
+from pyBrown_tools.messaging import timestamp
+from pyBrown_tools.trajectories import read_trajectories, add_auxiliary_data_multibeads, \
 								 compute_orientations, compute_mean_orientation_autocorrelation, \
 								 save_mean_orientation_autocorrelation_to_file, \
 								 compute_mean_squared_angular_displacements, \
 								 save_mean_squared_angular_displacements_to_file
-from pyBrown.plotting import plot_msads, plot_moas
+from pyBrown_tools.plotting import plot_msads, plot_moas
 
 #-------------------------------------------------------------------------------
 
