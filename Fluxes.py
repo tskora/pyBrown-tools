@@ -15,6 +15,7 @@
 # along with this program. If not, see https://www.gnu.org/licenses.
 
 import click
+import numpy as np
 import os
 
 from pyBrown_tools.input_MSD import InputDataMSD
