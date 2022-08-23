@@ -43,6 +43,7 @@ def main(input_filename):
 
 	timestamp( 'Reading input from {} file', input_filename )
 	i = InputDataMSD(input_filename, required_keywords, defaults)
+	i.input_data["plane_normal_vector"] /= np.linalg.norm(i.input_data["plane_normal_vector"])
 	timestamp( 'Input data:\n{}', i )
 
 	timestamp( 'Reading trajectories' )

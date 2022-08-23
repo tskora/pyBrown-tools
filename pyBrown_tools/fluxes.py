@@ -18,12 +18,14 @@ import numpy as np
 
 def compute_flux_single(r0, r1, plane_normal_vector, plane_point, box_size):
 
-	for i in range(0, 3):
-		if ( r1[i] - r0[i] >= box_size / 2 ) or ( r1[i] - r0[i] <= -box_size / 2 ):
-			return 0
+	proj0 = np.dot( plane_normal_vector / np.linalg.norm(plane_normal_vector), (r0 - plane_point) )
+	proj1 = np.dot( plane_normal_vector / np.linalg.norm(plane_normal_vector), (r1 - plane_point) )
 
-	f0 = np.dot( plane_normal_vector, (r0 - plane_point) ) > 0.0
-	f1 = np.dot( plane_normal_vector, (r1 - plane_point) ) > 0.0
+	if ( proj1 - proj0 >= box_size / 2 ) or ( proj1 - proj0 <= -box_size / 2 ):
+		return 0
+
+	f0 = proj0 > 0.0
+	f1 = proj1 > 0.0
 
 	if f0 == f1: return 0
 	elif f0: return -1
