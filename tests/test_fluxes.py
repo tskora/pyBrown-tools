@@ -28,6 +28,8 @@ from pyBrown_tools.fluxes import compute_flux_single
 class TestFluxes(unittest.TestCase):
 
 	def setUp(self):
+
+		self.box_size = 200.0
 		
 		return 0
 
@@ -42,7 +44,7 @@ class TestFluxes(unittest.TestCase):
 
 		for point in plane_points:
 			for vector in plane_normal_vectors:
-				self.assertEqual( compute_flux_single(r0, r1, vector, point), 0 )
+				self.assertEqual( compute_flux_single(r0, r1, vector, point, self.box_size), 0 )
 
 	#---------------------------------------------------------------------------
 
@@ -58,12 +60,12 @@ class TestFluxes(unittest.TestCase):
 		plane_point_5 = np.array([0.0, 0.0, 15.0])
 		plane_point_6 = np.array([0.0, 0.0, 25.0])
 
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
 
 	#---------------------------------------------------------------------------
 
@@ -79,12 +81,12 @@ class TestFluxes(unittest.TestCase):
 		plane_point_5 = np.array([0.0, 0.0, 15.0])
 		plane_point_6 = np.array([0.0, 0.0, 25.0])
 
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
 
 	#---------------------------------------------------------------------------
 
@@ -100,12 +102,12 @@ class TestFluxes(unittest.TestCase):
 		plane_point_5 = np.array([0.0, 0.0, 15.0])
 		plane_point_6 = np.array([0.0, 0.0, 25.0])
 
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5), -1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), -1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
 
 	#---------------------------------------------------------------------------
 
@@ -121,12 +123,12 @@ class TestFluxes(unittest.TestCase):
 		plane_point_5 = np.array([0.0, 0.0, 15.0])
 		plane_point_6 = np.array([0.0, 0.0, 25.0])
 
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5), 1 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), 1 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
 
 	#---------------------------------------------------------------------------
 
@@ -142,13 +144,54 @@ class TestFluxes(unittest.TestCase):
 		plane_point_5 = np.array([0.0, 0.0, 15.0])
 		plane_point_6 = np.array([0.0, 0.0, 25.0])
 
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5), 0 )
-		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
 
+	#---------------------------------------------------------------------------
+
+	def test_moving_through_pbc(self):
+
+		r0 = np.array([20.0, 10.0, -90.0])
+		r1 = np.array([20.0, 10.0, 90.0])
+		plane_normal_vector = np.array([0.0, 0.0, 1.0])
+		plane_point_1 = np.array([0.0, 0.0, -25.0])
+		plane_point_2 = np.array([0.0, 0.0, -15.0])
+		plane_point_3 = np.array([0.0, 0.0, -5.0])
+		plane_point_4 = np.array([0.0, 0.0, 5.0])
+		plane_point_5 = np.array([0.0, 0.0, 15.0])
+		plane_point_6 = np.array([0.0, 0.0, 25.0])
+
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
+
+	#---------------------------------------------------------------------------
+
+	def test_moving_through_pbc_reversed(self):
+
+		r0 = np.array([20.0, 10.0, 90.0])
+		r1 = np.array([20.0, 10.0, -90.0])
+		plane_normal_vector = np.array([0.0, 0.0, 1.0])
+		plane_point_1 = np.array([0.0, 0.0, -25.0])
+		plane_point_2 = np.array([0.0, 0.0, -15.0])
+		plane_point_3 = np.array([0.0, 0.0, -5.0])
+		plane_point_4 = np.array([0.0, 0.0, 5.0])
+		plane_point_5 = np.array([0.0, 0.0, 15.0])
+		plane_point_6 = np.array([0.0, 0.0, 25.0])
+
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_1, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_2, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_3, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_4, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_5, self.box_size), 0 )
+		self.assertEqual( compute_flux_single(r0, r1, plane_normal_vector, plane_point_6, self.box_size), 0 )
 
 #-------------------------------------------------------------------------------
 

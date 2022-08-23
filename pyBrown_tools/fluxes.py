@@ -16,7 +16,11 @@
 
 import numpy as np
 
-def compute_flux_single(r0, r1, plane_normal_vector, plane_point):
+def compute_flux_single(r0, r1, plane_normal_vector, plane_point, box_size):
+
+	for i in range(0, 3):
+		if ( r1[i] - r0[i] >= box_size / 2 ) or ( r1[i] - r0[i] <= -box_size / 2 ):
+			return 0
 
 	f0 = np.dot( plane_normal_vector, (r0 - plane_point) ) > 0.0
 	f1 = np.dot( plane_normal_vector, (r1 - plane_point) ) > 0.0

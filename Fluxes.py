@@ -33,7 +33,7 @@ def main(input_filename):
 
 	# here the list of keywords that are required for program to work is provided
 	required_keywords = ["labels", "input_xyz_template", "input_xyz_range",
-						 "plane_normal_vector", "plane_point"]
+						 "plane_normal_vector", "plane_point", "box_size"]
 
 	# here the dict of keywords:default values is provided
 	# if given keyword is absent in JSON, it is added with respective default value

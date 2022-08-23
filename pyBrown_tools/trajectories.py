@@ -280,6 +280,7 @@ def compute_fluxes(input_data, cm_labels, auxiliary_data):
 	cm_trajectories = np.memmap( cm_temp_filename, dtype = input_data["float_type"],
 						   shape = ( number_of_cm_trajectories, number_of_timeframes, 3 ) )
 
+
 	fluxes = [ { l:np.zeros(number_of_timeframes) for l in molecule_numbers.keys() } for ii in range(len(input_data["plane_normal_vector"])) ]
 
 	for ii in range(len(input_data["plane_normal_vector"])):
@@ -291,7 +292,7 @@ def compute_fluxes(input_data, cm_labels, auxiliary_data):
 			for j in range(number_of_cm_trajectories):
 				r0 = cm_trajectories[j][i-1]
 				r1 = cm_trajectories[j][i]
-				fluxes[ii][cm_labels[j]][i] += compute_flux_single(r0, r1, plane_normal_vector, plane_point)
+				fluxes[ii][cm_labels[j]][i] += compute_flux_single(r0, r1, plane_normal_vector, plane_point, input_data["box_size"])
 
 		for index in fluxes[0].keys():
 			fluxes[ii][index] /= number_of_xyz_files
